@@ -1,0 +1,71 @@
+{
+    "apiUrl": "http://localhost:3000",
+    "userPersistKey": "connectedUser",
+    "tokenPersistKey": "token",
+    "endpoints":{
+      "login": "/auth/login",
+      "register": "/auth/register",
+      "checkEmail": "/auth/check-email",
+      "checkCode": "/auth/check-code",
+      "resetPassword": "/auth/reset-password",
+      "rating": {
+        "root": "/rating",
+        "addOne": "api/rating/addOne",
+        "getOne": "api/rating/getOne"
+      },
+      "merchant": {
+        "root": "/merchant",
+        "changePassword": "/merchant/change-password",
+        "changePhone": "/merchant/change-phone",
+        "addWebsite": "/merchant/add-website",
+        "updateWebsite": "/merchant/update-website",
+        "deleteWebsite": "/merchant/delete-website",
+        "generateApiKey": "/merchant/generate-api-key",
+        "get": "/merchant/get",
+        "changeStatus": "/merchant/change-status"
+      },
+      "buyer": {
+        "root": "/buyer",
+        "changePassword": "/buyer/change-password",
+        "changePhone": "/buyer/change-phone",
+        "addWebsite": "/buyer/add-website",
+        "updateWebsite": "/buyer/update-website",
+        "deleteWebsite": "/buyer/delete-website",
+        "generateApiKey": "/buyer/generate-api-key",
+        "get": "/buyer/get",
+        "changeStatus": "/merbuyerchant/change-status"
+      },
+      "payment": {
+        "root": "/payment",
+        "changePassword": "/payment/change-password",
+        "changePhone": "/payment/change-phone",
+        "addWebsite": "/payment/add-website",
+        "updateWebsite": "/payment/update-website",
+        "deleteWebsite": "/payment/delete-website",
+        "generateApiKey": "/payment/generate-api-key",
+        "get": "api/payment/get",
+        "changeStatus": "api/payment/changeStatus"
+      }
+    },
+    "errors": {
+      "I0001": "Unauthorized",
+      "A0000": "Invalid email address",
+      "A0001": "Invalid code",
+      "A0002": "Invalid username",
+      "I0002": "Contact our support",
+      "I0000": "Something went wrong, try later",
+      "A0003": "This cin already used",
+      "A0004": "This username already used",
+      "A0005": "This email already used",
+      "A0006": "Invalid age",
+      "A0007": "The legal age has not yet been reached",
+      "A0008": "This phone already used",
+      "RC0000": "This receiver is frozen, contact support",
+      "RC0001": "This receiver already exists",
+      "P0000": "Path not found",
+      "P0001": "Insufficient balance",
+      "P0002": "You can't edit published paths",
+      "A0009": "User not found",
+      "A0010": "Incorrect password"
+    }
+  }
