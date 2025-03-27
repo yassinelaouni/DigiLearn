@@ -1,8 +1,8 @@
 import { put, select } from "redux-saga/effects";
 
-import helpers from "helpers";
+import helpers from "../../../../helpers";
 import config from "../../../../config.json";
-import errors from "store/errors";
+import errors from "../../../../store/errors";
 
 import receiverSelectors from "../../selectors";
 

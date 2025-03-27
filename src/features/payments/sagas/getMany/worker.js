@@ -1,11 +1,11 @@
 import { put, select } from "redux-saga/effects";
 
-import errors from "store/errors";
-import actions from "features/payments/actions";
-import merchantsActions from "features/merchants/actions";
+import errors from "../../../../store/errors";
+import actions from "../../../../features/payments/actions";
+import merchantsActions from "../../../../features/merchants/actions";
 import buyersSelectors from "../../selectors";
 import normalizer from '../../normalizer'
-import helpers from "helpers";
+import helpers from "../../../../helpers";
 import config from "../../../../config.json";
 
 export default function* getMany({ meta = {} }) {

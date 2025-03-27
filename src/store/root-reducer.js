@@ -9,9 +9,7 @@ const rootReducer = combineReducers({
   errors: errors.reducer,
   loading: loading.reducer,
   auth: features.auth.reducer,
-  rating: features.rating.reducer,
   merchant: features.merchants.reducer,
-  buyer: features.buyers.reducer,
   payment: features.payments.reducer,
 });
 

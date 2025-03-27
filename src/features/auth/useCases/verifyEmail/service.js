@@ -51,7 +51,7 @@ export default function useVerifyEmail() {
   const { isSuccess, id } = useSelector(errors.selectors.error);
 
   useEffect(() => {
-    if (isSuccess && id === types.verifyEmail) navigate("/dashboard/rating");
+    if (isSuccess && id === types.verifyEmail) navigate("/dashboard");
   }, [isSuccess, id, navigate]);
 
   return {

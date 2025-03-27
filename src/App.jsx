@@ -1,9 +1,12 @@
-
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
+import { Provider as ReduxProvider } from "react-redux";
+import features from './features';
+import layout from './layout';
+import store from "./store";
 import Index from "./pages/Index";
 import Courses from "./pages/Courses";
 import CourseDetails from "./pages/CourseDetails";
@@ -13,22 +16,48 @@ import NotFound from "./pages/NotFound";
 const queryClient = new QueryClient();
 
 const App = () => (
-  <QueryClientProvider client={queryClient}>
-    <TooltipProvider>
-      <Toaster />
-      <Sonner />
-      <BrowserRouter>
-        <Routes>
-          <Route path="/" element={<Index />} />
-          <Route path="/courses" element={<Courses />} />
-          <Route path="/courses/:slug" element={<CourseDetails />} />
-          <Route path="/about" element={<About />} />
-          {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
-          <Route path="*" element={<NotFound />} />
-        </Routes>
-      </BrowserRouter>
-    </TooltipProvider>
-  </QueryClientProvider>
+  <ReduxProvider store={store}>
+    <QueryClientProvider client={queryClient}>
+      <TooltipProvider>
+        <Toaster />
+        <Sonner />
+        <BrowserRouter>
+          <Routes>
+            {/* Public Routes */}
+            <Route path="/" element={<Index />} />
+            <Route path="/login" element={<features.auth.useCases.Login />} />
+            <Route path="/admin" element={<features.auth.useCases.Login />} />
+            <Route path="/signup" element={<features.auth.useCases.Register />} />
+            <Route path="/forgot-password" element={<features.auth.useCases.ForgotPassword />} />
+            <Route path="/verify-email" element={<features.auth.useCases.VerifyEmail />} />
+            <Route path="/courses" element={<Courses />} />
+            <Route path="/courses/:slug" element={<CourseDetails />} />
+            <Route path="/about" element={<About />} />
+
+            {/* Admin Dashboard Routes */}
+            <Route path="/adminDashboard" element={<layout.adminDashboard />}>
+              <Route index element={<Navigate to="app" replace />} />
+              <Route path="app" element={<features.admin.useCases.Dashboard />} />
+              <Route path="profile" element={<features.admin.useCases.Profile />} />
+              <Route path="payments" element={<features.payments.useCases.PaymentList.Main />} />
+              <Route path="merchants" element={<features.merchants.useCases.MerchantList.Main />} />
+              <Route path="merchants/detailed" element={<features.merchants.useCases.MerchantList.Detailed />} />
+            </Route>
+
+            {/* User Dashboard Routes */}
+            <Route path="/dashboard" element={<layout.dashboard />}>
+              <Route path="profile" element={<features.merchants.useCases.Profile />} />
+              <Route path="openAPIGuide" element={<features.merchants.useCases.OpenAPIGuide />} />
+              <Route path="deposit" element={<features.merchants.useCases.Deposit />} />
+            </Route>
+
+            {/* Catch-all Route for 404 */}
+            <Route path="*" element={<NotFound />} />
+          </Routes>
+        </BrowserRouter>
+      </TooltipProvider>
+    </QueryClientProvider>
+  </ReduxProvider>
 );
 
 export default App;

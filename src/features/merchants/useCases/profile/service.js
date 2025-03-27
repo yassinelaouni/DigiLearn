@@ -3,11 +3,10 @@ import helpers from "../../../../helpers";
 import actions from "../../actions";
 import types from "../../actionsTypes";
 import { useDispatch, useSelector } from "react-redux";
-import selectAuthMerchant from "features/auth/selectors/user";
+import selectAuthMerchant from "../../../../features/auth/selectors/user";
 import selectOneById from "../../selectors/oneById";
 import getInitialState from "../../initialState";
 import errors from "../../../../store/errors";
-
 
 
 export default function useProfile() {

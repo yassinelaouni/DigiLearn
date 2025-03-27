@@ -76,7 +76,7 @@ export default function useResetPassword() {
   // handle success
   const { isSuccess, id } = useSelector(errors.selectors.error);
   useEffect(() => {
-    if (isSuccess && id === types.resetPassword) navigate("/dashboard/rating");
+    if (isSuccess && id === types.resetPassword) navigate("/dashboard");
   }, [isSuccess, id, navigate]);
 
 

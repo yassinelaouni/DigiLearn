@@ -13,11 +13,11 @@ export default function useLogin() {
   const currentURL = window.location.href;
   let isAdmin
 
-  if (currentURL === 'http://localhost:3000/') {
+  if (currentURL === 'http://localhost:8080/login') {
     // URL is http://localhost:3000/
     isAdmin = false
 
-  } else if (currentURL === 'http://localhost:3000/admin') {
+  } else if (currentURL === 'http://localhost:8080/admin') {
     // URL is http://localhost:3000/admin
     isAdmin = true
   } else {
@@ -81,15 +81,15 @@ export default function useLogin() {
   // handle login success
   const { isSuccess, id } = useSelector(errors.selectors.error);
   useEffect(() => {
-    if (isSuccess && id === types.login && isAdmin) navigate("/adminDashboard");
-    else if (isSuccess && id === types.login && !isAdmin) navigate("/dashboard/rating");
+    if (isSuccess && id === types.login && isAdmin) navigate("/adminDashboard");   
+    if (isSuccess && id === types.login && !isAdmin) navigate("/dashboard");
   }, [isSuccess, id, navigate, isAdmin]);
 
   // navigate to login page
-  const gotoRegisterPage = () => navigate("/register")
+  const gotoRegisterPage = () => navigate("/signup")
 
   // navigate to forgot password page
-  const gotoForgotPasswordPage = () => navigate("./forgot-password");
+  const gotoForgotPasswordPage = () => navigate("/forgot-password");
 
   return {
     showPassword,

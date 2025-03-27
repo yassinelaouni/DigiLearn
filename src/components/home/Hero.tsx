@@ -94,7 +94,7 @@ const Hero = () => {
           >
             <div className="relative">
               <img 
-                src="/public/landing.png" 
+                src="/landing.png" 
                 alt="Digital learning illustration" 
                 className="w-full h-auto object-cover"
               />

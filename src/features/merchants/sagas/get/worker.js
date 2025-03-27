@@ -1,8 +1,7 @@
 import { put, call } from "redux-saga/effects";
 import actions from "../../actions";
-import errors from "store/errors";
-import helpers from "helpers";
-import config from "config.json";
+import errors from "../../../../store/errors";
+import helpers from "../../../../helpers";
 
 export default function* getWorker({ payload, meta = {} }) {
     let response = {};

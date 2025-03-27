@@ -1,9 +1,9 @@
 import { put, call, select } from "redux-saga/effects";
-import loading from "store/loading";
+import loading from "../../store/loading";
 import onResponseError from "./on-response-error";
 import onApiCallError from "./on-api-call-error";
-import services from "services";
-import features from "features";
+import services from "../../services";
+import features from "../../features";
 
 export default function* worker({
   method = "GET",

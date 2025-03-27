@@ -1,8 +1,8 @@
 import { put, call } from "redux-saga/effects";
 
-import errors from "store/errors";
+import errors from "../../../../store/errors";
 import actions from "../../actions";
-import helpers from "helpers";
+import helpers from "../../../../helpers";
 import config from "../../../../config.json";
 
 export default function* resetPasswordWorker({ payload, meta = {} }) {

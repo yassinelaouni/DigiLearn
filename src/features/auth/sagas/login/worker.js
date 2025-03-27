@@ -1,6 +1,6 @@
 import { put, call } from "redux-saga/effects";
 import actions from "../../actions";
-import merchantsActions from "features/merchants/actions"
+import merchantsActions from "../../../../features/merchants/actions"
 import errors from "../../../../store/errors";
 import helpers from "../../../../helpers";
 import config from "../../../../config.json";
@@ -16,7 +16,7 @@ export default function* loginWorker({ payload, meta = {} }) {
         message:
             response?.data?.errorMessage ?? "An internal error occurred login",
         id: meta.id
-    }
+    } 
 
     try {
         response = yield call(helpers.sagas.worker, {

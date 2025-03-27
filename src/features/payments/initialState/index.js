@@ -1,5 +1,4 @@
 import mockingData from './mockingData'
-import helpers from 'helpers'
 
 const emptyState = {
 	all: {},

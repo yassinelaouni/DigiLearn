@@ -77,7 +77,7 @@ const Header = () => {
       <div className="container flex items-center justify-between">
         {/* Logo */}
         <Link to="/" className="flex items-center gap-2">
-          <img width={50} height={50} src='/public/logo.png'></img>
+          <img width={50} height={50} src='/logo.png'></img>
           <span className="font-display font-bold text-2xl bg-gradient-to-r from-brand-purple to-brand-blue bg-clip-text text-transparent">
             DigiLearn
           </span>

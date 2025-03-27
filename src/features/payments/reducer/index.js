@@ -1,6 +1,6 @@
 import types from '../actionsTypes'
 import { produce } from 'immer'
-import helpers from 'helpers'
+import helpers from '../../../helpers'
 import initialState from '../initialState'
 
 const reducer = (state = initialState, action) => {

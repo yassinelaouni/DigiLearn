@@ -12,6 +12,13 @@ export default [
       ecmaVersion: 2020,
       globals: globals.browser,
     },
+    parserOptions: {
+    "ecmaVersion": 2021,
+    "sourceType": "module",
+    "ecmaFeatures": {
+      "jsx": true
+    }
+  },
     plugins: {
       "react-hooks": reactHooks,
       "react-refresh": reactRefresh,

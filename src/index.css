@@ -1,4 +1,3 @@
-
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Montserrat:wght@400;500;600;700;800&display=swap');
 
 @tailwind base;
@@ -25,8 +24,9 @@
     --muted: 210 40% 96.1%;
     --muted-foreground: 215.4 16.3% 46.9%;
 
-    --accent: 48 100% 63%;
-    --accent-foreground: 210 40% 98%;
+    /* 🔹 Updated Accent Color */
+    --accent: 46 85% 61%; /* Gold: #F0C441 */
+    --accent-foreground: 0 0% 20%; /* Dark text for contrast */
 
     --destructive: 0 84.2% 60.2%;
     --destructive-foreground: 210 40% 98%;
@@ -66,8 +66,9 @@
     --muted: 223 47% 11%;
     --muted-foreground: 215.4 16.3% 56.9%;
 
-    --accent: 48 100% 63%;
-    --accent-foreground: 222.2 47.4% 11.2%;
+    /* 🔹 Updated Accent Color (Dark Mode) */
+    --accent: 46 85% 61%; /* Gold: #F0C441 */
+    --accent-foreground: 0 0% 20%; /* Dark text for contrast */
 
     --destructive: 0 62.8% 30.6%;
     --destructive-foreground: 210 40% 98%;
@@ -111,8 +112,9 @@
     @apply max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16 md:py-24;
   }
   
+  /* 🔹 Updated Hero Gradient to include Gold */
   .hero-gradient {
-    background: linear-gradient(135deg, rgba(126, 102, 220, 0.15) 0%, rgba(78, 151, 243, 0.15) 100%);
+    background: linear-gradient(135deg, rgba(240, 196, 65, 0.2) 0%, rgba(78, 151, 243, 0.15) 100%);
   }
   
   .animated-card {

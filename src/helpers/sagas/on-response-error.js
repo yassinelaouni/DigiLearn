@@ -1,6 +1,6 @@
 import { put } from "redux-saga/effects";
-import errors from "store/errors";
-import features from "features";
+import errors from "../../store/errors";
+import features from "../../features";
 import config from "../../config.json";
 import prepareProdErrors from "../prepare-prod-errors";
 
