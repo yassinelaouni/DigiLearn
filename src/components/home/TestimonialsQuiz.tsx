@@ -165,27 +165,27 @@ const TestimonialsQuiz = () => {
   return (
     <section className="py-16 md:py-24">
       <div className="container">
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-12">
+        <div className="grid items-center px-4">
           {/* Testimonials Section */}
           <motion.div
             initial={{ opacity: 0, x: -20 }}
             whileInView={{ opacity: 1, x: 0 }}
             viewport={{ once: true }}
             transition={{ duration: 0.5 }}
-            className="space-y-8"
+            className="space-y-8 w-full max-w-4xl mx-auto"
           >
-            <div>
+            <div className="text-center mb-12">
               <h2 className="text-3xl md:text-4xl font-bold font-display mb-4">
                 What Our Students Say
               </h2>
-              <p className="text-muted-foreground text-lg">
+              <p className="text-muted-foreground text-lg max-w-3xl mx-auto">
                 Hear from students who have transformed their digital skills with our courses
               </p>
             </div>
-            
-            <div className="relative bg-white rounded-xl shadow-md border border-gray-100 p-6 md:p-8">
+
+            <div className="relative bg-white rounded-xl shadow-md border border-gray-100 p-6 md:p-8 mx-auto">
               {testimonials.map((testimonial, index) => (
-                <div 
+                <div
                   key={testimonial.id}
                   className={cn(
                     "transition-opacity duration-500 absolute inset-0 p-6 md:p-8 flex flex-col",
@@ -195,20 +195,20 @@ const TestimonialsQuiz = () => {
                   <div className="flex-1">
                     <div className="flex mb-4">
                       {[...Array(5)].map((_, i) => (
-                        <Star 
-                          key={i} 
+                        <Star
+                          key={i}
                           className={cn(
-                            "h-5 w-5", 
+                            "h-5 w-5",
                             i < testimonial.rating ? "text-brand-yellow fill-brand-yellow" : "text-gray-300"
-                          )} 
+                          )}
                         />
                       ))}
                     </div>
                     <p className="text-lg italic mb-6">"{testimonial.content}"</p>
                   </div>
                   <div className="flex items-center gap-4">
-                    <img 
-                      src={testimonial.avatar} 
+                    <img
+                      src={testimonial.avatar}
                       alt={testimonial.author}
                       className="w-12 h-12 rounded-full object-cover"
                     />
@@ -219,188 +219,27 @@ const TestimonialsQuiz = () => {
                   </div>
                 </div>
               ))}
-              
+
               <div className="relative h-64"></div> {/* Spacer to maintain height */}
-              
+
               <div className="absolute bottom-6 right-6 md:bottom-8 md:right-8 flex items-center gap-2">
-                <Button 
-                  variant="outline" 
-                  size="icon" 
+                <Button
+                  variant="outline"
+                  size="icon"
                   className="rounded-full"
                   onClick={prevTestimonial}
                 >
                   <ArrowLeft className="h-4 w-4" />
                 </Button>
-                <Button 
-                  variant="outline" 
-                  size="icon" 
+                <Button
+                  variant="outline"
+                  size="icon"
                   className="rounded-full"
                   onClick={nextTestimonial}
                 >
                   <ArrowRight className="h-4 w-4" />
                 </Button>
               </div>
-            </div>
-          </motion.div>
-          
-          {/* Quiz Preview Section */}
-          <motion.div
-            initial={{ opacity: 0, x: 20 }}
-            whileInView={{ opacity: 1, x: 0 }}
-            viewport={{ once: true }}
-            transition={{ duration: 0.5 }}
-            className="space-y-8"
-          >
-            <div>
-              <h2 className="text-3xl md:text-4xl font-bold font-display mb-4">
-                Test Your Digital Knowledge
-              </h2>
-              <p className="text-muted-foreground text-lg">
-                Take this quick quiz to see how your digital literacy skills measure up
-              </p>
-            </div>
-            
-            <div className="bg-white rounded-xl shadow-md border border-gray-100 p-6 md:p-8">
-              {!quizActive && !quizCompleted ? (
-                <div className="text-center py-8">
-                  <h3 className="text-xl font-bold mb-6">Ready to test your digital culture knowledge?</h3>
-                  <img 
-                    src="/lovable-uploads/450df0f0-3fc2-4bb4-beec-a9dc58d5a99a.png" 
-                    alt="Digital Culture Quiz" 
-                    className="mx-auto max-w-[220px] rounded-lg mb-8" 
-                  />
-                  <Button 
-                    onClick={() => setQuizActive(true)} 
-                    className="rounded-full" 
-                    size="lg"
-                  >
-                    Start Quiz
-                    <ArrowRight className="ml-2 h-4 w-4" />
-                  </Button>
-                </div>
-              ) : !quizCompleted ? (
-                <div>
-                  <div className="mb-6">
-                    <div className="flex justify-between items-center mb-2">
-                      <span className="text-sm font-medium bg-brand-purple/10 text-brand-purple px-3 py-1 rounded-full">
-                        Question {currentQuestion + 1} of {quizQuestions.length}
-                      </span>
-                      <span className="text-sm font-medium">
-                        Score: {score}/{quizQuestions.length}
-                      </span>
-                    </div>
-                    <div className="w-full bg-gray-100 rounded-full h-2 mt-3">
-                      <div 
-                        className="bg-gradient-to-r from-brand-purple to-brand-blue h-2 rounded-full"
-                        style={{ width: `${((currentQuestion + 1) / quizQuestions.length) * 100}%` }}
-                      ></div>
-                    </div>
-                  </div>
-                  
-                  <div className="mb-8">
-                    <h3 className="text-xl font-bold mb-6 text-gray-800">
-                      {quizQuestions[currentQuestion].question}
-                    </h3>
-                    
-                    <div className="space-y-3">
-                      {quizQuestions[currentQuestion].options.map((option, index) => (
-                        <button
-                          key={index}
-                          className={cn(
-                            "w-full px-5 py-4 rounded-lg transition-colors flex items-center justify-between",
-                            selectedOption === index
-                              ? index === quizQuestions[currentQuestion].correctAnswer
-                                ? "bg-green-50 border-2 border-green-500 text-green-800"
-                                : "bg-red-50 border-2 border-red-300 text-red-800"
-                              : isAnswered 
-                                ? "border-2 border-gray-100"
-                                : "border-2 border-gray-100 hover:border-brand-purple/50 hover:bg-brand-purple/5",
-                            isAnswered && "cursor-default"
-                          )}
-                          onClick={() => handleOptionSelect(index)}
-                          disabled={isAnswered}
-                        >
-                          <div className="flex items-center">
-                            <div className={cn(
-                              "w-6 h-6 rounded-full mr-3 flex items-center justify-center",
-                              selectedOption === index
-                                ? index === quizQuestions[currentQuestion].correctAnswer
-                                  ? "bg-green-500 text-white"
-                                  : "bg-red-500 text-white"
-                                : "border-2 border-gray-300"
-                            )}>
-                              {selectedOption === index && (
-                                index === quizQuestions[currentQuestion].correctAnswer
-                                  ? <Check className="h-4 w-4" />
-                                  : <XCircle className="h-4 w-4" />
-                              )}
-                            </div>
-                            <span className="text-left">{option}</span>
-                          </div>
-                          {isAnswered && index === quizQuestions[currentQuestion].correctAnswer && (
-                            <CheckCircle2 className="h-5 w-5 text-green-500" />
-                          )}
-                        </button>
-                      ))}
-                    </div>
-                  </div>
-                  
-                  {isAnswered && (
-                    <div className="flex justify-end">
-                      <Button 
-                        onClick={handleNextQuestion} 
-                        className="rounded-full"
-                        size="lg"
-                      >
-                        {currentQuestion < quizQuestions.length - 1 ? "Next Question" : "See Results"}
-                        <ArrowRight className="ml-2 h-4 w-4" />
-                      </Button>
-                    </div>
-                  )}
-                </div>
-              ) : (
-                <div className="text-center py-8">
-                  <div className="mb-8">
-                    <div className="inline-flex items-center justify-center w-24 h-24 rounded-full bg-brand-purple/10 mb-6">
-                      <span className="text-3xl font-bold text-brand-purple">
-                        {score}/{quizQuestions.length}
-                      </span>
-                    </div>
-                    <h3 className="text-2xl font-bold mb-3">
-                      {score === quizQuestions.length 
-                        ? "Perfect Score!" 
-                        : score >= quizQuestions.length / 2 
-                          ? "Good Job!" 
-                          : "Keep Learning!"}
-                    </h3>
-                    <p className="text-muted-foreground mb-8 max-w-md mx-auto">
-                      {score === quizQuestions.length 
-                        ? "You've mastered these digital concepts! You're ready to excel in our courses." 
-                        : score >= quizQuestions.length / 2 
-                          ? "You have a solid foundation in digital literacy. Our courses will help you build on this knowledge." 
-                          : "There's room to improve your digital knowledge. Our courses are designed to help you build these essential skills."}
-                    </p>
-                  </div>
-                  
-                  <div className="space-y-4 max-w-xs mx-auto">
-                    <Button 
-                      onClick={resetQuiz} 
-                      variant="default" 
-                      className="w-full rounded-full"
-                      size="lg"
-                    >
-                      Try Again
-                    </Button>
-                    <Button 
-                      variant="outline" 
-                      className="w-full rounded-full"
-                      size="lg"
-                    >
-                      Explore Free Courses
-                    </Button>
-                  </div>
-                </div>
-              )}
             </div>
           </motion.div>
         </div>

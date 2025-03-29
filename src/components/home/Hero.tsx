@@ -3,8 +3,30 @@ import { motion } from "framer-motion";
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { ChevronRight, Book, Lightbulb, Users, ArrowRight } from "lucide-react";
+import { useState, useEffect } from "react";
+
 
 const Hero = () => {
+
+  // Add state to track window width
+  const [isMobile, setIsMobile] = useState(false);
+
+  useEffect(() => {
+    // Function to check window size
+    const handleResize = () => {
+      setIsMobile(window.innerWidth <= 768); // Adjust breakpoint as needed
+    };
+
+    // Initial check
+    handleResize();
+
+    // Add event listener for window resize
+    window.addEventListener('resize', handleResize);
+
+    // Cleanup event listener
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
+
   return (
     <section className="relative overflow-hidden hero-gradient pb-16 pt-24 md:pt-32 md:pb-24">
       <div className="container relative z-10">
@@ -22,7 +44,7 @@ const Hero = () => {
               </span>
               New courses added every month
             </motion.div>
-            
+
             <motion.h1
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
@@ -34,7 +56,7 @@ const Hero = () => {
                 Modern University
               </span>
             </motion.h1>
-            
+
             <motion.p
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
@@ -43,7 +65,7 @@ const Hero = () => {
             >
               Unlock the power of digital literacy with our specialized university courses. Learn web development, digital marketing, data science, and more.
             </motion.p>
-            
+
             <motion.div
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
@@ -62,7 +84,7 @@ const Hero = () => {
                 </Link>
               </Button>
             </motion.div>
-            
+
             <motion.div
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
@@ -85,24 +107,24 @@ const Hero = () => {
               </div>
             </motion.div>
           </div>
-          
+
           <motion.div
             initial={{ opacity: 0, scale: 0.95 }}
             animate={{ opacity: 1, scale: 1 }}
             transition={{ duration: 0.6, delay: 0.3 }}
             className="relative"
           >
-            <div className="relative">
-              <img 
-                src="/landing.png" 
-                alt="Digital learning illustration" 
+              {!isMobile && (<div className="relative">
+              <img
+                src="/landing.png"
+                alt="Digital learning illustration"
                 className="w-full h-auto object-cover"
               />
               <div className="absolute top-0 left-0 w-full h-full"></div>
-            </div>
-            
+            </div>)}
+
             {/* Floating elements */}
-            <motion.div 
+            <motion.div
               className="absolute top-10 -left-12 bg-white rounded-2xl p-4 shadow-lg border border-gray-100 z-20 hidden md:flex items-center gap-3"
               animate={{ y: [0, -10, 0] }}
               transition={{ repeat: Infinity, duration: 5, ease: "easeInOut" }}
@@ -115,8 +137,8 @@ const Hero = () => {
                 <p className="text-sm text-muted-foreground">Curated for university</p>
               </div>
             </motion.div>
-            
-            <motion.div 
+
+            <motion.div
               className="absolute bottom-10 -right-8 bg-white rounded-2xl p-4 shadow-lg border border-gray-100 z-20 hidden md:flex items-center gap-3"
               animate={{ y: [0, 10, 0] }}
               transition={{ repeat: Infinity, duration: 5, ease: "easeInOut", delay: 1 }}
@@ -129,8 +151,8 @@ const Hero = () => {
                 <p className="text-sm text-muted-foreground">Hands-on projects</p>
               </div>
             </motion.div>
-            
-            <motion.div 
+
+            <motion.div
               className="absolute bottom-32 -left-10 bg-white rounded-2xl p-4 shadow-lg border border-gray-100 z-20 hidden md:flex items-center gap-3"
               animate={{ y: [0, 8, 0] }}
               transition={{ repeat: Infinity, duration: 4, ease: "easeInOut", delay: 0.5 }}
@@ -143,17 +165,16 @@ const Hero = () => {
                 <p className="text-sm text-muted-foreground">Connect with peers</p>
               </div>
             </motion.div>
-            
+
             {/* Background decorative elements */}
             <div className="absolute -bottom-10 -right-10 w-64 h-64 bg-brand-purple/10 rounded-full blur-3xl -z-10"></div>
             <div className="absolute -top-10 -left-5 w-32 h-32 bg-brand-blue/10 rounded-full blur-2xl -z-10"></div>
           </motion.div>
         </div>
       </div>
-    
-      
-      {/* Call-to-action banner */}
-      <div className="container mt-16 md:mt-24">
+
+
+      <div className={`container ${isMobile ? 'mt-2' : 'mt-16 md:mt-24'}`}> 
         <div className="relative overflow-hidden rounded-2xl bg-gradient-to-r from-brand-purple to-brand-blue p-8 md:p-10">
           <div className="absolute inset-0 bg-white/10 backdrop-blur-3xl"></div>
           <div className="relative z-10 flex flex-col md:flex-row items-center justify-between gap-6">
@@ -168,7 +189,7 @@ const Hero = () => {
               </Link>
             </Button>
           </div>
-          
+
           {/* Decorative elements */}
           <div className="absolute -top-24 -right-24 w-64 h-64 bg-white/10 rounded-full"></div>
           <div className="absolute -bottom-32 -left-32 w-80 h-80 bg-white/5 rounded-full"></div>

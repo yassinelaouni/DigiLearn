@@ -2,6 +2,7 @@ import { motion } from "framer-motion";
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { ArrowRight } from "lucide-react";
+import { useState, useEffect } from "react";
 
 // Import your local images
 import step1 from "../../../public/browse.png";
@@ -37,6 +38,26 @@ const steps = [
 ];
 
 const HowItWorks = () => {
+
+    // Add state to track window width
+    const [isMobile, setIsMobile] = useState(false);
+
+    useEffect(() => {
+      // Function to check window size
+      const handleResize = () => {
+        setIsMobile(window.innerWidth <= 768); // Adjust breakpoint as needed
+      };
+  
+      // Initial check
+      handleResize();
+  
+      // Add event listener for window resize
+      window.addEventListener('resize', handleResize);
+  
+      // Cleanup event listener
+      return () => window.removeEventListener('resize', handleResize);
+    }, []);
+
   return (
     <section className="py-16 md:py-24 bg-gray-50 overflow-hidden">
       <div className="container relative">
@@ -65,7 +86,7 @@ const HowItWorks = () => {
                     <img
                       src={step.image}
                       alt={step.title}
-                      className="w-1/2 h-full object-cover rounded-xl mx-auto"
+                      className={`w-${isMobile ? "9/10" : "1/2"} h-full object-cover rounded-xl mx-auto`}
                     />
                   </div>
                 </div>
