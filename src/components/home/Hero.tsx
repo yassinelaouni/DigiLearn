@@ -150,26 +150,7 @@ const Hero = () => {
           </motion.div>
         </div>
       </div>
-      
-      {/* Scrolling marquee of partners */}
-      <div className="mt-20 md:mt-28">
-        <div className="container">
-          <div className="text-center mb-6">
-            <p className="text-muted-foreground text-sm font-medium">TRUSTED BY LEADING UNIVERSITIES AND COMPANIES</p>
-          </div>
-        </div>
-        <div className="relative overflow-hidden">
-          <div className="flex items-center gap-12 animate-marquee">
-            {Array.from({ length: 8 }).map((_, i) => (
-              <div key={i} className="flex-shrink-0 grayscale opacity-70 hover:grayscale-0 hover:opacity-100 transition-all">
-                <div className="bg-white/80 h-12 w-28 rounded-md flex items-center justify-center">
-                  <div className="w-20 h-8 bg-gray-200 rounded animate-pulse"></div>
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
-      </div>
+    
       
       {/* Call-to-action banner */}
       <div className="container mt-16 md:mt-24">

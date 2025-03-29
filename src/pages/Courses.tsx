@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { motion } from "framer-motion";
 import Layout from "@/components/layout/Layout";
@@ -46,13 +45,13 @@ const durations = [
 
 const Courses = () => {
   const [searchQuery, setSearchQuery] = useState("");
-  const [selectedCategories, setSelectedCategories] = useState<string[]>([]);
-  const [selectedLevels, setSelectedLevels] = useState<string[]>([]);
-  const [selectedDurations, setSelectedDurations] = useState<string[]>([]);
+  const [selectedCategories, setSelectedCategories] = useState([]);
+  const [selectedLevels, setSelectedLevels] = useState([]);
+  const [selectedDurations, setSelectedDurations] = useState([]);
   const [filtersVisible, setFiltersVisible] = useState(false);
 
   // Toggle category selection
-  const toggleCategory = (slug: string) => {
+  const toggleCategory = (slug) => {
     setSelectedCategories(prev => 
       prev.includes(slug) 
         ? prev.filter(item => item !== slug) 
@@ -61,7 +60,7 @@ const Courses = () => {
   };
 
   // Toggle level selection
-  const toggleLevel = (value: string) => {
+  const toggleLevel = (value) => {
     setSelectedLevels(prev => 
       prev.includes(value) 
         ? prev.filter(item => item !== value) 
@@ -70,7 +69,7 @@ const Courses = () => {
   };
 
   // Toggle duration selection
-  const toggleDuration = (value: string) => {
+  const toggleDuration = (value) => {
     setSelectedDurations(prev => 
       prev.includes(value) 
         ? prev.filter(item => item !== value) 
@@ -149,6 +148,7 @@ const Courses = () => {
 
                   <Separator />
                   
+
                   {/* Category Filter */}
                   <div>
                     <h3 className="font-medium mb-3">Categories</h3>
@@ -177,6 +177,7 @@ const Courses = () => {
 
                   <Separator />
                   
+
                   {/* Level Filter */}
                   <div>
                     <h3 className="font-medium mb-3">Level</h3>
@@ -204,6 +205,7 @@ const Courses = () => {
 
                   <Separator />
                   
+
                   {/* Duration Filter */}
                   <div>
                     <h3 className="font-medium mb-3">Duration</h3>
@@ -231,6 +233,7 @@ const Courses = () => {
 
                   <Separator />
                   
+
                   {/* Reset Filters */}
                   <Button 
                     variant="outline" 

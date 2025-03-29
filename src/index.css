@@ -114,8 +114,7 @@
   
   /* 🔹 Updated Hero Gradient to include Gold */
   .hero-gradient {
-    background: linear-gradient(135deg, rgba(240, 196, 65, 0.2) 0%, rgba(78, 151, 243, 0.15) 100%);
-  }
+    background: linear-gradient(135deg, rgba(126, 102, 220, 0.15) 0%, rgba(78, 151, 243, 0.15) 100%);  }
   
   .animated-card {
     @apply transition-all duration-300 hover:shadow-lg hover:-translate-y-1;
