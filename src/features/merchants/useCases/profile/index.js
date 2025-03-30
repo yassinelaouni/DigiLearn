@@ -1,3 +1,3 @@
-import {Profile} from "./main"
+import Profile from "./main"
 
 export default Profile

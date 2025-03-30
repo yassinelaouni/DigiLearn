@@ -34,13 +34,16 @@ export default function Register() {
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('md'));
 
-  // Exact purple gradient from login page
-  const brandGradient = 'linear-gradient(135deg, #7E66DC 0%, #5A4AE3 100%)';
+  // Color constants
+  const primaryPurple = '#7E66DC';
+  const darkPurple = '#5A4AE3';
   const accentYellow = '#F0C441';
+  const brandGradient = `linear-gradient(135deg, ${primaryPurple} 0%, ${darkPurple} 100%)`;
+
 
   return (
-    <Box sx={{ 
-      minHeight: '100vh', 
+    <Box sx={{
+      minHeight: '100vh',
       background: 'linear-gradient(135deg, #f5f7fa 0%, #e4e8ed 100%)',
       display: 'flex',
       justifyContent: 'center',
@@ -74,8 +77,8 @@ export default function Register() {
               alignItems: 'center',
               textAlign: 'center'
             }}>
-              <Typography 
-                variant="h3" 
+              <Typography
+                variant="h3"
                 sx={{
                   fontWeight: 800,
                   mb: 2,
@@ -85,10 +88,10 @@ export default function Register() {
               >
                 DigitalLearn
               </Typography>
-              
-              <Typography 
+
+              <Typography
                 variant="h5"
-                sx={{ 
+                sx={{
                   opacity: 0.9,
                   mb: 4,
                   fontSize: '1.5rem'
@@ -146,7 +149,21 @@ export default function Register() {
               size="medium"
               error={isErrors.firstName}
               helperText={errorsMessages.firstName}
-              sx={{ mb: 3 }}
+              sx={{
+                mb: 3,
+                '& .MuiOutlinedInput-root': {
+                  borderRadius: 2,
+                  '&:hover fieldset': {
+                    borderColor: primaryPurple
+                  },
+                  '&.Mui-focused fieldset': {
+                    borderColor: primaryPurple
+                  }
+                },
+                '& .MuiInputLabel-root.Mui-focused': {
+                  color: primaryPurple
+                }
+              }}
             />
 
             {/* Last Name */}
@@ -160,7 +177,21 @@ export default function Register() {
               size="medium"
               error={isErrors.lastName}
               helperText={errorsMessages.lastName}
-              sx={{ mb: 3 }}
+              sx={{
+                mb: 3,
+                '& .MuiOutlinedInput-root': {
+                  borderRadius: 2,
+                  '&:hover fieldset': {
+                    borderColor: primaryPurple
+                  },
+                  '&.Mui-focused fieldset': {
+                    borderColor: primaryPurple
+                  }
+                },
+                '& .MuiInputLabel-root.Mui-focused': {
+                  color: primaryPurple
+                }
+              }}
             />
 
             {/* Email */}
@@ -175,22 +206,21 @@ export default function Register() {
               size="medium"
               error={isErrors.email}
               helperText={errorsMessages.email}
-              sx={{ mb: 3 }}
-            />
-
-            {/* Phone */}
-            <TextField
-              fullWidth
-              label="Phone"
-              name="phone"
-              placeholder="+212 --- --- ---"
-              value={data.phone}
-              onChange={handleChange}
-              variant="outlined"
-              size="medium"
-              error={isErrors.phone}
-              helperText={errorsMessages.phone}
-              sx={{ mb: 3 }}
+              sx={{
+                mb: 3,
+                '& .MuiOutlinedInput-root': {
+                  borderRadius: 2,
+                  '&:hover fieldset': {
+                    borderColor: primaryPurple
+                  },
+                  '&.Mui-focused fieldset': {
+                    borderColor: primaryPurple
+                  }
+                },
+                '& .MuiInputLabel-root.Mui-focused': {
+                  color: primaryPurple
+                }
+              }}
             />
 
             {/* Password */}
@@ -219,7 +249,21 @@ export default function Register() {
                   </InputAdornment>
                 )
               }}
-              sx={{ mb: 3 }}
+              sx={{
+                mb: 3,
+                '& .MuiOutlinedInput-root': {
+                  borderRadius: 2,
+                  '&:hover fieldset': {
+                    borderColor: primaryPurple
+                  },
+                  '&.Mui-focused fieldset': {
+                    borderColor: primaryPurple
+                  }
+                },
+                '& .MuiInputLabel-root.Mui-focused': {
+                  color: primaryPurple
+                }
+              }}
             />
 
             {/* Confirm Password */}
@@ -248,7 +292,21 @@ export default function Register() {
                   </InputAdornment>
                 )
               }}
-              sx={{ mb: 4 }}
+              sx={{
+                mb: 4,
+                '& .MuiOutlinedInput-root': {
+                  borderRadius: 2,
+                  '&:hover fieldset': {
+                    borderColor: primaryPurple
+                  },
+                  '&.Mui-focused fieldset': {
+                    borderColor: primaryPurple
+                  }
+                },
+                '& .MuiInputLabel-root.Mui-focused': {
+                  color: primaryPurple
+                }
+              }}
             />
 
             <motion.div
@@ -281,9 +339,9 @@ export default function Register() {
 
             <Typography
               variant="body2"
-              sx={{ 
-                textAlign: 'center', 
-                mt: 2, 
+              sx={{
+                textAlign: 'center',
+                mt: 2,
                 color: '#64748B',
                 fontSize: '0.875rem'
               }}

@@ -1,816 +1,417 @@
-import { useState, useEffect } from "react";
+import { useState, useRef } from "react";
 import {
-    Grid,
-    FormControl,
-    InputLabel,
-    Input,
-    InputAdornment,
-    IconButton,
-    TextField,
-    Button,
-    Typography,
-    FormHelperText,
-    InputBase,
+    Avatar,
     Box,
-    CircularProgress,
+    Button,
+    Card,
+    CardContent,
+    Divider,
+    IconButton,
+    InputAdornment,
+    TextField,
+    Typography
 } from "@mui/material";
-import { Visibility, VisibilityOff } from "@mui/icons-material";
-import CallIcon from '@mui/icons-material/Call';
-import EmailIcon from '@mui/icons-material/Email';
-import PersonRoundedIcon from '@mui/icons-material/PersonRounded';
-import Fingerprint from '@mui/icons-material/Fingerprint';
-import InsertLinkRoundedIcon from '@mui/icons-material/InsertLinkRounded';
-import CheckIcon from '@mui/icons-material/Check';
-import CloseIcon from '@mui/icons-material/Close';
-import AddIcon from '@mui/icons-material/Add';
-import EditIcon from '@mui/icons-material/Edit';
-import DeleteForeverIcon from '@mui/icons-material/DeleteForever';
-import HourglassBottomIcon from '@mui/icons-material/HourglassBottom';
-import styles from "./styles"
-import actions from "../../actions";
-import { useDispatch, useSelector } from "react-redux";
+import { Edit, Visibility, VisibilityOff, CameraAlt } from "@mui/icons-material";
 
+export default function ProfilePage() {
+    // User data states
+    const [profile, setProfile] = useState({
+        name: "YASSINE EL AOUNI",
+        email: "ya.elaouni@edu.umi.ac.ma",
+        avatar: null
+    });
 
-import useProfile from "./service";
+    const [editValues, setEditValues] = useState({
+        name: profile.name,
+        email: profile.email
+    });
 
+    const [password, setPassword] = useState({
+        old: "",
+        new: "",
+        confirmation: ""
+    });
 
+    const [showPasswords, setShowPasswords] = useState({
+        old: false,
+        new: false,
+        confirmation: false
+    });
 
+    const [editing, setEditing] = useState({
+        name: false,
+        email: false
+    });
 
-export function Profile() {
-    const dispatch = useDispatch();
+    const fileInputRef = useRef(null);
 
-    const {
-        isPhoneEdit,
-        isWebsiteEdit,
-        editingWebsiteId,
-        showPasswordOld,
-        showPasswordNew,
-        showPasswordConfirmation,
-        password,
-        phone,
-        lastName,
-        firstName,
-        email,
-        websites,
-        loading,
-        canChangePassword,
-        canChangePhone,
-        canWebsite,
-        canChangeWebsite,
-        isErrors,
-        errorsMessages,
-        handleChangePassword,
-        handleChangePhone,
-        handleAddWebsite,
-        handleSaveWebsite,
-        handleEditWebsite,
-        handleDeleteWebsite,
-        handleChangeWebsite,
-        showAddWebsiteHandler,
-        showPasswordOldHandler,
-        showPasswordNewHandler,
-        showPhoneEdit,
-        showInputField,
-        passwordOldMouseDownHandler,
-        passwordNewMouseDownHandler,
-        showPasswordConfirmationdHandler,
-        passwordConfirmationMouseDownHandler,
-        handleChangePasswordDispatch,
-        handleChangePhoneDispatch,
-        handleChangeWebsiteDispatch
-    } = useProfile();
-
-    const getContainerStyle = () => {
-        const isSmallScreen = window.innerWidth <= 600;
-        return {
-            display: 'flex',
-            marginLeft: '10px',
-            flexGrow: 1,
-            flexDirection: isSmallScreen ? 'column' : 'row',
-        };
+    // Handle avatar upload
+    const handleAvatarUpload = (e) => {
+        const file = e.target.files[0];
+        if (file) {
+            const reader = new FileReader();
+            reader.onload = (event) => {
+                setProfile({ ...profile, avatar: event.target.result });
+            };
+            reader.readAsDataURL(file);
+        }
     };
 
-    const LoadingScreen = () => {
-        return (
-            <Box
-                sx={{
-                    display: 'flex',
-                    justifyContent: 'center',
-                    alignItems: 'center',
-                    height: '100vh',
-                }}
-            >
-                <CircularProgress />
-            </Box>
-        );
+    // Trigger file input click
+    const triggerFileInput = () => {
+        fileInputRef.current.click();
     };
 
-    if (loading) {
-        return <LoadingScreen />;
-    }
+    // Get initials for avatar
+    const getInitials = () => {
+        return profile.name.split(' ').map(n => n[0]).join('');
+    };
 
+    // Toggle password visibility
+    const togglePasswordVisibility = (field) => {
+        setShowPasswords({
+            ...showPasswords,
+            [field]: !showPasswords[field]
+        });
+    };
+
+    // Handle edit field changes
+    const handleEditChange = (field, value) => {
+        setEditValues({
+            ...editValues,
+            [field]: value
+        });
+    };
+
+    // Save edited field
+    const handleSaveEdit = (field) => {
+        setProfile({
+            ...profile,
+            [field]: editValues[field]
+        });
+        setEditing({
+            ...editing,
+            [field]: false
+        });
+    };
+
+    // Cancel editing
+    const handleCancelEdit = (field) => {
+        setEditValues({
+            ...editValues,
+            [field]: profile[field]
+        });
+        setEditing({
+            ...editing,
+            [field]: false
+        });
+    };
+
+    // Start editing a field
+    const startEditing = (field) => {
+        setEditing({
+            ...editing,
+            [field]: true
+        });
+    };
 
     return (
-
-        < Grid
-            container
-            justifyContent="center"
-            alignItems="center"
-            style={{
-                marginTop: '15px',
-            }
-            }
-        >
-            {/* User Information */}
-            <Grid container justifyContent="flex-start" alignItems="center" style={{
-                marginTop: '20px', backgroundColor: 'rgb(225 225 224)',
-                borderRadius: 10,
-                padding: 25,
-                maxWidth: "1020px"
-            }} dir="ltr">
-                <Typography variant="h5" color="GrayText" style={{ textAlign: 'left' }}>
-                    User Information
-                </Typography>
-
-                {/* Seller ID */}
-                <Grid container justifyContent="flex-start" alignItems="center" style={{ marginTop: '10px', marginLeft: '10px' }}>
-                    <Fingerprint />
-                    <Typography variant="subtitle1" color="GrayText" style={{ marginLeft: '7px', textAlign: 'left' }}>
-                        Seller ID: ysselaui
+        <Box sx={{
+            display: 'flex',
+            flexDirection: 'column',
+            alignItems: 'center',
+            p: 3,
+            gap: 3,
+            maxWidth: 600,
+            mx: 'auto'
+        }}>
+            {/* Profile Card */}
+            <Card sx={{
+                width: '100%',
+                borderRadius: 2,
+                boxShadow: '0px 2px 8px rgba(0, 0, 0, 0.1)'
+            }}>
+                <CardContent sx={{ p: 4 }}>
+                    <Typography variant="h5" sx={{ fontWeight: 600, mb: 3 }}>
+                        Your profile
                     </Typography>
-                </Grid>
 
-                {/* Full Name */}
-                <Grid container justifyContent="flex-start" alignItems="center" style={{ marginLeft: '10px' }}>
-                    <InputBase
-                        name="fullName"
-                        id="full-name-input"
-                        label="Full Name"
-                        defaultValue={(firstName + " " + lastName) ?? "loading....."}
-                        readOnly
-                        startAdornment={
-                            <InputAdornment position="start">
-                                <PersonRoundedIcon />
-                            </InputAdornment>
-                        }
-                        style={{
-                            marginTop: 10,
-                            width: 250,
-                            marginRight: '80px',
-                            textAlign: 'left',
-                            textDecoration: 'none',
-                            borderBottom: 'none',
-                            boxShadow: 'none',
-                        }}
-                        inputProps={{
-                            style: {
-                                textDecoration: 'none',
-                                borderBottom: 'none',
-                                boxShadow: 'none',
-                            },
-                        }}
-                    />
-                </Grid>
-
-                {/* Email */}
-                <Grid container justifyContent="flex-start" alignItems="center" style={{ marginLeft: '10px' }}>
-                    {email ? < InputBase
-                        name="email"
-                        id="email-input"
-                        defaultValue={email}
-                        readOnly
-                        startAdornment={
-                            <InputAdornment position="start">
-                                <EmailIcon />
-                            </InputAdornment>
-                        }
-                        style={{
-                            marginTop: 10,
-                            width: 258,
-                            marginRight: '80px',
-                            textAlign: 'left',
-                            textDecoration: 'none',
-                            borderBottom: 'none',
-                            boxShadow: 'none',
-                        }}
-                        inputProps={{
-                            style: {
-                                textDecoration: 'none',
-                                borderBottom: 'none',
-                                boxShadow: 'none',
-                            },
-                        }}
-                    /> : <InputBase
-                        name="email"
-                        id="email-input"
-                        defaultValue="looding email"
-                        readOnly
-                        startAdornment={
-                            <InputAdornment position="start">
-                                <EmailIcon />
-                            </InputAdornment>
-                        }
-                        style={{
-                            marginTop: 10,
-                            width: 258,
-                            marginRight: '80px',
-                            textAlign: 'left',
-                            textDecoration: 'none',
-                            borderBottom: 'none',
-                            boxShadow: 'none',
-                        }}
-                        inputProps={{
-                            style: {
-                                textDecoration: 'none',
-                                borderBottom: 'none',
-                                boxShadow: 'none',
-                            },
-                        }}
-                    />}
-                </Grid>
-
-                {/* Phone */}
-                <Grid container justifyContent="space-between" alignItems="center" style={{ marginLeft: '10px' }}>
-                    {!isPhoneEdit ? (
-                        <Grid item>
-                            <InputBase
-                                name="phone"
-                                id="phone-input"
-                                defaultValue={phone}
-                                readOnly
-                                startAdornment={
-                                    <InputAdornment position="start">
-                                        <CallIcon />
-                                    </InputAdornment>
-                                }
-                                style={{
-                                    marginTop: 10,
-                                    width: '210px',
-                                    textAlign: 'left',
-                                    textDecoration: 'none',
-                                    borderBottom: 'none',
-                                    boxShadow: 'none',
-                                }}
-                                inputProps={{
-                                    style: {
-                                        textDecoration: 'none',
-                                        borderBottom: 'none',
-                                        boxShadow: 'none',
-                                    },
-                                }}
-                            />
-                        </Grid>
-                    ) : (
-                        <Grid item style={{ marginTop: 10 }}>
-                            <TextField
-                                name="phone"
-                                id="phone-input"
-                                defaultValue={phone}
-                                onChange={handleChangePhone}
-                                variant="standard"
-                                size="small"
-                                style={{ width: '210px', textAlign: 'left' }}
-                                error={isErrors.phone}
-                                helperText={errorsMessages.phone}
-                                InputProps={{
-                                    readOnly: !isPhoneEdit,
-                                    startAdornment: (
-                                        <>
-                                            <InputAdornment position="start">
-                                                <CallIcon />
-                                            </InputAdornment>
-                                        </>
-                                    ),
-                                }}
-                            />
-                        </Grid>
-                    )}
-                    {!isPhoneEdit ? (
-                        <Button
-                            variant="contained"
-                            size="small"
-                            style={{
-                                marginTop: '15px'
+                    {/* Avatar Section */}
+                    <Box sx={{
+                        display: 'flex',
+                        flexDirection: 'column',
+                        alignItems: 'center',
+                        mb: 4
+                    }}>
+                        <Avatar
+                            src={profile.avatar}
+                            sx={{
+                                width: 80,
+                                height: 80,
+                                bgcolor: '#7E66DC',
+                                fontSize: '2rem',
+                                mb: 2
                             }}
-                            onClick={showPhoneEdit}
-                            color="info"
                         >
-                            <EditIcon fontSize="small" />
-                        </Button>
-                    ) : (
+                            {getInitials()}
+                        </Avatar>
+                        <Typography variant="body1" sx={{ mb: 2, fontWeight: 500 }}>
+                            Upload your profile photo
+                        </Typography>
+                        <input
+                            type="file"
+                            ref={fileInputRef}
+                            hidden
+                            accept="image/*"
+                            onChange={handleAvatarUpload}
+                        />
                         <Button
                             variant="contained"
-                            size="small"
-                            style={{ marginTop: '15px' }}
-                            color="success"
-                            onClick={handleChangePhoneDispatch}
-                            disabled={!canChangePhone}
+                            onClick={triggerFileInput}
+                            startIcon={<CameraAlt />}
+                            sx={{
+                                textTransform: 'none',
+                                borderRadius: 1,
+                                px: 3,
+                                py: 1,
+                                bgcolor: '#7E66DC',
+                                '&:hover': {
+                                    bgcolor: '#5A4AE3'
+                                }
+                            }}
                         >
-                            Save
+                            Upload photo
                         </Button>
-                    )}
-                </Grid>
-            </Grid >
+                    </Box>
 
-            {/* User Websites */}
-            <Grid
-                container
-                justifyContent="space-between"
-                alignItems="center"
-                style={{
-                    marginTop: '15px',
-                    backgroundColor: 'rgb(225 225 224)',
-                    borderRadius: 10,
-                    padding: 25,
-                    maxWidth: "1020px",
-                    flexWrap: 'wrap', // Add this line to allow content wrapping
+                    <Divider sx={{ my: 3 }} />
 
-                }}
-            >
-                <Grid item>
-                    <Grid container justifyContent="flex-start" alignItems="center" >
-                        <Typography variant="h5" color="GrayText" style={{ textAlign: 'left' }}>
-                            User Websites
+                    {/* Name Field */}
+                    <Box sx={{ mb: 3 }}>
+                        <Typography variant="subtitle2" sx={{
+                            mb: 1,
+                            color: 'text.secondary',
+                            fontWeight: 500
+                        }}>
+                            Name
                         </Typography>
-                    </Grid>
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-                    {/* Render website components */}
-                    {websites.map((website, index) => (
-                        <Grid
-                            style={getContainerStyle()}
-                            key={website.id}
-                        >
-                            <Grid
-                                container
-                                item
-                            >
-                                <Box style={{
-                                    width: '100%',
-                                    display: 'flex',
-                                    flexDirection: 'row',
-                                    justifyContent: "flex-start",
-                                    alignItems: "center",
-                                }}>
-                                    {/* Website URL */}
-                                    {(isWebsiteEdit && website.id === editingWebsiteId) ? (
-                                        <Grid item>
-                                            <TextField
-                                                name={`website${index + 1}`}
-                                                id={`website${index + 1}-input`}
-                                                defaultValue={website.url}
-                                                onChange={handleChangeWebsite}
-                                                error={isErrors.website}
-                                                helperText={errorsMessages.website}
-                                                InputProps={{
-                                                    startAdornment: (
-                                                        <InputAdornment position="start">
-                                                            <InsertLinkRoundedIcon />
-                                                        </InputAdornment>
-                                                    ),
-                                                }}
-                                                variant="standard"
-                                                size="small"
-                                                style={styles.section}
-                                            />
-                                        </Grid>
-                                    ) : (
-                                        <Grid item>
-                                            <InputBase
-                                                name={`website${index + 1}`}
-                                                id={`website${index + 1}-input`}
-                                                defaultValue={website.url}
-                                                readOnly
-                                                startAdornment={
-                                                    <InputAdornment position="start">
-                                                        <InsertLinkRoundedIcon />
-                                                    </InputAdornment>
-                                                }
-                                                style={{
-                                                    marginTop: 10,
-                                                    width: '238px',
-                                                    textAlign: 'left',
-                                                    textDecoration: 'none',
-                                                    borderBottom: 'none',
-                                                    boxShadow: 'none',
-                                                }}
-                                                inputProps={{
-                                                    style: {
-                                                        textDecoration: 'none',
-                                                        borderBottom: 'none',
-                                                        boxShadow: 'none',
-                                                    },
-                                                }}
-                                            />
-                                        </Grid>
-                                    )}
-
-                                    {/* Status Section */}
-                                    <Grid
-                                        item
-                                        container
-                                        alignItems="center"
-                                        style={{
-                                            marginTop: 10,
-                                            display: 'flex',
-                                            marginLeft: '2px',
-                                        }}
-                                    >
-
-
-                                        {isWebsiteEdit && website.id === editingWebsiteId
-                                            ? null
-                                            : website.status === "Verified"
-                                                ? (
-                                                    <Grid item style={{ display: 'flex', flexDirection: 'row', marginLeft: '10px', width: "100px" }}>
-                                                        <CheckIcon style={{ color: 'green' }} />
-                                                        <Typography variant="body1" style={{ color: 'green', marginLeft: 5 }}>
-                                                            Verified
-                                                        </Typography>
-                                                    </Grid>
-                                                )
-                                                : website.status === "Inreview"
-                                                    ? (
-                                                        <Grid item style={{ display: 'flex', flexDirection: 'row', marginLeft: '10px', width: "100px" }}>
-                                                            <HourglassBottomIcon style={{ color: 'orange' }} />
-                                                            <Typography variant="body1" style={{ color: 'orange', marginLeft: 5 }}>
-                                                                Inreview
-                                                            </Typography>
-                                                        </Grid>
-                                                    )
-                                                    : (
-                                                        <Grid item style={{ display: 'flex', flexDirection: 'row', marginLeft: '10px', width: "100px" }}>
-                                                            <CloseIcon style={{ color: 'red' }} />
-                                                            <Typography variant="body1" style={{ color: 'red', marginLeft: 5 }}>
-                                                                Unverified
-                                                            </Typography>
-                                                        </Grid>
-                                                    )
-                                        }
-                                    </Grid>
-                                </Box>
-                            </Grid>
-
-                            {/* Edit and Delete Buttons */}
-                            <Grid
-                                item
-                                container
-                                alignItems="center"
-                                style={{
-                                    display: 'flex',
-                                    flexDirection: 'row',
-                                    marginLeft: '10px',
-                                    marginTop: '10px', // Add marginTop to separate the buttons from the status
-                                }}
-                            >
-
-                                {(isWebsiteEdit && website.id === editingWebsiteId) ? (
-                                    <Grid item>
-                                        <Button
-                                            variant="contained"
-                                            size="small"
-                                            style={{ marginLeft: '15px' }}
-                                            color="success"
-                                            onClick={handleChangeWebsiteDispatch}
-                                            disabled={!canChangeWebsite}
-                                        >
-                                            Save
-                                        </Button>
-                                    </Grid>
-                                ) : (
-                                    <Grid item>
-                                        <Button
-                                            variant="contained"
-                                            size="small"
-                                            style={{ marginLeft: '15px' }}
-                                            onClick={() => handleEditWebsite(website.id)}
-                                            color="info"
-                                        >
-                                            <EditIcon fontSize="small" />
-                                        </Button>
-                                    </Grid>
-                                )}
-
-                                <Grid item>
-                                    <Button
-                                        variant="contained"
-                                        size="small"
-                                        style={{ marginLeft: '15px' }}
-                                        onClick={() => handleDeleteWebsite(website.id)}
-                                        color="error"
-                                    >
-                                        <DeleteForeverIcon fontSize="small" />
-                                    </Button>
-                                </Grid>
-                            </Grid>
-
-                        </Grid>
-                    ))}
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-                    {/* ////// */}
-                </Grid>
-                {
-                    !(websites.length > 0) ? (<Grid
-                        item
-                        style={{
-                            marginLeft: '10px',
-                            marginTop: '15px',
-                            width: '100%',
-                            display: 'flex',
-                            alignItems: 'center',
-                            justifyContent: 'center',
-                        }}
-                    >
-                        <Typography variant="h6">No websites found. Add a website</Typography>
-                    </Grid>) : null
-                }
-
-                {/* Add Button */}
-                {
-                    showInputField ? (
-                        <Grid
-                            item
-                            container
-                            justifyContent="flex-end"
-                            alignItems="center"
-                            style={{ width: '100%', marginBottom: '14px' }}
-                        >
-                            <Grid
-                                container
-                                justifyContent="flex-start"
-                                alignItems="center"
-                                style={{ marginLeft: '10px', width: '100%' }}
-                            >
+                        {editing.name ? (
+                            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
                                 <TextField
-                                    name="new-website-input"
-                                    id="new-website-input"
-                                    label="New website"
-                                    onChange={handleAddWebsite}
-                                    error={isErrors.website}
-                                    helperText={errorsMessages.website}
-                                    InputProps={{
-                                        startAdornment: (
-                                            <InputAdornment position="start">
-                                                <InsertLinkRoundedIcon />
-                                            </InputAdornment>
-                                        ),
-                                    }}
-                                    variant="standard"
+                                    fullWidth
+                                    value={editValues.name}
+                                    onChange={(e) => handleEditChange('name', e.target.value)}
+                                    variant="outlined"
                                     size="small"
-                                    style={styles.section}
                                 />
-                            </Grid>
-                            <Button
-                                variant="contained"
-                                size="small"
-                                color="success"
-                                disabled={!canWebsite}
-                                onClick={handleSaveWebsite}>
-                                Save
-                            </Button>
-                        </Grid>
-                    ) : (
-                        <Grid
-                            container
-                            justifyContent="flex-end"
-                            alignItems="center"
-                            style={{ marginTop: '15px' }}
-                        >
-                            <Button variant="contained" size="small" onClick={showAddWebsiteHandler} color="info">
-                                <AddIcon fontSize="small" />
-                            </Button>
-                        </Grid>
-                    )
-                }
-            </Grid >
+                                <Button
+                                    variant="contained"
+                                    onClick={() => handleSaveEdit('name')}
+                                    sx={{
+                                        bgcolor: '#7E66DC',
+                                        '&:hover': { bgcolor: '#5A4AE3' }
+                                    }}
+                                >
+                                    Save
+                                </Button>
+                                <Button
+                                    variant="outlined"
+                                    onClick={() => handleCancelEdit('name')}
+                                >
+                                    Cancel
+                                </Button>
+                            </Box>
+                        ) : (
+                            <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                                <Typography variant="body1">
+                                    {profile.name}
+                                </Typography>
+                                <Button
+                                    variant="outlined"
+                                    onClick={() => startEditing('name')}
+                                    startIcon={<Edit />}
+                                >
+                                    Edit
+                                </Button>
+                            </Box>
+                        )}
+                    </Box>
 
-            {/** Change Password */}
-            < Grid
-                container justifyContent="flex-start" alignItems="center" style={{
-                    marginTop: '20px', backgroundColor: 'rgb(225 225 224)',
-                    borderRadius: 10,
-                    padding: 25,
-                    maxWidth: "1020px"
-                }
-                } dir="ltr"
-            >
+                    {/* Email Field */}
+                    <Box sx={{ mb: 2 }}>
+                        <Typography variant="subtitle2" sx={{
+                            mb: 1,
+                            color: 'text.secondary',
+                            fontWeight: 500
+                        }}>
+                            Email address
+                        </Typography>
+                        {editing.email ? (
+                            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                                <TextField
+                                    fullWidth
+                                    value={editValues.email}
+                                    onChange={(e) => handleEditChange('email', e.target.value)}
+                                    variant="outlined"
+                                    size="small"
+                                />
+                                <Button
+                                    variant="contained"
+                                    onClick={() => handleSaveEdit('email')}
+                                    sx={{
+                                        bgcolor: '#7E66DC',
+                                        '&:hover': { bgcolor: '#5A4AE3' }
+                                    }}
+                                >
+                                    Save
+                                </Button>
+                                <Button
+                                    variant="outlined"
+                                    onClick={() => handleCancelEdit('email')}
+                                >
+                                    Cancel
+                                </Button>
+                            </Box>
+                        ) : (
+                            <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                                <Typography variant="body1">
+                                    {profile.email}
+                                </Typography>
+                                <Button
+                                    variant="outlined"
+                                    onClick={() => startEditing('email')}
+                                    startIcon={<Edit />}
+                                >
+                                    Edit
+                                </Button>
+                            </Box>
+                        )}
+                    </Box>
+                </CardContent>
+            </Card>
 
-                <Typography variant="h5" color="GrayText" style={{ textAlign: 'left' }}>
-                    Change Password
-                </Typography>
+            {/* Change Password Card */}
+            <Card sx={{
+                width: '100%',
+                borderRadius: 2,
+                boxShadow: '0px 2px 8px rgba(0, 0, 0, 0.1)'
+            }}>
+                <CardContent sx={{ p: 4 }}>
+                    <Typography variant="h6" sx={{ fontWeight: 600, mb: 3 }}>
+                        Change Password
+                    </Typography>
 
-                {/** Old Password */}
-                <Grid
-                    container
-                    justifyContent="flex-start"
-                    alignItems="center"
-                    style={{ marginTop: 15, marginLeft: '10px' }}
-                >
-                    <FormControl sx={{ m: 1, width: 300 }} variant="standard">
-                        <InputLabel size="small" htmlFor="password">
+                    {/* Old Password */}
+                    <Box sx={{ mb: 3 }}>
+                        <Typography variant="subtitle2" sx={{
+                            mb: 1,
+                            color: 'text.secondary',
+                            fontWeight: 500
+                        }}>
                             Old Password
-                        </InputLabel>
-                        <Input
-                            name="old"
-                            id="password-old"
-                            size="small"
+                        </Typography>
+                        <TextField
+                            fullWidth
                             value={password.old}
-                            onChange={handleChangePassword}
-                            type={showPasswordOld ? "text" : "password"}
-                            endAdornment={
-                                <InputAdornment position="end">
-                                    <IconButton
-                                        aria-label="toggle password confirmation visibility"
-                                        onClick={showPasswordOldHandler}
-                                        onMouseDown={passwordOldMouseDownHandler}
-                                    >
-                                        {showPasswordOld ? <VisibilityOff /> : <Visibility />}
-                                    </IconButton>
-                                </InputAdornment>
-                            }
+                            onChange={(e) => setPassword({ ...password, old: e.target.value })}
+                            type={showPasswords.old ? "text" : "password"}
+                            variant="outlined"
+                            size="small"
+                            InputProps={{
+                                endAdornment: (
+                                    <InputAdornment position="end">
+                                        <IconButton
+                                            onClick={() => togglePasswordVisibility('old')}
+                                            edge="end"
+                                        >
+                                            {showPasswords.old ? <VisibilityOff /> : <Visibility />}
+                                        </IconButton>
+                                    </InputAdornment>
+                                )
+                            }}
                         />
-                        {isErrors.passwordOld &&
-                            <FormHelperText sx={{ color: "red" }} id="password-confirmation-helper-text">{errorsMessages.passwordOld}</FormHelperText>
-                        }
-                    </FormControl>
-                </Grid>
+                    </Box>
 
-                {/** New Password */}
-                <Grid
-                    container
-                    justifyContent="flex-start"
-                    alignItems="center"
-                    style={{ marginTop: 15, marginLeft: '10px' }}
-                >
-                    <FormControl sx={{ m: 1, width: 300 }} variant="standard">
-                        <InputLabel size="small" htmlFor="password">
+                    {/* New Password */}
+                    <Box sx={{ mb: 3 }}>
+                        <Typography variant="subtitle2" sx={{
+                            mb: 1,
+                            color: 'text.secondary',
+                            fontWeight: 500
+                        }}>
                             New Password
-                        </InputLabel>
-                        <Input
-                            name="new"
-                            id="password-new"
-                            size="small"
+                        </Typography>
+                        <TextField
+                            fullWidth
                             value={password.new}
-                            onChange={handleChangePassword}
-                            type={showPasswordNew ? "text" : "password"}
-                            endAdornment={
-                                <InputAdornment position="end">
-                                    <IconButton
-                                        aria-label="toggle password confirmation visibility"
-                                        onClick={showPasswordNewHandler}
-                                        onMouseDown={passwordNewMouseDownHandler}
-                                    >
-                                        {showPasswordNew ? <VisibilityOff /> : <Visibility />}
-                                    </IconButton>
-                                </InputAdornment>
-                            }
-                        />
-                        {isErrors.passwordNew &&
-                            <FormHelperText sx={{ color: "red" }} id="password-confirmation-helper-text">{errorsMessages.passwordNew}</FormHelperText>
-                        }
-                    </FormControl>
-                </Grid>
-
-                {/** Confirm Password */}
-                <Grid
-                    container
-                    justifyContent="flex-start"
-                    alignItems="center"
-                    style={{ marginTop: 15, marginLeft: '10px' }}
-                >
-                    <FormControl sx={{ m: 1, width: 300 }} variant="standard">
-                        <InputLabel size="small" htmlFor="password">
-                            Confirm Password
-                        </InputLabel>
-                        <Input
-                            name="confirmation"
-                            id="password-confirmation"
+                            onChange={(e) => setPassword({ ...password, new: e.target.value })}
+                            type={showPasswords.new ? "text" : "password"}
+                            variant="outlined"
                             size="small"
-                            value={password.confirmation}
-                            onChange={handleChangePassword}
-                            type={showPasswordConfirmation ? "text" : "password"}
-                            endAdornment={
-                                <InputAdornment position="end">
-                                    <IconButton
-                                        aria-label="toggle password confirmation visibility"
-                                        onClick={showPasswordConfirmationdHandler}
-                                        onMouseDown={passwordConfirmationMouseDownHandler}
-                                    >
-                                        {showPasswordConfirmation ? <VisibilityOff /> : <Visibility />}
-                                    </IconButton>
-                                </InputAdornment>
-                            }
+                            InputProps={{
+                                endAdornment: (
+                                    <InputAdornment position="end">
+                                        <IconButton
+                                            onClick={() => togglePasswordVisibility('new')}
+                                            edge="end"
+                                        >
+                                            {showPasswords.new ? <VisibilityOff /> : <Visibility />}
+                                        </IconButton>
+                                    </InputAdornment>
+                                )
+                            }}
                         />
-                        {isErrors.passwordConfirmation &&
-                            <FormHelperText sx={{ color: "red" }} id="password-confirmation-helper-text">{errorsMessages.passwordConfirmation}</FormHelperText>
-                        }
-                    </FormControl>
-                </Grid>
+                    </Box>
 
-                {/** Change Password Button */}
-                <Grid container
-                    justifyContent="flex-start"
-                    alignItems="center"
-                    style={{ marginTop: 15, marginLeft: '10px' }}
-                >
+                    {/* Confirm Password */}
+                    <Box sx={{ mb: 3 }}>
+                        <Typography variant="subtitle2" sx={{
+                            mb: 1,
+                            color: 'text.secondary',
+                            fontWeight: 500
+                        }}>
+                            Confirm Password
+                        </Typography>
+                        <TextField
+                            fullWidth
+                            value={password.confirmation}
+                            onChange={(e) => setPassword({ ...password, confirmation: e.target.value })}
+                            type={showPasswords.confirmation ? "text" : "password"}
+                            variant="outlined"
+                            size="small"
+                            InputProps={{
+                                endAdornment: (
+                                    <InputAdornment position="end">
+                                        <IconButton
+                                            onClick={() => togglePasswordVisibility('confirmation')}
+                                            edge="end"
+                                        >
+                                            {showPasswords.confirmation ? <VisibilityOff /> : <Visibility />}
+                                        </IconButton>
+                                    </InputAdornment>
+                                )
+                            }}
+                        />
+                    </Box>
+
                     <Button
+                        fullWidth
                         variant="contained"
-                        size="small"
-                        style={{ width: 160, marginTop: '30px' }}
-                        color="success"
-                        onClick={handleChangePasswordDispatch}
-                        disabled={!canChangePassword}
+                        sx={{
+                            bgcolor: '#7E66DC',
+                            py: 1.5,
+                            borderRadius: 1,
+                            fontWeight: 600,
+                            textTransform: 'none',
+                            '&:hover': {
+                                bgcolor: '#5A4AE3'
+                            }
+                        }}
                     >
                         Change Password
                     </Button>
-                </Grid>
-            </Grid >
-
-
-        </Grid >
+                </CardContent>
+            </Card>
+        </Box>
     );
 }

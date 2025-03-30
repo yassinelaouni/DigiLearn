@@ -33,9 +33,10 @@ export default function Login() {
   const isMobile = useMediaQuery(theme.breakpoints.down('md'));
   const isWideScreen = useMediaQuery(theme.breakpoints.up('xl'));
 
-  // Exact colors from register page
-  const brandGradient = 'linear-gradient(135deg, #7E66DC 0%, #5A4AE3 100%)';
+  const primaryPurple = '#7E66DC';
+  const darkPurple = '#5A4AE3';
   const accentYellow = '#F0C441';
+  const brandGradient = `linear-gradient(135deg, ${primaryPurple} 0%, ${darkPurple} 100%)`;
 
   // Animation variants
   const containerVariants = {
@@ -174,11 +175,14 @@ export default function Login() {
                 '& .MuiOutlinedInput-root': {
                   borderRadius: 2,
                   '&:hover fieldset': {
-                    borderColor: '#7E66DC'
+                    borderColor: primaryPurple
                   },
                   '&.Mui-focused fieldset': {
-                    borderColor: '#7E66DC'
+                    borderColor: primaryPurple
                   }
+                },
+                '& .MuiInputLabel-root.Mui-focused': {
+                  color: primaryPurple
                 }
               }}
             />
@@ -214,18 +218,21 @@ export default function Login() {
                 '& .MuiOutlinedInput-root': {
                   borderRadius: 2,
                   '&:hover fieldset': {
-                    borderColor: '#7E66DC'
+                    borderColor: primaryPurple
                   },
                   '&.Mui-focused fieldset': {
-                    borderColor: '#7E66DC'
+                    borderColor: primaryPurple
                   }
+                },
+                '& .MuiInputLabel-root.Mui-focused': {
+                  color: primaryPurple
                 }
               }}
             />
 
             {/* Forgot Password */}
-            <Box sx={{  mb: 4 }}>
-            
+            <Box sx={{ mb: 2 }}>
+    
             </Box>
 
             {/* Login Button */}
