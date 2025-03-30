@@ -28,8 +28,6 @@ const App = () => (
             <Route path="/login" element={<features.auth.useCases.Login />} />
             <Route path="/admin" element={<features.auth.useCases.Login />} />
             <Route path="/signup" element={<features.auth.useCases.Register />} />
-            <Route path="/forgot-password" element={<features.auth.useCases.ForgotPassword />} />
-            <Route path="/verify-email" element={<features.auth.useCases.VerifyEmail />} />
             <Route path="/courses" element={<Courses />} />
             <Route path="/courses/:slug" element={<CourseDetails />} />
             <Route path="/about" element={<About />} />

@@ -14,6 +14,12 @@ import {
 import { Edit, Visibility, VisibilityOff, CameraAlt } from "@mui/icons-material";
 
 export default function ProfilePage() {
+
+    const primaryPurple = '#7E66DC';
+    const darkPurple = '#5A4AE3';
+    const accentYellow = '#F0C441';
+    const brandGradient = `linear-gradient(135deg, ${primaryPurple} 0%, ${darkPurple} 100%)`;
+
     // User data states
     const [profile, setProfile] = useState({
         name: "YASSINE EL AOUNI",
@@ -329,6 +335,17 @@ export default function ProfilePage() {
                                     </InputAdornment>
                                 )
                             }}
+                            sx={{
+                                '& .MuiOutlinedInput-root': {
+                                    borderRadius: 2,
+                                    '&:hover fieldset': {
+                                        borderColor: primaryPurple
+                                    },
+                                    '&.Mui-focused fieldset': {
+                                        borderColor: primaryPurple
+                                    }
+                                }
+                            }}
                         />
                     </Box>
 
@@ -360,6 +377,17 @@ export default function ProfilePage() {
                                     </InputAdornment>
                                 )
                             }}
+                            sx={{
+                                '& .MuiOutlinedInput-root': {
+                                    borderRadius: 2,
+                                    '&:hover fieldset': {
+                                        borderColor: primaryPurple
+                                    },
+                                    '&.Mui-focused fieldset': {
+                                        borderColor: primaryPurple
+                                    }
+                                }
+                            }}
                         />
                     </Box>
 
@@ -390,6 +418,17 @@ export default function ProfilePage() {
                                         </IconButton>
                                     </InputAdornment>
                                 )
+                            }}
+                            sx={{
+                                '& .MuiOutlinedInput-root': {
+                                    borderRadius: 2,
+                                    '&:hover fieldset': {
+                                        borderColor: primaryPurple
+                                    },
+                                    '&.Mui-focused fieldset': {
+                                        borderColor: primaryPurple
+                                    }
+                                }
                             }}
                         />
                     </Box>
