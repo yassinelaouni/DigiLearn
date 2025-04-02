@@ -17,18 +17,18 @@ import {
 export const Dashboard = () => {
     // Mock data for the line chart
     const lineChartData = [
-        { month: 'Jan', visits: 500, buyers: 120, merchants: 80 },
-        { month: 'Feb', visits: 600, buyers: 130, merchants: 90 },
-        { month: 'Mar', visits: 700, buyers: 140, merchants: 100 },
-        { month: 'Apr', visits: 800, buyers: 150, merchants: 110 },
-        { month: 'May', visits: 900, buyers: 160, merchants: 120 },
-        { month: 'Jun', visits: 1000, buyers: 170, merchants: 130 },
+        { month: 'Jan', visits: 500, buyers: 120, users: 80 },
+        { month: 'Feb', visits: 600, buyers: 130, users: 90 },
+        { month: 'Mar', visits: 700, buyers: 140, users: 100 },
+        { month: 'Apr', visits: 800, buyers: 150, users: 110 },
+        { month: 'May', visits: 900, buyers: 160, users: 120 },
+        { month: 'Jun', visits: 1000, buyers: 170, users: 130 },
     ];
 
     // Mock data for the pie chart
     const pieData = [
         { name: 'buyers', value: 120 },
-        { name: 'Merchants', value: 80 },
+        { name: 'users', value: 80 },
     ];
 
     // Calculate the percentage increase compared to last year
@@ -75,7 +75,7 @@ export const Dashboard = () => {
                                     />
                                     <Line
                                         type="monotone"
-                                        dataKey="merchants"
+                                        dataKey="users"
                                         stroke="rgba(88, 132, 216, 1)"
                                         fill="rgba(88, 132, 216, 0.2)"
                                     />
@@ -89,7 +89,7 @@ export const Dashboard = () => {
                     <Card>
                         <CardContent>
                             <Typography variant="h6" gutterBottom>
-                                buyers and Merchants
+                                buyers and users
                             </Typography>
                             <ResponsiveContainer width="100%" height={300}>
                                 <PieChart>
@@ -103,7 +103,7 @@ export const Dashboard = () => {
                                         fill="#8884d8"
                                     >
                                         <Cell key="buyers" fill="#82ca9d" />
-                                        <Cell key="merchants" fill="#8884d8" />
+                                        <Cell key="users" fill="#8884d8" />
                                     </Pie>
                                     <Tooltip />
                                     <Legend />

@@ -1,6 +1,6 @@
 import { put, call } from "redux-saga/effects";
 import actions from "../../actions";
-import merchantsActions from "../../../../features/merchants/actions"
+import usersActions from "../../../../features/users/actions"
 import errors from "../../../../store/errors";
 import helpers from "../../../../helpers";
 import config from "../../../../config.json";
@@ -8,7 +8,7 @@ import config from "../../../../config.json";
 export default function* loginWorker({ payload, meta = {} }) {
     let response = {};
     const { isAdmin } = meta
-    const url = isAdmin ? "api/merchants/admin/login" : "api/merchants/login"
+    const url = isAdmin ? "api/users/admin/login" : "api/users/login"
 
     const errorResponse = {
         isSuccess: false,
@@ -32,8 +32,8 @@ export default function* loginWorker({ payload, meta = {} }) {
                 })
             );
             yield put(
-                merchantsActions.merged({
-                    merchants: response?.data?.user,
+                usersActions.merged({
+                    users: response?.data?.user,
                     meta,
                 })
             );

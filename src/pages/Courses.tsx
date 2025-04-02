@@ -2,7 +2,7 @@ import { useState } from "react";
 import { motion } from "framer-motion";
 import Layout from "@/components/layout/Layout";
 import { 
-  Search, 
+  Search,  
   SlidersHorizontal, 
   ChevronDown, 
   ChevronRight,

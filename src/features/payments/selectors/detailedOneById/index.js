@@ -1,7 +1,7 @@
 import { memoize } from 'proxy-memoize'
 import selectOneById from '../oneById'
 import helpers from '../../../../helpers'
-import detailedSelected from '../../../../features/merchants/selectors/oneById'
+import detailedSelected from '../../../../features/users/selectors/oneById'
 
 const detailedOneById = memoize(({ state, id }) => {
 	if (!id) return null

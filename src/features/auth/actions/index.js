@@ -1,25 +1,30 @@
 import login from "./login";
 import register from "./register";
-import checkEmail from "./checkEmail";
-import verifyEmail from "./verifyEmail";
-import resendCode from "./resendCode";
-import checkCode from "./checkCode";
-import resetPassword from "./resetPassword";
 import userSet from "./userSet";
 import tokenSet from "./tokenSet";
 import logout from "./logout";
 import setup from "./setup";
+import changePassword from "./changePassword";
+import changeFirstName from "./changeFirstName";
+import changeLastName from "./changeLastName";
+import changeAvatar from "./changeAvatar";
+import firstNameUpdated from "./firstNameUpdated";
+import lastNameUpdated from "./lastNameUpdated";
+import avatarUpdated from "./avatarUpdated";
+
 
 export default Object.freeze({
   login,
   register,
-  checkEmail,
-  verifyEmail,
-  checkCode,
-  resendCode,
-  resetPassword,
   userSet,
   tokenSet,
   logout,
   setup,
+  changePassword,
+  changeFirstName,
+  changeLastName,
+  changeAvatar,
+  firstNameUpdated,
+  lastNameUpdated,
+  avatarUpdated,
 });

@@ -1,8 +1,16 @@
 import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import { Menu, X, LogIn, Search, ChevronDown, Book, Laptop, Video } from 'lucide-react';
+import { Menu, X, LogIn, Search, ChevronDown, Book, Laptop, Video, LogOut, User, Settings } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
+import { useDispatch, useSelector } from "react-redux";
+import selectAuthUser from "@/features/auth/selectors/user";
+import Cookies from 'js-cookie';
+
+const STORAGE_KEYS = {
+  PROFILE: 'userProfile',
+  AVATAR: 'userAvatar'
+}; 
 
 const navItems = [
   {
@@ -52,7 +60,95 @@ const Header = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isScrolled, setIsScrolled] = useState(false);
   const [openDropdown, setOpenDropdown] = useState(null);
+  const dispatch = useDispatch();
+  const currentUser = useSelector(selectAuthUser);
 
+  // Initialize profile state
+  const getInitialState = () => {
+    try {
+      const localStorageProfile = localStorage.getItem(STORAGE_KEYS.PROFILE);
+      if (localStorageProfile) return JSON.parse(localStorageProfile);
+
+      const cookieProfile = Cookies.get(STORAGE_KEYS.PROFILE);
+      if (cookieProfile) return JSON.parse(cookieProfile);
+
+      return {
+        id: currentUser?.id || '',
+        firstName: currentUser?.firstName || '',
+        lastName: currentUser?.lastName || '',
+        email: currentUser?.email || '',
+        avatar: currentUser?.avatar || null
+      };
+    } catch (error) {
+      console.error('Error loading profile data:', error);
+      return {
+        id: '',
+        firstName: '',
+        lastName: '',
+        email: '',
+        avatar: null,
+      };
+    }
+  };
+
+  const [profile, setProfile] = useState(getInitialState());
+
+  // Persist profile to storage
+  useEffect(() => {
+    if (!profile.id) return;
+
+    try {
+      const profileData = JSON.stringify(profile);
+      localStorage.setItem(STORAGE_KEYS.PROFILE, profileData);
+      Cookies.set(STORAGE_KEYS.PROFILE, profileData, {
+        expires: 7,
+        secure: process.env.NODE_ENV === 'production',
+        sameSite: 'strict'
+      });
+
+      if (profile.avatar) {
+        localStorage.setItem(STORAGE_KEYS.AVATAR, profile.avatar);
+      }
+    } catch (error) {
+      console.error('Error saving profile data:', error);
+    }
+  }, [profile]);
+
+  // Sync with Redux changes
+  useEffect(() => {
+    if (currentUser?.id) {
+      setProfile(prev => ({
+        id: currentUser.id,
+        firstName: currentUser.firstName || prev.firstName,
+        lastName: currentUser.lastName || prev.lastName,
+        email: currentUser.email || prev.email || '',
+        avatar: currentUser.avatar || prev.avatar
+      }));
+    }
+  }, [currentUser]);
+
+  // Get user initials
+  const getInitials = () => {
+    return `${profile.firstName?.[0] || ''}${profile.lastName?.[0] || ''}`.toUpperCase();
+  };
+
+  // Clean storage on logout
+  const cleanupStorage = () => {
+    localStorage.removeItem(STORAGE_KEYS.PROFILE);
+    localStorage.removeItem(STORAGE_KEYS.AVATAR);
+    Cookies.remove(STORAGE_KEYS.PROFILE);
+  };
+
+  // Handle logout
+  const handleLogout = () => {
+    cleanupStorage();
+    // dispatch(logoutAction()); // Uncomment if you have logout action
+    setOpenDropdown(null);
+    setIsMenuOpen(false);
+    window.location.reload(); // Temporary solution until proper auth flow
+  };
+
+  // Scroll effect
   useEffect(() => {
     const handleScroll = () => {
       setIsScrolled(window.scrollY > 10);
@@ -77,7 +173,7 @@ const Header = () => {
       <div className="container flex items-center justify-between">
         {/* Logo */}
         <Link to="/" className="flex items-center gap-2">
-          <img width={50} height={50} src='/logo.png'></img>
+          <img width={50} height={50} src='/logo.png' alt="DigiLearn Logo" />
           <span className="font-display font-bold text-2xl bg-gradient-to-r from-brand-purple to-brand-blue bg-clip-text text-transparent">
             DigiLearn
           </span>
@@ -130,17 +226,81 @@ const Header = () => {
           ))}
         </nav>
 
-        {/* Search & Auth buttons */}
+        {/* User Controls */}
         <div className="hidden md:flex items-center gap-3">
           <Button variant="ghost" size="icon" className="rounded-full">
             <Search className="h-5 w-5" />
           </Button>
-          <Button asChild variant="outline" className="rounded-full">
-            <Link to="/login">Log In</Link>
-          </Button>
-          <Button asChild className="rounded-full bg-gradient-to-r from-brand-purple to-brand-blue">
-            <Link to="/signup">Sign Up</Link>
-          </Button>
+
+          {profile.id ? (
+            <div className="relative">
+              <button
+                onClick={() => handleDropdownToggle('profile')}
+                className="flex items-center gap-2 p-1 rounded-full hover:bg-black/5 transition-colors"
+              >
+                {profile.avatar ? (
+                  <img 
+                    src={profile.avatar} 
+                    alt="Profile" 
+                    className="h-8 w-8 rounded-full object-cover"
+                  />
+                ) : (
+                  <div className="h-8 w-8 rounded-full bg-gradient-to-r from-brand-purple to-brand-blue flex items-center justify-center text-white font-medium">
+                    {getInitials()}
+                  </div>
+                )}
+                <ChevronDown
+                  className={cn(
+                    "h-4 w-4 transition-transform",
+                    openDropdown === 'profile' ? "rotate-180" : ""
+                  )}
+                />
+              </button>
+
+              {openDropdown === 'profile' && (
+                <div className="absolute right-0 top-full mt-2 w-56 bg-white rounded-xl shadow-lg ring-1 ring-black/5 overflow-hidden z-50 animate-fade-in">
+                  <div className="p-3 border-b">
+                    <div className="font-medium truncate">{profile.firstName} {profile.lastName}</div>                  </div>
+                  <div className="p-1">
+                    <Link
+                      to="/profile"
+                      className="flex items-center gap-2 px-3 py-2 text-sm hover:bg-muted transition-colors rounded-lg"
+                      onClick={() => setOpenDropdown(null)}
+                    >
+                      <User className="h-4 w-4" />
+                      Profile
+                    </Link>
+                    <Link
+                      to="/settings"
+                      className="flex items-center gap-2 px-3 py-2 text-sm hover:bg-muted transition-colors rounded-lg"
+                      onClick={() => setOpenDropdown(null)}
+                    >
+                      <Settings className="h-4 w-4" />
+                      Settings
+                    </Link>
+                  </div>
+                  <div className="p-1 border-t">
+                    <button
+                      onClick={handleLogout}
+                      className="w-full flex items-center gap-2 px-3 py-2 text-sm hover:bg-muted transition-colors rounded-lg text-red-500"
+                    >
+                      <LogOut className="h-4 w-4" />
+                      Log Out
+                    </button>
+                  </div>
+                </div>
+              )}
+            </div>
+          ) : (
+            <>
+              <Button asChild variant="outline" className="rounded-full">
+                <Link to="/login">Log In</Link>
+              </Button>
+              <Button asChild className="rounded-full bg-gradient-to-r from-brand-purple to-brand-blue">
+                <Link to="/signup">Sign Up</Link>
+              </Button>
+            </>
+          )}
         </div>
 
         {/* Mobile menu button */}
@@ -197,19 +357,68 @@ const Header = () => {
               </div>
             ))}
           </nav>
-          <div className="mt-auto grid grid-cols-2 gap-3 pt-4">
-            <Button asChild variant="outline" className="w-full">
-              <Link to="/login" onClick={toggleMenu}>
-                <LogIn className="h-4 w-4 mr-2" />
-                Log In
+          
+          {/* Mobile auth section */}
+          {profile.id ? (
+            <div className="mt-auto space-y-3 pt-4">
+              <div className="flex items-center gap-3 p-3 border rounded-lg">
+                {profile.avatar ? (
+                  <img 
+                    src={profile.avatar} 
+                    alt="Profile" 
+                    className="h-10 w-10 rounded-full object-cover"
+                  />
+                ) : (
+                  <div className="h-10 w-10 rounded-full bg-gradient-to-r from-brand-purple to-brand-blue flex items-center justify-center text-white font-medium">
+                    {getInitials()}
+                  </div>
+                )}
+                <div>
+                  <div className="font-medium truncate">
+                    {profile.firstName} {profile.lastName}
+                  </div>
+                  <div className="text-xs text-muted-foreground truncate">
+                    {profile.email}
+                  </div>
+                </div>
+              </div>
+              <Link
+                to="/profile"
+                className="block p-3 text-center rounded-lg border hover:bg-muted transition-colors"
+                onClick={toggleMenu}
+              >
+                My Profile
               </Link>
-            </Button>
-            <Button asChild className="w-full bg-gradient-to-r from-brand-purple to-brand-blue">
-              <Link to="/signup" onClick={toggleMenu}>
-                Sign Up
+              <Link
+                to="/settings"
+                className="block p-3 text-center rounded-lg border hover:bg-muted transition-colors"
+                onClick={toggleMenu}
+              >
+                Settings
               </Link>
-            </Button>
-          </div>
+              <button
+                onClick={handleLogout}
+                className="w-full p-3 text-center rounded-lg border hover:bg-muted transition-colors flex items-center justify-center gap-2 text-red-500"
+              >
+                <LogOut className="h-4 w-4" />
+                Log Out
+              </button>
+            </div>
+          ) : (
+            <div className="mt-auto grid grid-cols-2 gap-3 pt-4">
+              <Button asChild variant="outline" className="w-full">
+                <Link to="/login" onClick={toggleMenu}>
+                  <LogIn className="h-4 w-4 mr-2" />
+                  Log In
+                </Link>
+              </Button>
+              <Button asChild className="w-full bg-gradient-to-r from-brand-purple to-brand-blue">
+                <Link to="/signup" onClick={toggleMenu}>
+                  Sign Up
+                </Link>
+              </Button>
+            </div>
+          )}
         </div>
       </div>
       

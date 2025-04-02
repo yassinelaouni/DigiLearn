@@ -5,7 +5,7 @@ import features from "../features";
 export default function* rootSaga() {
   yield all([
     features.auth.sagas(),
-    features.merchants.sagas(),
+    features.users.sagas(),
     features.payments.sagas()
   ]);
 }

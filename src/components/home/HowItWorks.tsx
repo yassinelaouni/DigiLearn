@@ -5,10 +5,10 @@ import { ArrowRight } from "lucide-react";
 import { useState, useEffect } from "react";
 
 // Import your local images
-import step1 from "../../../public/browse.png";
-import step2 from "../../../public/enroll.png";
-import step3 from "../../../public/learn.png";
-import step4 from "../../../public/test.png";
+import step1 from "/browse.png";
+import step2 from "/enroll.png";
+import step3 from "/learn.png";
+import step4 from "/test.png";
 
 const steps = [
   {

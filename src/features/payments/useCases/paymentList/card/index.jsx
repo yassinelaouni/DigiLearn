@@ -15,7 +15,7 @@ import { Modal } from '@mui/material';
 import { useSelector, useDispatch } from 'react-redux';
 import selectors from '../../../selectors';
 import actions from '../../../actions';
-// import merchantActions from '../../../../../features/merchants/actions';
+// import userActions from '../../../../../features/users/actions';
 import CloseIcon from '@mui/icons-material/Close';
 import { useNavigate } from 'react-router-dom';
 
@@ -139,8 +139,8 @@ export default function PaymentsCard({ id, handleOpen = () => { } }) {
 	};
 
 	const handleGotoCreator = React.useCallback(() => {
-		// dispatch(merchantActions.selectedSet({ id: payment.creator?.id }));//payment?.creator?.id 
-		navigate('/adminDashboard/merchants/detailed');
+		// dispatch(userActions.selectedSet({ id: payment.creator?.id }));//payment?.creator?.id 
+		navigate('/adminDashboard/users/detailed');
 	}, [dispatch, navigate, payment]);
 
 	if (!payment) return null;

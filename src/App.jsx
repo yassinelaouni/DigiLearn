@@ -28,6 +28,7 @@ const App = () => (
             <Route path="/login" element={<features.auth.useCases.Login />} />
             <Route path="/admin" element={<features.auth.useCases.Login />} />
             <Route path="/signup" element={<features.auth.useCases.Register />} />
+            <Route path="profile" element={<features.users.useCases.Profile />} />
             <Route path="/courses" element={<Courses />} />
             <Route path="/courses/:slug" element={<CourseDetails />} />
             <Route path="/about" element={<About />} />
@@ -38,15 +39,13 @@ const App = () => (
               <Route path="app" element={<features.admin.useCases.Dashboard />} />
               <Route path="profile" element={<features.admin.useCases.Profile />} />
               <Route path="payments" element={<features.payments.useCases.PaymentList.Main />} />
-              <Route path="merchants" element={<features.merchants.useCases.MerchantList.Main />} />
-              <Route path="merchants/detailed" element={<features.merchants.useCases.MerchantList.Detailed />} />
+              <Route path="users" element={<features.users.useCases.userList.Main />} />
+              <Route path="users/detailed" element={<features.users.useCases.userList.Detailed />} />
             </Route>
 
             {/* User Dashboard Routes */}
             <Route path="/dashboard" element={<layout.dashboard />}>
-              <Route path="profile" element={<features.merchants.useCases.Profile />} />
-              <Route path="openAPIGuide" element={<features.merchants.useCases.OpenAPIGuide />} />
-              <Route path="deposit" element={<features.merchants.useCases.Deposit />} />
+              <Route path="profile" element={<features.users.useCases.Profile />} />
             </Route>
 
             {/* Catch-all Route for 404 */}

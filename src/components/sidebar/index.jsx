@@ -19,8 +19,8 @@ const navConfig = [
         icon: <AssessmentOutlinedIcon />,
     },
     {
-        title: 'merchant',
-        path: '/adminDashboard/merchants',
+        title: 'user',
+        path: '/adminDashboard/users',
         icon: <ShoppingBasketIcon />,
     },
     {

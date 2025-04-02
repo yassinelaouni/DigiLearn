@@ -5,7 +5,7 @@ import Delete from '../remove'
 import Reject from '../reject'
 import Card from '../card'
 import { useDispatch } from 'react-redux'
-//import merchantActions from 'features/merchants/actions';
+//import userActions from 'features/users/actions';
 
 import useMain from './service'
 
@@ -14,9 +14,9 @@ export default function PaymentsMain() {
 	const { ids, paymentId, isOpenModal, handleModalOpen, handleModalClose } = useMain()
 
 
-	// get merchants' ids
+	// get users' ids
 	// useEffect(() => {
-	// 	dispatch(merchantActions.get())
+	// 	dispatch(userActions.get())
 	// }, [])
 
 	return (

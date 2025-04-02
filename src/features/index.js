@@ -1,11 +1,11 @@
 import admin from "./admin"
 import auth from "./auth";
-import merchants from "./merchants"
+import users from "./users"
 import payments from "./payments"
 
 export default Object.freeze({
   admin,
   auth,
-  merchants,
+  users,
   payments
 });

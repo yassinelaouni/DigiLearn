@@ -5,24 +5,21 @@
     "endpoints":{
       "login": "/auth/login",
       "register": "/auth/register",
-      "checkEmail": "/auth/check-email",
-      "checkCode": "/auth/check-code",
-      "resetPassword": "/auth/reset-password",
       "rating": {
         "root": "/rating",
         "addOne": "api/rating/addOne",
         "getOne": "api/rating/getOne"
       },
-      "merchant": {
-        "root": "/merchant",
-        "changePassword": "/merchant/change-password",
-        "changePhone": "/merchant/change-phone",
-        "addWebsite": "/merchant/add-website",
-        "updateWebsite": "/merchant/update-website",
-        "deleteWebsite": "/merchant/delete-website",
-        "generateApiKey": "/merchant/generate-api-key",
-        "get": "/merchant/get",
-        "changeStatus": "/merchant/change-status"
+      "user": {
+        "root": "/user",
+        "changePassword": "/user/change-password",
+        "changePhone": "/user/change-phone",
+        "addWebsite": "/user/add-website",
+        "updateWebsite": "/user/update-website",
+        "deleteWebsite": "/user/delete-website",
+        "generateApiKey": "/user/generate-api-key",
+        "get": "/user/get",
+        "changeStatus": "/user/change-status"
       },
       "buyer": {
         "root": "/buyer",

@@ -2,7 +2,7 @@ import { put, select } from "redux-saga/effects";
 
 import errors from "../../../../store/errors";
 import actions from "../../../../features/payments/actions";
-import merchantsActions from "../../../../features/merchants/actions";
+import usersActions from "../../../../features/users/actions";
 import buyersSelectors from "../../selectors";
 import normalizer from '../../normalizer'
 import helpers from "../../../../helpers";
@@ -19,10 +19,10 @@ export default function* getMany({ meta = {} }) {
   });
 
   if (data?.success && data?.found) {
-    const { merchants, payments } = normalizer(data?.found)
-    // console.log("sagas :", merchants)
-    yield put(merchantsActions.merged({
-      merchants: Object.entries(merchants).map(([id, data]) => {
+    const { users, payments } = normalizer(data?.found)
+    // console.log("sagas :", users)
+    yield put(usersActions.merged({
+      users: Object.entries(users).map(([id, data]) => {
         return { id, ...data };
       })
     }))

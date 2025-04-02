@@ -47,7 +47,7 @@ export default function DenseAppBar() {
             <Grid xs={10} item container alignItems="center" justifyContent="flex-start" style={{ marginLeft: 20 }}>
               <Grid xs={2} >
                 <NavLink
-                  to="/adminDashboard/merchants"
+                  to="/adminDashboard/users"
                   style={{ textDecoration: "none", color: "black" }}
                 >
                   {({ isActive }) => (
@@ -57,7 +57,7 @@ export default function DenseAppBar() {
                       size="small"
                       style={{ color: isActive ? "#1976D2" : "gray" }}
                     >
-                      Merchants
+                      users
                     </Button>
                   )}
                 </NavLink>
