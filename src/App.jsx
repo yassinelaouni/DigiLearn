@@ -10,6 +10,8 @@ import store from "./store";
 import Index from "./pages/Index";
 import Courses from "./pages/Courses";
 import CourseDetails from "./pages/CourseDetails";
+import CertificationTest from "./pages/CertificationTest";
+import CertificationResults from "./pages/CertificationResults";
 import About from "./pages/About";
 import NotFound from "./pages/NotFound";
 import { ChatbotButton } from './components/ChatbotButton';
@@ -35,6 +37,8 @@ const App = () => (
             <Route path="/certificate" element={<features.payments.useCases.Certificate />} />
             <Route path="/courses" element={<Courses />} />
             <Route path="/courses/:slug" element={<CourseDetails />} />
+            <Route path="/courses/:slug/certification" element={<CertificationTest />} />
+            <Route path="/courses/:slug/certification/results" element={<CertificationResults />} />
             <Route path="/about" element={<About />} />
 
             {/* Admin Dashboard Routes */}

@@ -9,7 +9,8 @@ import {
   BarChart,
   Check,
   ChevronDown,
-  ChevronUp
+  ChevronUp,
+  Award
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Link } from "react-router-dom";
@@ -204,7 +205,7 @@ const CourseDetails = () => {
           </div>
         </div>
       </section>
-      
+
       <section className="py-10 md:py-16 bg-gray-50">
         <div className="container">
           <div className="bg-white rounded-xl border border-gray-100 shadow-sm overflow-hidden">
