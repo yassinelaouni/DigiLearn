@@ -105,7 +105,7 @@ export default function useRegister() {
   // handle register click
   const handleRegister = () => {
     dispatch(actions.register({ ...data }));
-    navigate("/dashboard")
+    navigate("/")
   };
 
   // handle success

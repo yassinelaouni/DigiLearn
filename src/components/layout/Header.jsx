@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom';
 import { Menu, X, LogIn, Search, ChevronDown, Book, Laptop, Video, LogOut, User, Settings } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
+import { useNavigate } from 'react-router-dom';
 import { useDispatch, useSelector } from "react-redux";
 import selectAuthUser from "@/features/auth/selectors/user";
 import Cookies from 'js-cookie';
@@ -10,7 +11,7 @@ import Cookies from 'js-cookie';
 const STORAGE_KEYS = {
   PROFILE: 'userProfile',
   AVATAR: 'userAvatar'
-}; 
+};
 
 const navItems = [
   {
@@ -41,14 +42,9 @@ const navItems = [
     ],
   },
   {
-    label: "Resources",
-    href: "/resources",
+    label: "Certificates",
+    href: "/certificates",
     icon: Laptop,
-  },
-  {
-    label: "Programs",
-    href: "/programs",
-    icon: Video,
   },
   {
     label: "About",
@@ -61,7 +57,9 @@ const Header = () => {
   const [isScrolled, setIsScrolled] = useState(false);
   const [openDropdown, setOpenDropdown] = useState(null);
   const dispatch = useDispatch();
+  const navigate = useNavigate();
   const currentUser = useSelector(selectAuthUser);
+
 
   // Initialize profile state
   const getInitialState = () => {
@@ -158,13 +156,13 @@ const Header = () => {
   }, []);
 
   const toggleMenu = () => setIsMenuOpen(!isMenuOpen);
-  
+
   const handleDropdownToggle = (label) => {
     setOpenDropdown(openDropdown === label ? null : label);
   };
 
   return (
-    <header 
+    <header
       className={cn(
         "fixed top-0 left-0 right-0 z-50 transition-all duration-300 py-4",
         isScrolled ? "bg-white/90 backdrop-blur-md shadow-sm" : "bg-transparent"
@@ -172,11 +170,9 @@ const Header = () => {
     >
       <div className="container flex items-center justify-between">
         {/* Logo */}
-        <Link to="/" className="flex items-center gap-2">
-          <img width={50} height={50} src='/logo.png' alt="DigiLearn Logo" />
-          <span className="font-display font-bold text-2xl bg-gradient-to-r from-brand-purple to-brand-blue bg-clip-text text-transparent">
-            DigiLearn
-          </span>
+        <Link to={"/"} className="flex items-center justify-center gap-2">
+          <img width={165} src='/logo.png' alt="DigiLearn Logo" />
+
         </Link>
 
         {/* Desktop Navigation */}
@@ -184,13 +180,14 @@ const Header = () => {
           {navItems.map((item) => (
             <div key={item.label} className="relative group">
               <button
-                onClick={() => item.children && handleDropdownToggle(item.label)}
+                onClick={() => item.children ? handleDropdownToggle(item.label):navigate(item.href)}
                 className={cn(
                   "px-4 py-2 rounded-full font-medium flex items-center gap-1 hover:bg-black/5 transition-colors",
                   openDropdown === item.label ? "text-brand-purple" : ""
                 )}
               >
                 {item.label}
+
                 {item.children && (
                   <ChevronDown
                     className={cn(
@@ -200,7 +197,7 @@ const Header = () => {
                   />
                 )}
               </button>
-              
+
               {item.children && openDropdown === item.label && (
                 <div className="absolute top-full left-0 mt-2 w-72 bg-white rounded-xl shadow-lg ring-1 ring-black/5 overflow-hidden z-50 animate-fade-in">
                   <div className="p-4 grid gap-3">
@@ -228,10 +225,6 @@ const Header = () => {
 
         {/* User Controls */}
         <div className="hidden md:flex items-center gap-3">
-          <Button variant="ghost" size="icon" className="rounded-full">
-            <Search className="h-5 w-5" />
-          </Button>
-
           {profile.id ? (
             <div className="relative">
               <button
@@ -239,9 +232,9 @@ const Header = () => {
                 className="flex items-center gap-2 p-1 rounded-full hover:bg-black/5 transition-colors"
               >
                 {profile.avatar ? (
-                  <img 
-                    src={profile.avatar} 
-                    alt="Profile" 
+                  <img
+                    src={profile.avatar}
+                    alt="Profile"
                     className="h-8 w-8 rounded-full object-cover"
                   />
                 ) : (
@@ -329,7 +322,7 @@ const Header = () => {
           <nav className="flex flex-col gap-2">
             {navItems.map((item) => (
               <div key={item.label} className="border-b pb-2">
-                <Link 
+                <Link
                   to={item.href}
                   className="flex items-center justify-between p-3 rounded-lg hover:bg-muted transition-colors"
                   onClick={toggleMenu}
@@ -357,15 +350,15 @@ const Header = () => {
               </div>
             ))}
           </nav>
-          
+
           {/* Mobile auth section */}
           {profile.id ? (
             <div className="mt-auto space-y-3 pt-4">
               <div className="flex items-center gap-3 p-3 border rounded-lg">
                 {profile.avatar ? (
-                  <img 
-                    src={profile.avatar} 
-                    alt="Profile" 
+                  <img
+                    src={profile.avatar}
+                    alt="Profile"
                     className="h-10 w-10 rounded-full object-cover"
                   />
                 ) : (
@@ -421,10 +414,10 @@ const Header = () => {
           )}
         </div>
       </div>
-      
+
       {/* Backdrop for mobile menu */}
       {isMenuOpen && (
-        <div 
+        <div
           className="fixed inset-0 bg-black/20 backdrop-blur-sm z-30 md:hidden"
           onClick={toggleMenu}
         />

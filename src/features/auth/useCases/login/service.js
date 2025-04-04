@@ -82,7 +82,7 @@ export default function useLogin() {
   const { isSuccess, id } = useSelector(errors.selectors.error);
   useEffect(() => {
     if (isSuccess && id === types.login && isAdmin) navigate("/adminDashboard");   
-    if (isSuccess && id === types.login && !isAdmin) navigate("/dashboard");
+    if (isSuccess && id === types.login && !isAdmin) navigate("/");
   }, [isSuccess, id, navigate, isAdmin]);
 
   // navigate to login page

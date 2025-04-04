@@ -12,6 +12,8 @@ import Courses from "./pages/Courses";
 import CourseDetails from "./pages/CourseDetails";
 import About from "./pages/About";
 import NotFound from "./pages/NotFound";
+import { ChatbotButton } from './components/ChatbotButton';
+
 
 const queryClient = new QueryClient();
 
@@ -22,13 +24,15 @@ const App = () => (
         <Toaster />
         <Sonner />
         <BrowserRouter>
+        <div className="app">
           <Routes>
             {/* Public Routes */}
             <Route path="/" element={<Index />} />
             <Route path="/login" element={<features.auth.useCases.Login />} />
             <Route path="/admin" element={<features.auth.useCases.Login />} />
             <Route path="/signup" element={<features.auth.useCases.Register />} />
-            <Route path="profile" element={<features.users.useCases.Profile />} />
+            <Route path="/profile" element={<features.users.useCases.Profile />} />
+            <Route path="/certificate" element={<features.payments.useCases.Certificate />} />
             <Route path="/courses" element={<Courses />} />
             <Route path="/courses/:slug" element={<CourseDetails />} />
             <Route path="/about" element={<About />} />
@@ -51,6 +55,8 @@ const App = () => (
             {/* Catch-all Route for 404 */}
             <Route path="*" element={<NotFound />} />
           </Routes>
+          <ChatbotButton />
+          </div>
         </BrowserRouter>
       </TooltipProvider>
     </QueryClientProvider>

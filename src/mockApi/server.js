@@ -1,9 +1,14 @@
-import { createServer, Model } from 'miragejs';
+import { createServer, Model,belongsTo, hasMany} from 'miragejs';
 
 createServer({
   models: {
     user: Model,
     admin: Model,
+    course: Model,
+    certificate: Model.extend({
+      user: belongsTo(),
+      course: belongsTo()
+    })
   },
 
   routes() {
@@ -261,6 +266,178 @@ createServer({
         errors: {}
       };
     });
+        // Issue a new certificate
+        this.post('/certificates/issue', (schema, request) => {
+          const attrs = JSON.parse(request.requestBody);
+          const { userId, courseId, issueDate } = attrs;
+          
+          const user = schema.users.find(userId);
+          const course = schema.courses.find(courseId);
+          
+          if (!user || !course) {
+            return {
+              success: false,
+              certificate: null,
+              errorCode: "NotFound",
+              errorMessage: "User or course not found",
+              errors: {}
+            };
+          }
+          
+          const certificate = schema.certificates.create({
+            user,
+            course,
+            issueDate: issueDate || new Date().toISOString(),
+            certificateId: `CERT-${Math.random().toString(36).substr(2, 9).toUpperCase()}`,
+            isVerified: false
+          });
+          
+          return {
+            success: true,
+            certificate: {
+              id: certificate.id,
+              certificateId: certificate.certificateId,
+              userId: user.id,
+              courseId: course.id,
+              issueDate: certificate.issueDate,
+              isVerified: certificate.isVerified,
+              user: {
+                firstName: user.firstName,
+                lastName: user.lastName,
+                email: user.email
+              },
+              course: {
+                title: course.title,
+                description: course.description
+              }
+            },
+            errorCode: "",
+            errorMessage: "Certificate issued successfully",
+            errors: {}
+          };
+        });
+    
+        // Get user's certificates
+        this.get('/users/:userId/certificates', (schema, request) => {
+          const userId = request.params.userId;
+          const user = schema.users.find(userId);
+          
+          if (!user) {
+            return {
+              success: false,
+              certificates: [],
+              errorCode: "UserNotFound",
+              errorMessage: "User not found",
+              errors: {}
+            };
+          }
+          
+          const certificates = schema.certificates.where({ userId });
+          
+          return {
+            success: true,
+            certificates: certificates.models.map(cert => ({
+              id: cert.id,
+              certificateId: cert.certificateId,
+              courseId: cert.courseId,
+              courseTitle: cert.course.title,
+              issueDate: cert.issueDate,
+              isVerified: cert.isVerified
+            })),
+            errorCode: "",
+            errorMessage: "",
+            errors: {}
+          };
+        });
+    
+        // Verify a certificate
+        this.get('/certificates/verify/:certificateId', (schema, request) => {
+          const certificateId = request.params.certificateId;
+          const certificate = schema.certificates.findBy({ certificateId });
+          
+          if (!certificate) {
+            return {
+              success: false,
+              certificate: null,
+              errorCode: "CertificateNotFound",
+              errorMessage: "Certificate not found",
+              errors: {}
+            };
+          }
+          
+          return {
+            success: true,
+            certificate: {
+              certificateId: certificate.certificateId,
+              user: {
+                firstName: certificate.user.firstName,
+                lastName: certificate.user.lastName,
+                email: certificate.user.email
+              },
+              course: {
+                title: certificate.course.title,
+                description: certificate.course.description
+              },
+              issueDate: certificate.issueDate,
+              isVerified: certificate.isVerified
+            },
+            errorCode: "",
+            errorMessage: "",
+            errors: {}
+          };
+        });
+    
+        // Admin: Get all certificates
+        this.get('/admin/certificates', (schema, request) => {
+          const certificates = schema.certificates.all();
+          
+          return {
+            success: true,
+            certificates: certificates.models.map(cert => ({
+              id: cert.id,
+              certificateId: cert.certificateId,
+              userId: cert.userId,
+              userEmail: cert.user.email,
+              userName: `${cert.user.firstName} ${cert.user.lastName}`,
+              courseId: cert.courseId,
+              courseTitle: cert.course.title,
+              issueDate: cert.issueDate,
+              isVerified: cert.isVerified
+            })),
+            errorCode: "",
+            errorMessage: "",
+            errors: {}
+          };
+        });
+    
+        // Admin: Verify a certificate
+        this.patch('/admin/certificates/verify/:certificateId', (schema, request) => {
+          const certificateId = request.params.certificateId;
+          const certificate = schema.certificates.findBy({ certificateId });
+          
+          if (!certificate) {
+            return {
+              success: false,
+              certificate: null,
+              errorCode: "CertificateNotFound",
+              errorMessage: "Certificate not found",
+              errors: {}
+            };
+          }
+          
+          certificate.update({ isVerified: true });
+          
+          return {
+            success: true,
+            certificate: {
+              certificateId: certificate.certificateId,
+              isVerified: certificate.isVerified
+            },
+            errorCode: "",
+            errorMessage: "Certificate verified successfully",
+            errors: {}
+          };
+        });
   },
 
   seeds(server) {
@@ -270,7 +447,7 @@ createServer({
       email: 'admin@example.com',
       firstName: 'Admin',
       lastName: 'User',
-      password: 'admin123',
+      password: 'Yss@@56hh',
       avatar: null
     });
 
@@ -290,7 +467,7 @@ createServer({
       email: 'user2@example.com',
       firstName: 'Jane',
       lastName: 'Smith',
-      password: 'password123',
+      password: 'Yss@@56hh',
       balance: 50,
       avatar: null
     });
@@ -303,6 +480,38 @@ createServer({
       password: 'Yss@@56hh',
       balance: 0,
       avatar: null
+    });
+
+    // Create courses
+    server.create('course', {
+      id: '1',
+      title: 'Web Development Fundamentals',
+      description: 'Learn the basics of HTML, CSS and JavaScript'
+    });
+
+    server.create('course', {
+      id: '2',
+      title: 'Advanced React',
+      description: 'Master React with hooks, context and advanced patterns'
+    });
+
+    // Create certificates
+    server.create('certificate', {
+      id: '1',
+      user: server.schema.users.find(1),
+      course: server.schema.courses.find(1),
+      certificateId: 'CERT-ABC123',
+      issueDate: '2023-05-15',
+      isVerified: true
+    });
+
+    server.create('certificate', {
+      id: '2',
+      user: server.schema.users.find(3),
+      course: server.schema.courses.find(2),
+      certificateId: 'CERT-XYZ789',
+      issueDate: '2023-06-20',
+      isVerified: false
     });
   }
 });
