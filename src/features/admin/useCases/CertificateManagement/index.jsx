@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { Award, Search, Check, X, Download } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
@@ -12,14 +12,38 @@ import {
 } from '@/components/ui/table';
 
 const AdminCertificates = () => {
-  const [certificates, setCertificates] = useState([]);
-  const [searchTerm, setSearchTerm] = useState('');
+  // Mock certificates data
+  const [certificates, setCertificates] = useState([
+    {
+      certificateId: 'CERT-001',
+      userId: '1',
+      userName: 'John Doe',
+      courseId: 'COURSE-101',
+      courseTitle: 'Introduction to React',
+      issueDate: '2023-05-01T00:00:00Z',
+      isVerified: true
+    },
+    {
+      certificateId: 'CERT-002',
+      userId: '2',
+      userName: 'Jane Smith',
+      courseId: 'COURSE-102',
+      courseTitle: 'Advanced JavaScript',
+      issueDate: '2023-05-15T00:00:00Z',
+      isVerified: false
+    },
+    {
+      certificateId: 'CERT-003',
+      userId: '3',
+      userName: 'Robert Johnson',
+      courseId: 'COURSE-103',
+      courseTitle: 'Node.js Fundamentals',
+      issueDate: '2023-06-01T00:00:00Z',
+      isVerified: true
+    }
+  ]);
 
-  useEffect(() => {
-    fetch('/api/admin/certificates')
-      .then(res => res.json())
-      .then(data => setCertificates(data.certificates || []));
-  }, []);
+  const [searchTerm, setSearchTerm] = useState('');
 
   const filteredCerts = certificates.filter(cert =>
     cert.userName.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -28,17 +52,13 @@ const AdminCertificates = () => {
   );
 
   const handleVerify = (certificateId) => {
-    fetch(`/api/admin/certificates/verify/${certificateId}`, {
-      method: 'PATCH'
-    })
-    .then(res => res.json())
-    .then(data => {
-      if (data.success) {
-        setCertificates(certs => certs.map(c => 
-          c.certificateId === certificateId ? { ...c, isVerified: true } : c
-        ));
-      }
-    });
+    setCertificates(certs => certs.map(c => 
+      c.certificateId === certificateId ? { ...c, isVerified: true } : c
+    ));
+  };
+
+  const handleDelete = (certificateId) => {
+    setCertificates(certs => certs.filter(c => c.certificateId !== certificateId));
   };
 
   return (
@@ -103,7 +123,11 @@ const AdminCertificates = () => {
                   <Button variant="ghost" size="sm" className="mr-2">
                     <Download className="h-4 w-4" />
                   </Button>
-                  <Button variant="ghost" size="sm">
+                  <Button 
+                    variant="ghost" 
+                    size="sm"
+                    onClick={() => handleDelete(cert.certificateId)}
+                  >
                     <X className="h-4 w-4 text-red-500" />
                   </Button>
                 </TableCell>

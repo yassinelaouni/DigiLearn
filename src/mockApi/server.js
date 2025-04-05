@@ -476,7 +476,7 @@ createServer({
         })),
         learningOutcomes: course.learningOutcomes || []
       };
-
+ 
       return {
         success: true,
         course: courseData,

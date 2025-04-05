@@ -18,28 +18,6 @@ const navItems = [
     label: "Courses",
     href: "/courses",
     icon: Book,
-    children: [
-      {
-        label: "Web Development",
-        href: "/courses/web-development",
-        description: "Learn modern web technologies and frameworks",
-      },
-      {
-        label: "Digital Marketing",
-        href: "/courses/digital-marketing",
-        description: "Master SEO, social media, and online advertising",
-      },
-      {
-        label: "Data Science",
-        href: "/courses/data-science",
-        description: "Analyze data and build predictive models",
-      },
-      {
-        label: "UX/UI Design",
-        href: "/courses/ux-ui-design",
-        description: "Create beautiful and user-friendly interfaces",
-      },
-    ],
   },
   {
     label: "Certificates",

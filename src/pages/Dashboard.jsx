@@ -25,13 +25,13 @@ const UserDashboard = () => {
                 title: "Windows Basics",
                 progress: 3,
                 total: 16,
-                thumbnail: "/windows-thumbnail.jpg"
+                thumbnail: "https://images.unsplash.com/photo-1547658719-da2b51169166?auto=format&fit=crop&w=800&q=80"
             },
             {
                 title: "Word",
                 progress: 6,
                 total: 36,
-                thumbnail: "/word-thumbnail.jpg"
+                thumbnail: "https://images.unsplash.com/photo-1547658719-da2b51169166?auto=format&fit=crop&w=800&q=80"
             }
         ]
     });
@@ -90,9 +90,6 @@ const UserDashboard = () => {
                 <div className="mb-8">
                     <div className="flex justify-between items-center mb-4">
                         <h2 className="text-xl font-bold">Continue learning</h2>
-                        <Link to="/courses" className="text-sm text-blue-600 hover:underline">
-                            View all
-                        </Link>
                     </div>
 
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -133,21 +130,6 @@ const UserDashboard = () => {
                                 </div>
                             </div>
                         ))}
-                    </div>
-                </div>
-
-                {/* Quick Actions */}
-                <div className="bg-white rounded-lg border p-6 shadow-sm">
-                    <h2 className="text-xl font-bold mb-4">Quick actions</h2>
-                    <div className="grid grid-cols-2 gap-4">
-                        <Button variant="outline" className="h-24 flex flex-col items-center justify-center gap-2">
-                            <Play className="h-6 w-6" />
-                            <span>Resume last lesson</span>
-                        </Button>
-                        <Button variant="outline" className="h-24 flex flex-col items-center justify-center gap-2">
-                            <FileText className="h-6 w-6" />
-                            <span>Take a quiz</span>
-                        </Button>
                     </div>
                 </div>
             </div>
