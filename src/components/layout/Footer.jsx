@@ -4,9 +4,9 @@ const Footer = () => {
   return (
     <footer className="bg-white border-t">
       <div className="container py-12 md:py-16">
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
           {/* Logo & Info */}
-          <div className="space-y-4">
+          <div className="space-y-4 pr-20">
             <Link to="/" className="flex items-center gap-2">
               <img width={165} src='/logo.png' alt="DigiLearn Logo" />
             </Link>
@@ -75,21 +75,10 @@ const Footer = () => {
           </div>
         </div>
 
-        <div className="mt-12 pt-6 border-t flex flex-col md:flex-row justify-between items-center gap-4">
+        <div className="mt-12 pt-6 border-t flex flex-col justify-between items-center gap-4">
           <p className="text-sm text-muted-foreground">
             © {new Date().getFullYear()} DigiLearn. All rights reserved.
           </p>
-          <div className="flex items-center gap-4 text-sm text-muted-foreground">
-            <Link to="/privacy" className="hover:text-foreground underline-anim inline-block pb-1">
-              Privacy Policy
-            </Link>
-            <Link to="/terms" className="hover:text-foreground underline-anim inline-block pb-1">
-              Terms of Service
-            </Link>
-            <Link to="/cookies" className="hover:text-foreground underline-anim inline-block pb-1">
-              Cookie Policy
-            </Link>
-          </div>
         </div>
       </div>
     </footer>
