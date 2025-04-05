@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import { Menu, X, LogIn, Search, ChevronDown, Book, Laptop, Video, LogOut, User, Settings } from 'lucide-react';
+import { Menu, X, LogIn, Search, ChevronDown, Book, Laptop, Video, LogOut, User, Settings,Award } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 import { useNavigate } from 'react-router-dom';
@@ -44,12 +44,18 @@ const navItems = [
   {
     label: "Certificates",
     href: "/certificates",
-    icon: Laptop,
+    icon: Award, // Changed from Laptop to Award for better semantics
+  },
+  {
+    label: "Dashboard",
+    href: "/dashboard",
+    icon: User, // Using User icon for dashboard
   },
   {
     label: "About",
     href: "/about",
   },
+  
 ];
 
 const Header = () => {
@@ -262,14 +268,6 @@ const Header = () => {
                     >
                       <User className="h-4 w-4" />
                       Profile
-                    </Link>
-                    <Link
-                      to="/settings"
-                      className="flex items-center gap-2 px-3 py-2 text-sm hover:bg-muted transition-colors rounded-lg"
-                      onClick={() => setOpenDropdown(null)}
-                    >
-                      <Settings className="h-4 w-4" />
-                      Settings
                     </Link>
                   </div>
                   <div className="p-1 border-t">

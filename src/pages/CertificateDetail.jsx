@@ -1,15 +1,12 @@
-import { CheckCircle2, Share2, Download, ChevronLeft } from "lucide-react";
-import { Button } from "@/components/ui/button";
-import { Link, useParams } from "react-router-dom";
+import { Download, ChevronLeft } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { Link, useParams } from 'react-router-dom';
 import Layout from "@/components/layout/Layout";
 import { motion } from "framer-motion";
 import { useRef } from 'react';
 import html2canvas from "html2canvas";
 import jsPDF from "jspdf";
-import { useSelector } from "react-redux";
 import { useToast } from "@/hooks/use-toast";
-import selectAuthUser from "@/features/auth/selectors/user";
-import { useLocation } from 'react-router-dom';
 
 // Import your certificate assets
 import certificateBg from '/bg.png';
@@ -18,35 +15,18 @@ import companyLogo from '/logoCertificate.png';
 import adminSignature from '/signature.png';
 import DigilearnAcademy from '/DIGILEARNAcademy.png';
 
-const CertificationResults = () => {
-    const { slug } = useParams();
-    const { state } = useLocation();
+const CertificateDetail = () => {
+    const { id } = useParams();
     const certificateRef = useRef();
     const { toast } = useToast();
-    const currentUser = useSelector(selectAuthUser);
 
-
-
-    // Process user data with fallbacks
-    const stateData = state || {};
-    const {
-        passed = true,
-        score = 18,
-        totalQuestions = 20,
-        userData: stateUserData
-    } = stateData;
-
-    // Calculate passing score (85% of total questions)
-    const passingScore = Math.ceil(totalQuestions * 0.85);
-
-    const userData = stateUserData || {
-        name: `${currentUser?.firstName || ''} ${currentUser?.lastName || ''}`.trim() || "Student Name",
-        skill: "Marketing with Canva",
-        date: new Date().toLocaleDateString('en-US', {
-            day: 'numeric',
-            month: 'short',
-            year: 'numeric'
-        }),
+    // Certificate data - in a real app, you would fetch this based on the ID
+    const certificate = {
+        id: id,
+        name: 'Yassine EL AOUNI',
+        skill: 'Marketing with Canva',
+        date: 'April 4, 2025',
+        score: '18/20 (90%)',
         issuer: "DIGILEARN Academy",
         title: "Course Instructor"
     };
@@ -67,7 +47,7 @@ const CertificationResults = () => {
             const imgHeight = (canvas.height * imgWidth) / canvas.width;
 
             pdf.addImage(imgData, 'PNG', 0, 0, imgWidth, imgHeight);
-            pdf.save(`${userData.name.replace(/\s+/g, '_')}_certificate.pdf`);
+            pdf.save(`${certificate.name.replace(/\s+/g, '_')}_certificate.pdf`);
 
             toast({
                 title: "Certificate downloaded!",
@@ -84,43 +64,15 @@ const CertificationResults = () => {
         }
     };
 
-    if (!passed) {
-        return (
-            <Layout>
-                <div className="container py-8 md:py-12">
-                    <div className="max-w-3xl mx-auto text-center">
-                        <h1 className="text-3xl font-bold mb-4">Test Results</h1>
-                        <p className="text-xl mb-6">
-                        Your score: {score}/{totalQuestions} (minimum passing score: {passingScore} - 85%)</p>
-                        <Button asChild>
-                            <Link to={`/courses/${slug}/certification`}>
-                                Try Again
-                            </Link>
-                        </Button>
-                        <div className="mt-12">
-                            <Link
-                                to={`/courses/${slug}`}
-                                className="inline-flex items-center text-sm text-muted-foreground hover:text-foreground"
-                            >
-                                <ChevronLeft className="h-4 w-4 mr-1" />
-                                Back to Course
-                            </Link>
-                        </div>
-                    </div>
-                </div>
-            </Layout>
-        );
-    }
-
     return (
         <Layout>
             <div className="container py-4 md:py-8">
                 <Link
-                    to={`/courses/${slug}`}
+                    to="/certificates"
                     className="inline-flex items-center text-sm text-muted-foreground hover:text-foreground mb-4"
                 >
                     <ChevronLeft className="h-4 w-4 mr-1" />
-                    Back to Course
+                    Back to Certificates
                 </Link>
 
                 <div className="max-w-5xl mx-auto">
@@ -129,10 +81,9 @@ const CertificationResults = () => {
                         animate={{ opacity: 1, y: 0 }}
                         className="text-center mb-6"
                     >
-                        <CheckCircle2 className="h-12 w-12 mx-auto text-green-500 mb-3" />
-                        <h1 className="text-2xl md:text-3xl font-bold mb-2">Congratulations!</h1>
+                        <h1 className="text-2xl md:text-3xl font-bold mb-2">Your Certificate</h1>
                         <p className="text-lg md:text-xl text-muted-foreground mb-4">
-                            You passed with a score of {score}/{totalQuestions}
+                            Earned on {certificate.date} with score {certificate.score}
                         </p>
                     </motion.div>
 
@@ -184,7 +135,7 @@ const CertificationResults = () => {
                                     </div>
                                     <div className="relative flex justify-center">
                                         <h3 className="text-xl sm:text-3xl md:text-4xl lg:text-5xl font-bold uppercase text-gray-800 px-4 sm:px-6 md:px-8 tracking-wider">
-                                            {userData.name}
+                                            {certificate.name}
                                         </h3>
                                     </div>
                                 </div>
@@ -194,11 +145,11 @@ const CertificationResults = () => {
                                 </p>
 
                                 <h4 className="text-xl sm:text-2xl md:text-3xl font-bold uppercase text-gray-800 mb-4 md:mb-6">
-                                    {userData.skill}
+                                    {certificate.skill}
                                 </h4>
 
                                 <p className="text-sm sm:text-base md:text-xl font-bold text-gray-800">
-                                    Awarded on {userData.date}
+                                    Awarded on {certificate.date}
                                 </p>
                             </div>
 
@@ -210,8 +161,8 @@ const CertificationResults = () => {
                                         alt="Signature"
                                         className="h-10 md:h-12 mb-1 md:mb-2"
                                     />
-                                    <p className="text-xs sm:text-sm md:text-base font-bold text-gray-800">{userData.issuer}</p>
-                                    <p className="text-xs sm:text-sm text-gray-600">{userData.title}</p>
+                                    <p className="text-xs sm:text-sm md:text-base font-bold text-gray-800">{certificate.issuer}</p>
+                                    <p className="text-xs sm:text-sm text-gray-600">{certificate.title}</p>
                                 </div>
 
                                 <div className="flex flex-col justify-center items-center sm:items-end">
@@ -225,27 +176,19 @@ const CertificationResults = () => {
                         </div>
                     </motion.div>
 
-                    {/* Action Buttons - Stacked on mobile */}
+                    {/* Download Button */}
                     <motion.div
-                        className="flex flex-col sm:flex-row gap-3 justify-center px-4 sm:px-0"
+                        className="flex justify-center"
                         initial={{ opacity: 0 }}
                         animate={{ opacity: 1 }}
                         transition={{ delay: 0.2 }}
                     >
                         <Button
-                            variant="outline"
                             size="lg"
-                            className="gap-2 w-full sm:w-auto"
-                        >
-                            <Share2 className="h-4 w-4 md:h-5 md:w-5" />
-                            Share
-                        </Button>
-                        <Button
-                            size="lg"
-                            className="gap-2 w-full sm:w-auto bg-gradient-to-r from-purple-600 to-blue-500 hover:opacity-90"
+                            className="gap-2 bg-gradient-to-r from-purple-600 to-blue-500 hover:opacity-90"
                             onClick={handleDownload}
                         >
-                            <Download className="h-4 w-4 md:h-5 md:w-5" />
+                            <Download className="h-5 w-5" />
                             Download PDF
                         </Button>
                     </motion.div>
@@ -255,4 +198,4 @@ const CertificationResults = () => {
     );
 };
 
-export default CertificationResults;
+export default CertificateDetail;

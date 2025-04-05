@@ -35,6 +35,18 @@ const quizQuestions = [
         correctAnswer: 1,
         feedback: "Not quite. We want designing to feel seamless, no matter where or how you work. Have another try."
     },
+    {
+        id: 3,
+        question: "How can you transfer designs between devices in Canva?",
+        options: [
+            "Transfer your files manually using a USB connection.",
+            "Designs sync automatically across devices when logged in.",
+            "Email the designs to yourself.",
+            "Canva doesn't support cross-device work."
+        ],
+        correctAnswer: 1,
+        feedback: "Not quite. We want designing to feel seamless, no matter where or how you work. Have another try."
+    },
     // Add more questions...
 ];
 
