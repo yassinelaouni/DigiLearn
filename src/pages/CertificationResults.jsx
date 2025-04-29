@@ -17,6 +17,7 @@ import universityLogo from '/fste.png';
 import companyLogo from '/logoCertificate.png';
 import adminSignature from '/signature.png';
 import DigilearnAcademy from '/DIGILEARNAcademy.png';
+import { bottom } from "@popperjs/core";
 
 const CertificationResults = () => {
     const { slug } = useParams();
@@ -64,7 +65,7 @@ const CertificationResults = () => {
             const pdf = new jsPDF('l', 'mm', 'a4');
             const imgData = canvas.toDataURL('image/png');
             const imgWidth = 297;
-            const imgHeight = (canvas.height * imgWidth) / canvas.width;
+            const imgHeight = (canvas.height * imgWidth) / canvas.width+6;
 
             pdf.addImage(imgData, 'PNG', 0, 0, imgWidth, imgHeight);
             pdf.save(`${userData.name.replace(/\s+/g, '_')}_certificate.pdf`);
@@ -158,7 +159,7 @@ const CertificationResults = () => {
                                 <img
                                     src={companyLogo}
                                     alt="Company Logo"
-                                    className="h-16 md:h-24"
+                                    className="h-12 md:h-16"
                                 />
                                 <img
                                     src={universityLogo}
@@ -208,7 +209,7 @@ const CertificationResults = () => {
                                     <img
                                         src={adminSignature}
                                         alt="Signature"
-                                        className="h-10 md:h-12 mb-1 md:mb-2"
+                                       width={90} 
                                     />
                                     <p className="text-xs sm:text-sm md:text-base font-bold text-gray-800">{userData.issuer}</p>
                                     <p className="text-xs sm:text-sm text-gray-600">{userData.title}</p>
@@ -218,7 +219,7 @@ const CertificationResults = () => {
                                     <img
                                         src={DigilearnAcademy}
                                         alt="DIGILEARN Academy"
-                                        className="h-12 md:h-16"
+                                        width={110}
                                     />
                                 </div>
                             </div>

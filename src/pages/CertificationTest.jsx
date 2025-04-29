@@ -1,4 +1,4 @@
-import React, { useState,useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useParams, Link } from "react-router-dom";
 import { Award, ChevronLeft, Clock, CheckCircle2, XCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -10,45 +10,9 @@ import { useDispatch, useSelector } from "react-redux";
 import selectAuthUser from "@/features/auth/selectors/user";
 
 
-const quizQuestions = [
-    {
-        id: 1,
-        question: "When you use a Canva template, what can you edit?",
-        options: [
-            "Everything for the first five minutes.",
-            "Everything.",
-            "It depends what subscription plan you are on.",
-            "Each template has its own specific rules for editing."
-        ],
-        correctAnswer: 1,
-        feedback: "That's right. Canva templates are just the beginning. They help you start inspired, then it's over to you to adjust and edit. No more blank page, just a quicker way to jump into your next idea."
-    },
-    {
-        id: 2,
-        question: "How can you transfer designs between devices in Canva?",
-        options: [
-            "Transfer your files manually using a USB connection.",
-            "Designs sync automatically across devices when logged in.",
-            "Email the designs to yourself.",
-            "Canva doesn't support cross-device work."
-        ],
-        correctAnswer: 1,
-        feedback: "Not quite. We want designing to feel seamless, no matter where or how you work. Have another try."
-    },
-    {
-        id: 3,
-        question: "How can you transfer designs between devices in Canva?",
-        options: [
-            "Transfer your files manually using a USB connection.",
-            "Designs sync automatically across devices when logged in.",
-            "Email the designs to yourself.",
-            "Canva doesn't support cross-device work."
-        ],
-        correctAnswer: 1,
-        feedback: "Not quite. We want designing to feel seamless, no matter where or how you work. Have another try."
-    },
-    // Add more questions...
-];
+
+
+
 
 const CertificationTest = ({ courseTitle }) => {
     const { slug } = useParams();
@@ -58,29 +22,106 @@ const CertificationTest = ({ courseTitle }) => {
     const [score, setScore] = useState(0);
     const [quizCompleted, setQuizCompleted] = useState(false);
     const [testStarted, setTestStarted] = useState(false);
+    const [quizQuestions, setQuizQuestions] = useState([]);
+    const [isLoading, setIsLoading] = useState(true);
     const navigate = useNavigate();
     const [course, setCourse] = useState(null);
     const dispatch = useDispatch();
     const currentUser = useSelector(selectAuthUser);
+    const handleQuizCompletion = async () => { // Mark the function as async
+        const passed = score >= Math.floor(quizQuestions.length * 0.7);
+
+        // 🆕 Save certificate if passed
+        if (passed && currentUser && course) {
+            await fetch('/api/certificates', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    userId: currentUser.id,
+                    courseId: course.id,
+                    date: new Date().toISOString(),
+                    issuer: "DIGILEARN Academy"
+                })
+            });
+        }
+
+        // 🔁 Navigate to results
+        navigate(`/courses/${slug}/certification/results`, {
+            state: {
+                passed,
+                score,
+                totalQuestions: quizQuestions.length,
+                userData: {
+                    name: currentUser?.firstName || "Yassine EL AOUNI",
+                    skill: course?.title || "Marketing with Canva",
+                    date: new Date().toLocaleDateString(),
+                    issuer: "DIGILEARN Academy",
+                    title: "Course Instructor"
+                }
+            },
+            replace: true
+        });
+
+        return (
+            <Layout>
+                <div className="flex justify-center items-center h-64">
+                    <p>Generating your certificate...</p>
+                </div>
+            </Layout>
+        );
+};
 
     useEffect(() => {
-        const fetchCourse = async () => {
+        const fetchQuizData = async () => {
             try {
                 const response = await fetch(`/api/courses/${slug}`);
-                const data = await response.json();
-                if (data.success) {
-                    setCourse(data.course);
+                const courseData = await response.json();
+
+                if (courseData.success) {
+                    setCourse(courseData.course);
+
+                    const quizResponse = await fetch(`/api/quiz?courseId=${courseData.course.id}`);
+                    const quizData = await quizResponse.json();
+
+                    if (quizData.success && quizData.questions?.length > 0) {
+                        setQuizQuestions(quizData.questions); // ✅ correct
+                    }
+
                 }
             } catch (error) {
-                console.error("Failed to fetch course:", error);
+                console.error("Failed to fetch data:", error);
+            } finally {
+                setIsLoading(false);
             }
         };
 
-        fetchCourse();
+        fetchQuizData();
     }, [slug]);
 
+
+    if (isLoading) {
+        return (
+            <Layout>
+                <div className="container py-8 text-center">Loading quiz data...</div>
+            </Layout>
+        );
+    }
+
+
     if (!course) {
-        return <div>Loading course...</div>;
+        return (
+            <Layout>
+                <div className="container py-8 text-center">Course not found</div>
+            </Layout>
+        );
+    }
+
+    if (quizQuestions.length === 0) {
+        return (
+            <Layout>
+                <div className="container py-8 text-center">No quiz questions available</div>
+            </Layout>
+        );
     }
 
 
@@ -171,30 +212,9 @@ const CertificationTest = ({ courseTitle }) => {
     }
 
     if (quizCompleted) {
-        const passed = score >= Math.floor(quizQuestions.length * 0.7);
-
-        navigate(`/courses/${slug}/certification/results`, {
-            state: {
-                passed,
-                score,
-                totalQuestions: quizQuestions.length,
-                userData: {
-                    name: currentUser?.firstName || "Yassine EL AOUNI" , //" " + currentUser?.lastName || "EL AOUNI",
-                    skill: course?.title || "Marketing with Canva", // Fallback if course not loaded
-                    date: new Date().toLocaleDateString(),
-                    issuer: "DIGILEARN Academy",
-                    title: "Course Instructor"
-                }
-            },
-            replace: true
-        });
-
-        return (
-            <div className="flex justify-center items-center h-64">
-                <p>Generating your certificate...</p>
-            </div>
-        );
+       handleQuizCompletion(); // Call the function to handle quiz completion
     }
+
 
 
     return (

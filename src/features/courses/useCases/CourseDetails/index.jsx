@@ -1,0 +1,288 @@
+import { useState } from 'react';
+import { useParams } from "react-router-dom";
+import Layout from "@/components/layout/Layout";
+import {
+  ArrowLeft,
+  Play,
+  MessageSquareWarning,
+  Clock,
+  BarChart,
+  Check,
+  ChevronDown,
+  ChevronUp,
+  Award
+} from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Link } from "react-router-dom";
+import courseData from "./courseData";
+import { Modal, IconButton } from '@mui/material';
+import CloseIcon from '@mui/icons-material/Close';
+
+const CourseDetails = () => {
+  const { slug } = useParams();
+  const [currentVideo, setCurrentVideo] = useState(null);
+  const [isVideoOpen, setIsVideoOpen] = useState(false);
+  const [expandedLessons, setExpandedLessons] = useState({});
+
+  const course = Object.values(courseData).find(
+    c => c.slug.toLowerCase() === slug?.toLowerCase()
+  );
+
+  const toggleLesson = (lessonId) => {
+    setExpandedLessons(prev => ({
+      ...prev,
+      [lessonId]: !prev[lessonId]
+    }));
+  };
+
+  const handleVideoOpen = (videoUrl) => {
+    setCurrentVideo(videoUrl);
+    setIsVideoOpen(true);
+  };
+
+  const handleVideoClose = () => {
+    setIsVideoOpen(false);
+    setCurrentVideo(null);
+  };
+
+  if (!course) {
+    return (
+      <Layout>
+        <div className="container py-20 text-center">
+          <div className="max-w-md mx-auto">
+            <MessageSquareWarning className="h-12 w-12 mx-auto text-gray-400 mb-4" />
+            <h1 className="text-2xl font-bold mb-2">Course not found</h1>
+            <Button asChild>
+              <Link to="/courses">Back to Courses</Link>
+            </Button>
+          </div>
+        </div>
+      </Layout>
+    );
+  }
+
+  return (
+    <Layout>
+      <section className="bg-gradient-to-b from-gray-50 to-white">
+        <div className="container py-8 md:py-12">
+          <Link to="/courses" className="inline-flex items-center text-sm text-muted-foreground hover:text-foreground mb-4">
+            <ArrowLeft className="h-4 w-4 mr-1" />
+            Back to Courses
+          </Link>
+
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+            <div className="lg:col-span-2">
+              <div className="flex items-center mb-3">
+                <span className="bg-blue-100 text-blue-700 px-3 py-1 rounded-full text-xs font-medium">
+                  {course.category}
+                </span>
+              </div>
+
+              <h1 className="text-3xl md:text-4xl font-bold font-display mb-4">
+                {course.title}
+              </h1>
+
+              <p className="text-lg text-muted-foreground mb-6">
+                {course.description}
+              </p>
+
+              <div className="flex items-center gap-4 mb-6">
+                <div className="flex items-center">
+                  <span className="text-yellow-400 mr-1">★</span>
+                  <span className="font-medium">{course.rating}</span>
+                </div>
+
+                <div className="flex items-center gap-1 text-muted-foreground">
+                  <Clock className="h-4 w-4" />
+                  <span>{course.duration}</span>
+                </div>
+
+                <div className="flex items-center gap-1 text-muted-foreground">
+                  <BarChart className="h-4 w-4" />
+                  <span>{course.level}</span>
+                </div>
+              </div>
+
+              <Button size="lg" className="rounded-full bg-gradient-to-r from-purple-600 to-blue-500 hover:opacity-90 transition-opacity">
+                Enroll Now
+              </Button>
+            </div>
+
+            <div className="rounded-xl overflow-hidden h-80 lg:h-auto shadow-md">
+              <img
+                src={course.thumbnail}
+                alt={course.title}
+                className="w-full h-full object-cover"
+                loading="lazy"
+              />
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section className="py-10 md:py-16">
+        <div className="container">
+          {/* What You'll Learn Section */}
+          <div className="bg-white rounded-xl border border-gray-100 shadow-sm p-6 mb-8">
+            <h2 className="text-xl font-bold mb-6">What You'll Learn</h2>
+            <div className="space-y-3">
+              {course.learningOutcomes?.map((outcome, index) => (
+                <div key={index} className="flex items-start gap-2">
+                  <Check className="h-5 w-5 text-green-600 mt-0.5 flex-shrink-0" />
+                  <span>{outcome}</span>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          {/* Course Content Section */}
+          <div className="bg-white rounded-xl border border-gray-100 shadow-sm overflow-hidden">
+            <div className="p-6 border-b">
+              <h2 className="text-xl font-bold">Course Content</h2>
+            </div>
+
+            {course.modules.map((module) => (
+              <div key={module.id} className="border-b last:border-b-0">
+                <div className="p-6">
+                  <h3 className="font-medium text-lg mb-4">{module.title}</h3>
+                  <div className="space-y-3">
+                    {module.lessons.map((lesson) => (
+                      <div key={lesson.id} className="rounded-lg overflow-hidden border border-gray-200">
+                        {/* Lesson Header */}
+                        <div
+                          className="flex items-center justify-between p-4 bg-gray-50 hover:bg-gray-100 cursor-pointer transition-colors"
+                          onClick={() => toggleLesson(lesson.id)}
+                        >
+                          <div className="flex items-center gap-3">
+                            <Play className="h-4 w-4 text-purple-600 flex-shrink-0" />
+                            <div>
+                              <h4 className="font-medium">{lesson.title}</h4>
+                              {lesson.duration && (
+                                <span className="text-xs text-muted-foreground">{lesson.duration}</span>
+                              )}
+                            </div>
+                          </div>
+                          {expandedLessons[lesson.id] ? (
+                            <ChevronUp className="h-4 w-4 text-muted-foreground" />
+                          ) : (
+                            <ChevronDown className="h-4 w-4 text-muted-foreground" />
+                          )}
+                        </div>
+
+                        {/* Lesson Content (Collapsible) */}
+                        {expandedLessons[lesson.id] && (
+                          <div className="p-4 bg-white">
+                            {lesson.image && (
+                              <div className="mb-4 rounded-md overflow-hidden">
+                                <img
+                                  src={lesson.image}
+                                  alt={lesson.title}
+                                  className="w-full h-auto object-cover"
+                                />
+                              </div>
+                            )}
+                            <div className="prose prose-sm max-w-none">
+                              {lesson.description && (
+                                <p className="text-muted-foreground mb-4">{lesson.description}</p>
+                              )}
+                              <Button
+                                variant="outline"
+                                className="mt-2"
+                                onClick={() => handleVideoOpen(lesson.videoUrl)}
+                              >
+                                <Play className="h-4 w-4 mr-2" />
+                                Watch Video
+                              </Button>
+                            </div>
+                          </div>
+                        )}
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      <section className="py-10 md:py-16 bg-gray-50">
+        <div className="container">
+          <div className="bg-white rounded-xl border border-gray-100 shadow-sm overflow-hidden">
+            <div className="p-6 border-b">
+              <h2 className="text-xl font-bold flex items-center gap-2">
+                <Award className="h-5 w-5 text-yellow-500" />
+                Certification Test
+              </h2>
+            </div>
+            <div className="p-6 text-center">
+              <h3 className="text-2xl font-bold mb-2">Make it official</h3>
+              <p className="text-muted-foreground mb-6 max-w-2xl mx-auto">
+                Take this 20-question test and earn a certification - perfect for your CV and LinkedIn.
+              </p>
+              <Button
+                asChild
+                size="lg"
+                className="bg-gradient-to-r from-purple-600 to-blue-500"
+              >
+                <Link to={`/courses/${slug}/certification`}>
+                  Earn a certificate
+                </Link>
+              </Button>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Video Modal */}
+      <Modal
+        open={isVideoOpen}
+        onClose={handleVideoClose}
+        style={{
+          display: 'flex',
+          justifyContent: 'center',
+          alignItems: 'center',
+        }}
+      >
+        <div
+          style={{
+            position: 'relative',
+            width: '80%',
+            height: '80%',
+            backgroundColor: '#000',
+            borderRadius: '8px',
+            overflow: 'hidden'
+          }}
+        >
+          <IconButton
+            onClick={handleVideoClose}
+            style={{
+              position: 'absolute',
+              top: 10,
+              right: 10,
+              zIndex: 1,
+              backgroundColor: 'rgba(0,0,0,0.5)',
+              color: 'white',
+            }}
+          >
+            <CloseIcon />
+          </IconButton>
+
+          {currentVideo && (
+            <iframe
+              width="100%"
+              height="100%"
+              src={currentVideo.includes('embed') ? currentVideo : `https://www.youtube.com/embed/${currentVideo.split('v=')[1]}`}
+              frameBorder="0"
+              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+              allowFullScreen
+              title="YouTube video player"
+            />
+          )}
+        </div>
+      </Modal>
+    </Layout>
+  );
+};
+
+export default CourseDetails;
