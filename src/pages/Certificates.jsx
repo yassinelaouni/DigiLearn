@@ -146,7 +146,7 @@ const Certificates = () => {
                                             <p className="text-sm text-muted-foreground">
                                                 Certificate ID: {cert.certificateId}
                                             </p>
-                                        </div>
+                                        </div> 
                                         <div className="p-4 bg-gray-50 h-18"> {/* Fixed button container height */}
                                             <Button className="w-full" asChild>
                                                 <Link

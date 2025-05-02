@@ -27,7 +27,6 @@ const AppRoutes = () => {
   // List of paths where ChatbotButton should be hidden
   const hiddenPaths = [
     '/adminDashboard',
-    '/adminDashboard/app',
     '/adminDashboard/users',
     '/adminDashboard/courses',
     '/adminDashboard/certificates',
@@ -69,8 +68,7 @@ const AppRoutes = () => {
 
         {/* Admin Dashboard Routes */}
         <Route path="/adminDashboard" element={<Layout />}>
-          <Route index element={<Navigate to="app" replace />} />
-          <Route path="app" element={<features.admin.useCases.Dashboard />} />
+          <Route index element={<Navigate to="users" replace />} />
           <Route path="users" element={<features.admin.useCases.UserManagement />} />
           <Route path="courses" element={<features.admin.useCases.CourseManagement />} />
           <Route path="certificates" element={<features.admin.useCases.CertificateManagement />} />

@@ -163,7 +163,7 @@ const TestimonialsQuiz = () => {
   };
 
   return (
-    <section className="py-16 md:py-24">
+    <section className="py-16 md:py-24 md:pt-0">
       <div className="container">
         <div className="grid items-center px-4">
           {/* Testimonials Section */}
@@ -174,73 +174,6 @@ const TestimonialsQuiz = () => {
             transition={{ duration: 0.5 }}
             className="space-y-8 w-full max-w-4xl mx-auto"
           >
-            <div className="text-center mb-12">
-              <h2 className="text-3xl md:text-4xl font-bold font-display mb-4">
-                What Our Students Say
-              </h2>
-              <p className="text-muted-foreground text-lg max-w-3xl mx-auto">
-                Hear from students who have transformed their digital skills with our courses
-              </p>
-            </div>
-
-            <div className="relative bg-white rounded-xl shadow-md border border-gray-100 p-6 md:p-8 mx-auto">
-              {testimonials.map((testimonial, index) => (
-                <div
-                  key={testimonial.id}
-                  className={cn(
-                    "transition-opacity duration-500 absolute inset-0 p-6 md:p-8 flex flex-col",
-                    activeTestimonial === index ? "opacity-100 z-10" : "opacity-0 z-0"
-                  )}
-                >
-                  <div className="flex-1">
-                    <div className="flex mb-4">
-                      {[...Array(5)].map((_, i) => (
-                        <Star
-                          key={i}
-                          className={cn(
-                            "h-5 w-5",
-                            i < testimonial.rating ? "text-brand-yellow fill-brand-yellow" : "text-gray-300"
-                          )}
-                        />
-                      ))}
-                    </div>
-                    <p className="text-lg italic mb-6">"{testimonial.content}"</p>
-                  </div>
-                  <div className="flex items-center gap-4">
-                    <img
-                      src={testimonial.avatar}
-                      alt={testimonial.author}
-                      className="w-12 h-12 rounded-full object-cover"
-                    />
-                    <div>
-                      <p className="font-bold">{testimonial.author}</p>
-                      <p className="text-sm text-muted-foreground">{testimonial.role}</p>
-                    </div>
-                  </div>
-                </div>
-              ))}
-
-              <div className="relative h-64"></div> {/* Spacer to maintain height */}
-
-              <div className="absolute bottom-6 right-6 md:bottom-8 md:right-8 flex items-center gap-2">
-                <Button
-                  variant="outline"
-                  size="icon"
-                  className="rounded-full"
-                  onClick={prevTestimonial}
-                >
-                  <ArrowLeft className="h-4 w-4" />
-                </Button>
-                <Button
-                  variant="outline"
-                  size="icon"
-                  className="rounded-full"
-                  onClick={nextTestimonial}
-                >
-                  <ArrowRight className="h-4 w-4" />
-                </Button>
-              </div>
-            </div>
           </motion.div>
         </div>
       </div>

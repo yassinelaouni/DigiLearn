@@ -1,4 +1,7 @@
 const User = require('../models/User');
+const Certificate = require('../models/Certificate');
+const UserProgress = require('../models/UserProgress');
+const Course = require('../models/Course');
 
 // Update user avatar
 exports.updateAvatar = async (req, res) => {
@@ -197,6 +200,113 @@ exports.getAllUsers = async (req, res) => {
       success: false,
       errorMessage: 'Server error',
       errors: err.message,
+    });
+  }
+};
+
+// Get user dashboard
+exports.getUserDashboard = async (req, res) => {
+  try {
+    const user = await User.findById(req.params.userId);
+    if (!user) {
+      return res.status(404).json({
+        success: false,
+        errorMessage: "User not found"
+      });
+    }
+
+    const [certificates, userProgress, allCourses] = await Promise.all([
+      Certificate.find({ userId: req.params.userId }),
+      UserProgress.find({ userId: req.params.userId, completed: true }),
+      Course.find().populate({
+        path: 'modules',
+        populate: {
+          path: 'lessons'
+        }
+      })
+    ]);
+
+    const recentCourses = allCourses.slice(0, 2).map(course => {
+      const courseLessons = course.modules.flatMap(module => module.lessons);
+      const completedLessons = courseLessons.filter(lesson => 
+        userProgress.some(progress => progress.lessonId.equals(lesson._id))
+      );
+
+      return {
+        id: course._id,
+        title: course.title,
+        slug: course.slug,
+        thumbnail: course.thumbnail,
+        progress: completedLessons.length,
+        total: courseLessons.length
+      };
+    });
+
+    res.json({
+      success: true,
+      data: {
+        name: `${user.firstName} ${user.lastName}`,
+        stats: {
+          tutorialsCompleted: certificates.length,
+          quizzesTaken: 0, // You'll need a Quiz model for this
+          lessonsCompleted: userProgress.length
+        },
+        recentCourses
+      }
+    });
+  } catch (err) {
+    res.status(500).json({
+      success: false,
+      errorMessage: "Server error"
+    });
+  }
+};
+
+// Get user progress
+exports.getUserProgress = async (req, res) => {
+  try {
+    const progress = await UserProgress.find({ userId: req.query.userId });
+
+    res.json({
+      success: true,
+      progress: progress.map(p => ({
+        lessonId: p.lessonId,
+        completed: p.completed
+      }))
+    });
+  } catch (err) {
+    res.status(500).json({
+      success: false,
+      errorMessage: "Server error"
+    });
+  }
+};
+
+// Mark lesson complete
+exports.markLessonComplete = async (req, res) => {
+  try {
+    const { userId, lessonId } = req.body;
+
+    let progress = await UserProgress.findOne({ userId, lessonId });
+
+    if (!progress) {
+      progress = await UserProgress.create({ userId, lessonId, completed: true });
+    } else {
+      progress.completed = true;
+      await progress.save();
+    }
+
+    res.json({
+      success: true,
+      progress: {
+        lessonId: progress.lessonId,
+        completed: progress.completed
+      }
+    });
+  } catch (err) {
+    res.status(500).json({
+      success: false,
+      errorMessage: "Server error"
     });
   }
 };

@@ -18,6 +18,10 @@ const ModuleSchema = new mongoose.Schema({
     type: Date,
     default: Date.now,
   },
+  lessons: [{
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'Lesson'
+  }],
 });
 
 module.exports = mongoose.model('Module', ModuleSchema);

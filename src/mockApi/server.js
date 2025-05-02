@@ -1,40 +1,51 @@
 import { createServer, Model, belongsTo, hasMany } from 'miragejs';
+import { v4 as uuidv4 } from 'uuid';
+
 
 createServer({
   models: {
     user: Model.extend({
       certificates: hasMany(),
-      progresses: hasMany('userProgress'),
-      quizzes: hasMany()
-    }),
-    course: Model.extend({
-      modules: hasMany(),
-      certificates: hasMany()
-    }),
-    module: Model.extend({
-      course: belongsTo(),
-      lessons: hasMany()
-    }),
-    lesson: Model.extend({
-      module: belongsTo(),
       progresses: hasMany('userProgress')
     }),
-    userProgress: Model.extend({
-      user: belongsTo(),
-      lesson: belongsTo(),
-      completed: Boolean
-    }),
-    quiz: Model.extend({
-      course: belongsTo()
-    }),
-    certificate: Model.extend({
-      user: belongsTo(),
-      course: belongsTo()
-    }),
-    admin: Model,
+
     course: Model.extend({
-      certificates: hasMany(),
+      lessons: hasMany('lesson'),
+      quiz: belongsTo('quiz'),
+      certificates: hasMany('certificate')
     }),
+
+    module: Model.extend({
+      course: belongsTo('course'),
+      lessons: hasMany('lesson')
+    }),
+
+    lesson: Model.extend({
+      module: belongsTo('module'),
+      course: belongsTo('course'),
+      progresses: hasMany('userProgress')
+    }),
+
+    userProgress: Model.extend({
+      user: belongsTo('user'),
+      lesson: belongsTo('lesson')
+    }),
+
+    quiz: Model.extend({
+      course: belongsTo('course'),
+      questions: hasMany('question')
+    }),
+
+    question: Model.extend({
+      quiz: belongsTo('quiz')
+    }),
+
+    certificate: Model.extend({
+      user: belongsTo('user'),
+      course: belongsTo('course')
+    }),
+
+    admin: Model.extend({})
   },
 
   routes() {
@@ -103,6 +114,17 @@ createServer({
       };
     });
 
+    // In your MirageJS config
+    this.get('/api/admin/dashboard/stats', (schema) => {
+      return {
+        totalUsers: schema.users.all().length,
+        totalCourses: schema.courses.all().length,
+        totalCertificates: schema.certificates.all().length,
+        recentCertificates: schema.certificates.all().models.slice(0, 5),
+        activeUsers: schema.users.all().models.filter(u => u.progresses.length > 0).length
+      };
+    });
+
     // User registration
     this.post('/users/register', (schema, request) => {
       const { email, password, firstName, lastName } = JSON.parse(request.requestBody);
@@ -125,7 +147,8 @@ createServer({
         firstName,
         lastName,
         balance: 0,
-        avatar: null
+        avatar: null,
+        createdAt: new Date().toISOString() // Only adding createdAt
       });
 
       return {
@@ -135,7 +158,8 @@ createServer({
           email: user.email,
           firstName: user.firstName,
           lastName: user.lastName,
-          avatar: user.avatar
+          avatar: user.avatar,
+          createdAt: user.createdAt // Include createdAt in response
         },
         token: 'new_user_token',
         errorCode: "",
@@ -269,24 +293,6 @@ createServer({
           balance: user.balance,
           avatar: user.avatar
         },
-        errorCode: "",
-        errorMessage: "",
-        errors: {}
-      };
-    });
-
-    // Get all users (admin only)
-    this.get('/users/get/all', () => {
-      const users = schema.users.all();
-      return {
-        success: true,
-        users: users.models.map(user => ({
-          id: user.id,
-          email: user.email,
-          firstName: user.firstName,
-          lastName: user.lastName,
-          avatar: user.avatar
-        })),
         errorCode: "",
         errorMessage: "",
         errors: {}
@@ -583,9 +589,34 @@ createServer({
       return schema.certificates.create(attrs);
     });
 
+    this.get('/certificates/:id', (schema, request) => {
+      const certificate = schema.certificates.find(request.params.id);
+
+      if (!certificate) {
+        return {
+          success: false,
+          errorMessage: "Certificate not found"
+        };
+      }
+
+      const user = schema.users.find(certificate.userId);
+      const course = schema.courses.find(certificate.courseId);
+
+      return {
+        success: true,
+        certificate: {
+          ...certificate.attrs,
+          name: `${user.firstName} ${user.lastName}`,
+          courseTitle: course.title,
+          issuer: "DIGILEARN Academy",
+          title: "Course Instructor"
+        }
+      };
+    });
+
     this.get('/user/dashboard/:userId', (schema, request) => {
       const userId = request.params.userId;
-      
+
       // Find user with all relationships
       const user = schema.users.find(userId);
       if (!user) {
@@ -594,30 +625,30 @@ createServer({
           errorMessage: "User not found"
         };
       }
-    
+
       // Get user's progress with lesson relationships
       const userProgress = schema.userProgresses.where({ userId, completed: true }).models;
-    
+
       // Get courses with all relationships
       const allCourses = schema.courses.all().models.map(course => {
         const modules = schema.modules.where({ courseId: course.id }).models.map(module => ({
           ...module.attrs,
           lessons: schema.lessons.where({ moduleId: module.id }).models
         }));
-        
+
         return {
           ...course.attrs,
           modules
         };
       });
-    
+
       // Prepare recent courses
       const recentCourses = allCourses.slice(0, 2).map(course => {
         const courseLessons = course.modules.flatMap(module => module.lessons);
-        const completedLessons = courseLessons.filter(lesson => 
+        const completedLessons = courseLessons.filter(lesson =>
           userProgress.some(progress => progress.lessonId === lesson.id)
         );
-    
+
         return {
           id: course.id,
           title: course.title,
@@ -627,7 +658,7 @@ createServer({
           total: courseLessons.length
         };
       });
-    
+
       return {
         success: true,
         data: {
@@ -656,30 +687,348 @@ createServer({
       };
     });
 
-    // Mark lesson complete
-    this.post('/user/progress', (schema, request) => {
-      const { userId, lessonId } = JSON.parse(request.requestBody);
 
-      // Find or create progress record
-      let progress = schema.userProgresses.findBy({ userId, lessonId });
+    // Get all users
+    this.get('/users/get/all', (schema) => {
+      return {
+        success: true,
+        users: schema.users.all().models.map(user => ({
+          id: user.id,
+          email: user.email,
+          firstName: user.firstName,
+          lastName: user.lastName,
+          avatar: user.avatar,
+          role: user.role || 'student',
+          createdAt: user.createdAt || new Date().toISOString()
+        })),
+        errorCode: "",
+        errorMessage: "",
+        errors: {}
+      };
+    });
 
-      if (!progress) {
-        progress = schema.userProgresses.create({ userId, lessonId, completed: true });
-      } else {
-        progress.update({ completed: true });
+    // Delete user
+    this.delete('/users/delete/:id', (schema, request) => {
+      const id = request.params.id;
+      schema.users.find(id).destroy();
+      return {
+        success: true,
+        errorCode: "",
+        errorMessage: "",
+        errors: {}
+      };
+    });
+
+    // Update user
+    this.patch('/users/update/:id', (schema, request) => {
+      const id = request.params.id;
+      const attrs = JSON.parse(request.requestBody);
+      const user = schema.users.find(id).update(attrs);
+
+      return {
+        success: true,
+        user: {
+          id: user.id,
+          email: user.email,
+          firstName: user.firstName,
+          lastName: user.lastName,
+          avatar: user.avatar,
+          role: user.role,
+          createdAt: user.createdAt
+        },
+        errorCode: "",
+        errorMessage: "",
+        errors: {}
+      };
+    });
+
+    // Courses Endpoints
+    this.get('/courses', (schema) => {
+      const courses = schema.courses.all().models;
+
+      const coursesWithRelations = courses.map(course => {
+        // Get all modules for this course
+        const modules = schema.modules.where({ courseId: course.id }).models.map(module => ({
+          ...module.attrs,
+          lessons: schema.lessons.where({ moduleId: module.id }).models.map(l => l.attrs)
+        }));
+
+        // Get all lessons (both direct and through modules)
+        const moduleLessons = modules.flatMap(module => module.lessons);
+        const directLessons = schema.lessons.where({ courseId: course.id }).models.map(l => l.attrs);
+        const allLessons = [...moduleLessons, ...directLessons];
+
+        // Get quiz with questions
+        const quiz = schema.quizzes.findBy({ courseId: course.id });
+        const quizWithQuestions = quiz ? {
+          ...quiz.attrs,
+          questions: schema.questions.where({ quizId: quiz.id }).models.map(q => q.attrs)
+        } : null;
+        return {
+          ...course.attrs,
+          modules,
+          lessons: allLessons,
+          quiz: quizWithQuestions
+        };
+      });
+
+      return {
+        success: true,
+        courses: coursesWithRelations,
+        errorCode: "",
+        errorMessage: "",
+        errors: {}
+      };
+    });
+
+    this.post('/courses', (schema, request) => {
+      const attrs = JSON.parse(request.requestBody);
+      const course = schema.courses.create(attrs);
+
+      return {
+        success: true,
+        course: {
+          ...course.attrs,
+          lessons: [],
+          quiz: null
+        },
+        errorCode: "",
+        errorMessage: "",
+        errors: {}
+      };
+    });
+
+    this.put('/courses/:id', (schema, request) => {
+      const id = request.params.id;
+      const attrs = JSON.parse(request.requestBody);
+
+      // First find the course
+      const course = schema.courses.find(id);
+
+      // Update the course attributes
+      course.update(attrs);
+
+      // Get updated relationships
+      const lessons = schema.lessons.where({ courseId: id }).models.map(l => l.attrs);
+      const quiz = schema.quizzes.findBy({ courseId: id })?.attrs || null;
+
+      return {
+        success: true,
+        course: {
+          ...course.attrs,
+          lessons,
+          quiz: quiz ? {
+            ...quiz,
+            questions: schema.questions.where({ quizId: quiz.id }).models.map(q => q.attrs)
+          } : null
+        },
+        errorCode: "",
+        errorMessage: "",
+        errors: {}
+      };
+    });
+
+    this.delete('/courses/:id', (schema, request) => {
+      const id = request.params.id;
+
+      // Delete related lessons first
+      schema.lessons.where({ courseId: id }).models.forEach(lesson => {
+        // Delete related progresses
+        schema.userProgresses.where({ lessonId: lesson.id }).models.forEach(progress => progress.destroy());
+        lesson.destroy();
+      });
+
+      // Delete related quiz and questions
+      const quiz = schema.quizzes.findBy({ courseId: id });
+      if (quiz) {
+        schema.questions.where({ quizId: quiz.id }).models.forEach(q => q.destroy());
+        quiz.destroy();
+      }
+
+      // Delete related certificates
+      schema.certificates.where({ courseId: id }).models.forEach(cert => cert.destroy());
+
+      // Finally delete the course
+      schema.courses.find(id).destroy();
+
+      return {
+        success: true,
+        errorCode: "",
+        errorMessage: "",
+        errors: {}
+      };
+    });
+
+    // Lessons Endpoints
+    this.get('/courses/:courseId/lessons', (schema, request) => {
+      const courseId = request.params.courseId;
+      const lessons = schema.lessons.where({ courseId });
+
+      return {
+        success: true,
+        lessons: lessons.models.map(lesson => lesson.attrs),
+        errorCode: "",
+        errorMessage: "",
+        errors: {}
+      };
+    });
+
+    this.post('/lessons', (schema, request) => {
+      const attrs = JSON.parse(request.requestBody);
+      const lesson = schema.lessons.create(attrs);
+
+      return {
+        success: true,
+        lesson: lesson.attrs,
+        errorCode: "",
+        errorMessage: "",
+        errors: {}
+      };
+    });
+
+    this.put('/lessons/:id', (schema, request) => {
+      const id = request.params.id;
+      const attrs = JSON.parse(request.requestBody);
+      const lesson = schema.lessons.find(id).update(attrs);
+
+      return {
+        success: true,
+        lesson: lesson.attrs,
+        errorCode: "",
+        errorMessage: "",
+        errors: {}
+      };
+    });
+
+    this.delete('/lessons/:id', (schema, request) => {
+      const id = request.params.id;
+      const lesson = schema.lessons.find(id);
+
+      // Delete associated progresses first
+      schema.userProgresses.where({ lessonId: id }).models.forEach(p => p.destroy());
+
+      // Then delete the lesson
+      lesson.destroy();
+
+      return {
+        success: true,
+        errorCode: "",
+        errorMessage: "",
+        errors: {}
+      };
+    });
+
+    // Quiz Endpoints
+    this.get('/courses/:courseId/quiz', (schema, request) => {
+      const courseId = request.params.courseId;
+      const quiz = schema.quizzes.findBy({ courseId });
+
+      return {
+        success: true,
+        quiz: quiz?.attrs || null,
+        errorCode: "",
+        errorMessage: "",
+        errors: {}
+      };
+    });
+
+    this.post('/quizzes', (schema, request) => {
+      const { questions, ...quizData } = JSON.parse(request.requestBody);
+
+      // Create quiz first
+      const quiz = schema.quizzes.create(quizData);
+
+      // Then create questions
+      if (questions && questions.length) {
+        questions.forEach(q => {
+          schema.questions.create({
+            ...q,
+            quizId: quiz.id
+          });
+        });
       }
 
       return {
         success: true,
-        progress: {
-          lessonId: progress.lessonId,
-          completed: progress.completed
+        quiz: {
+          ...quiz.attrs,
+          questions: schema.questions.where({ quizId: quiz.id }).models.map(q => q.attrs)
         }
       };
     });
 
+    this.put('/quizzes/:id', (schema, request) => {
+      const id = request.params.id;
+      const { questions, ...quizData } = JSON.parse(request.requestBody);
 
+      // Update quiz
+      const quiz = schema.quizzes.find(id).update(quizData);
 
+      // Handle questions
+      if (questions && questions.length) {
+        // Delete existing questions
+        schema.questions.where({ quizId: id }).models.forEach(q => q.destroy());
+
+        // Create new questions
+        questions.forEach(q => {
+          schema.questions.create({
+            ...q,
+            quizId: id
+          });
+        });
+      }
+
+      return {
+        success: true,
+        quiz: {
+          ...quiz.attrs,
+          questions: schema.questions.where({ quizId: id }).models.map(q => q.attrs)
+        }
+      };
+    });
+
+    this.delete('/quizzes/:id', (schema, request) => {
+      const id = request.params.id;
+
+      // First delete all questions
+      schema.questions.where({ quizId: id }).models.forEach(q => q.destroy());
+
+      // Then delete the quiz
+      schema.quizzes.find(id).destroy();
+
+      return { success: true };
+    });
+
+    // File Upload Endpoint (simulated)
+    this.post('/upload', (schema, request) => {
+      // This is a simulation - in a real app, you'd handle file uploads differently
+      return {
+        success: true,
+        url: `/uploads/${Date.now()}-file.pdf`,
+        errorCode: "",
+        errorMessage: "",
+        errors: {}
+      };
+    });
+
+    // Categories Endpoint
+    this.get('/categories', () => {
+      const categories = [
+        'Web Development',
+        'Mobile Development',
+        'Data Science',
+        'Machine Learning',
+        'Digital Marketing'
+      ];
+
+      return {
+        success: true,
+        categories,
+        errorCode: "",
+        errorMessage: "",
+        errors: {}
+      };
+    });
   },
 
   seeds(server) {
@@ -690,7 +1039,8 @@ createServer({
       firstName: 'Admin',
       lastName: 'User',
       password: 'Yss@@56hh',
-      avatar: null
+      avatar: null,
+      createdAt: '2023-01-01T00:00:00Z' // Added for admin
     });
 
     // Create regular users
@@ -701,7 +1051,8 @@ createServer({
       lastName: 'Doe',
       password: 'password123',
       balance: 100,
-      avatar: null
+      avatar: null,
+      createdAt: '2023-01-15T00:00:00Z' // Added
     });
 
     server.create('user', {
@@ -711,7 +1062,8 @@ createServer({
       lastName: 'Smith',
       password: 'Yss@@56hh',
       balance: 50,
-      avatar: null
+      avatar: null,
+      createdAt: '2023-02-20T00:00:00Z' // Added
     });
 
     server.create('user', {
@@ -721,7 +1073,8 @@ createServer({
       lastName: 'EL AOUNI',
       password: 'Yss@@56hh',
       balance: 0,
-      avatar: null
+      avatar: null,
+      createdAt: '2023-03-10T00:00:00Z' // Added
     });
 
 
@@ -1097,50 +1450,45 @@ createServer({
       score: '17/20 (85%)'
     });
 
-    // Create quizzes
-    server.create('quiz', {
-      id: '1',
-      courseId: '1', // Quiz for course with id 1
-      questions: [
-        {
-          id: 1,
-          question: "When you use a Canva template, what can you edit?",
-          options: [
-            "Everything for the first five minutes.",
-            "Everything.",
-            "It depends what subscription plan you are on.",
-            "Each template has its own specific rules for editing."
-          ],
-          correctAnswer: 1,
-          feedback: "That's right. Canva templates are just the beginning..."
-        },
-        {
-          id: 2,
-          question: "How can you transfer designs between devices in Canva?",
-          options: [
-            "Transfer your files manually using a USB connection.",
-            "Designs sync automatically across devices when logged in.",
-            "Email the designs to yourself.",
-            "Canva doesn't support cross-device work."
-          ],
-          correctAnswer: 1,
-          feedback: "Not quite. We want designing to feel seamless..."
-        }
-      ]
+    // In your seeds function:
+const quiz1 = server.create('quiz', {
+  id: `quiz-${uuidv4()}`,
+  courseId: '1'
+});
+
+
+    // Create questions with unique IDs
+    server.create('question', {
+      id: `q-${uuidv4()}`,
+      quizId: quiz1.id,
+      question: "When you use a Canva template, what can you edit?",
+      options: ["Option 1", "Option 2", "Option 3", "Option 4"],
+      correctAnswer: 1,
+      feedback: "That's right..."
     });
 
-        // THEN create user progress records
-        server.create('userProgress', {
-          userId: '1',
-          lessonId: 'l1',  // Must match an existing lesson ID
-          completed: true
-        });
-    
-        server.create('userProgress', {
-          userId: '1',
-          lessonId: 'l2',  // Must match an existing lesson ID
-          completed: false
-        });
+    server.create('question', {
+  id: `q-${uuidv4()}`,
+      quizId: quiz1.id,
+      question: "How can you transfer designs between devices in Canva?",
+      options: ["Option A", "Option B", "Option C", "Option D"],
+      correctAnswer: 1,
+      feedback: "Not quite..."
+    });
+
+
+    // THEN create user progress records
+    server.create('userProgress', {
+      userId: '1',
+      lessonId: 'l1',  // Must match an existing lesson ID
+      completed: true
+    });
+
+    server.create('userProgress', {
+      userId: '1',
+      lessonId: 'l2',  // Must match an existing lesson ID
+      completed: false
+    });
 
 
   }

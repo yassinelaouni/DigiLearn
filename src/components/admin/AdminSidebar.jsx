@@ -12,7 +12,6 @@ export const AdminSidebar = () => {
   const location = useLocation();
   const navigate = useNavigate();
   const navItems = [
-    { icon: LayoutDashboard, label: 'Dashboard', path: '/adminDashboard/app' },
     { icon: Users, label: 'Users', path: '/adminDashboard/users' },
     { icon: BookOpen, label: 'Courses', path: '/adminDashboard/courses' },
     { icon: Award, label: 'Certificates', path: '/adminDashboard/certificates' },

@@ -33,6 +33,10 @@ const LessonSchema = new mongoose.Schema({
     type: Date,
     default: Date.now,
   },
+  progresses: [{
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'UserProgress'
+  }]
 });
 
 module.exports = mongoose.model('Lesson', LessonSchema);

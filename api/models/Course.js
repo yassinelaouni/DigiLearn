@@ -42,6 +42,14 @@ const CourseSchema = new mongoose.Schema({
     type: Date,
     default: Date.now,
   },
+  modules: [{
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'Module'
+  }],
+  certificates: [{
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'Certificate'
+  }]
 });
 
 module.exports = mongoose.model('Course', CourseSchema);

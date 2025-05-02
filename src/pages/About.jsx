@@ -177,7 +177,7 @@ const About = () => {
               >
                 Meet Our Team
               </motion.h2>
-              <motion.p
+              {/* <motion.p
                 initial={{ opacity: 0, y: 20 }}
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true }}
@@ -185,43 +185,40 @@ const About = () => {
                 className="text-lg text-muted-foreground mb-8"
               >
                 Our platform is built by technologists and digital culture experts committed to educational excellence
-              </motion.p>
+              </motion.p> */}
             </div>
 
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-8 max-w-4xl mx-auto">
-              {[
-                {
-                  name: "Yassine EL AOUNI",
-                  role: "Software & AI Engineering Student",
-                  image: "/yassine.png",
-                },
-                {
-                  name: "Yassine EL AOUNI",
-                  role: "Software & AI Engineering Student",
-                  image: "/profile.png",
-                },
-              ].map((member, index) => (
-                <motion.div
-                key={index}
-                initial={{ opacity: 0, y: 20 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true }}
-                transition={{ duration: 0.5, delay: index * 0.1 }}
-                className="bg-white rounded-xl overflow-hidden border border-gray-100 shadow-sm hover:shadow-md transition-shadow"
-              >
-                <div className="aspect-square overflow-hidden">
-                  <img 
-                    src={member.image} 
-                    alt={member.name} 
-                    className="w-full h-full object-cover"
-                  />
-                </div>
-                <div className="p-6">
-                  <h3 className="font-bold text-xl mb-1">{member.name}</h3>
-                  <p className="text-brand-purple font-medium text-sm mb-3">{member.role}</p>
-                </div>
-              </motion.div>
-              ))}
+            <div className="flex justify-center">
+              <div className="grid grid-cols-1 sm:grid-cols-1 gap-8 max-w-4xl w-1/2">
+                {[
+                  {
+                    name: "Yassine EL AOUNI",
+                    role: "Software & AI Engineering Student",
+                    image: "/yassine.png",
+                  },
+                ].map((member, index) => (
+                  <motion.div
+                    key={index}
+                    initial={{ opacity: 0, y: 20 }}
+                    whileInView={{ opacity: 1, y: 0 }}
+                    viewport={{ once: true }}
+                    transition={{ duration: 0.5, delay: index * 0.1 }}
+                    className="bg-white rounded-xl overflow-hidden border border-gray-100 shadow-sm hover:shadow-md transition-shadow"
+                  >
+                    <div className="aspect-square overflow-hidden">
+                      <img
+                        src={member.image}
+                        alt={member.name}
+                        className="w-full h-full object-cover"
+                      />
+                    </div>
+                    <div className="p-6">
+                      <h3 className="font-bold text-xl mb-1">{member.name}</h3>
+                      <p className="text-brand-purple font-medium text-sm mb-3">{member.role}</p>
+                    </div>
+                  </motion.div>
+                ))}
+              </div>
             </div>
           </div>
         </div>

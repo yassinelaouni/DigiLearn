@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Users, Search, Edit, Trash2 } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
@@ -17,125 +17,103 @@ import {
   DialogTitle,
 } from '@/components/ui/dialog';
 
+const API_BASE = '/api'; // Added base API path
+
 const AdminUsers = () => {
-  // Mock users data
-  const [users, setUsers] = useState([
-    {
-      id: '1',
-      firstName: 'John',
-      lastName: 'Doe',
-      email: 'john.doe@example.com',
-      createdAt: '2023-01-15T00:00:00Z',
-      role: 'student'
-    },
-    {
-      id: '2',
-      firstName: 'Jane',
-      lastName: 'Smith',
-      email: 'jane.smith@example.com',
-      createdAt: '2023-02-20T00:00:00Z',
-      role: 'student'
-    },
-    {
-      id: '3',
-      firstName: 'Robert',
-      lastName: 'Johnson',
-      email: 'robert.j@example.com',
-      createdAt: '2023-03-10T00:00:00Z',
-      role: 'admin'
-    },
-    {
-      id: '4',
-      firstName: 'Robert',
-      lastName: 'Johnson',
-      email: 'robert.j@example.com',
-      createdAt: '2023-03-10T00:00:00Z',
-      role: 'admin'
-    },
-    {
-      id: '4',
-      firstName: 'Robert',
-      lastName: 'Johnson',
-      email: 'robert.j@example.com',
-      createdAt: '2023-03-10T00:00:00Z',
-      role: 'admin'
-    },
-    {
-      id: '5',
-      firstName: 'Robert',
-      lastName: 'Johnson',
-      email: 'robert.j@example.com',
-      createdAt: '2023-03-10T00:00:00Z',
-      role: 'admin'
-    },
-    {
-      id: '6',
-      firstName: 'Robert',
-      lastName: 'Johnson',
-      email: 'robert.j@example.com',
-      createdAt: '2023-03-10T00:00:00Z',
-      role: 'admin'
-    },
-    {
-      id: '7',
-      firstName: 'Robert',
-      lastName: 'Johnson',
-      email: 'robert.j@example.com',
-      createdAt: '2023-03-10T00:00:00Z',
-      role: 'admin'
-    },
-    {
-      id: '8',
-      firstName: 'Robert',
-      lastName: 'Johnson',
-      email: 'robert.j@example.com',
-      createdAt: '2023-03-10T00:00:00Z',
-      role: 'admin'
-    },
-    {
-      id: '9',
-      firstName: 'Robert',
-      lastName: 'Johnson',
-      email: 'robert.j@example.com',
-      createdAt: '2023-03-10T00:00:00Z',
-      role: 'admin'
-    },
-    {
-      id: '10',
-      firstName: 'Robert',
-      lastName: 'Johnson',
-      email: 'robert.j@example.com',
-      createdAt: '2023-03-10T00:00:00Z',
-      role: 'admin'
-    },
-
-  ]);
-
+  const [users, setUsers] = useState([]);
   const [searchTerm, setSearchTerm] = useState('');
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [currentUser, setCurrentUser] = useState(null);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState(null);
+
+  // Fetch users from API
+  useEffect(() => {
+    const fetchUsers = async () => {
+      try {
+        const response = await fetch(`${API_BASE}/users/get/all`);
+        if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+        const data = await response.json();
+        
+        if (data.success) {
+          setUsers(data.users);
+        } else {
+          throw new Error(data.errorMessage || 'Failed to fetch users');
+        }
+      } catch (error) {
+        console.error('Error fetching users:', error);
+        setError(error.message);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchUsers();
+  }, []);
 
   const filteredUsers = users.filter(user =>
     `${user.firstName} ${user.lastName}`.toLowerCase().includes(searchTerm.toLowerCase()) ||
     user.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    user.role.toLowerCase().includes(searchTerm.toLowerCase())
+    (user.role && user.role.toLowerCase().includes(searchTerm.toLowerCase()))
   );
 
-  const handleDeleteUser = (userId) => {
-    setUsers(users.filter(user => user.id !== userId));
+  const handleDeleteUser = async (userId) => {
+    try {
+      const response = await fetch(`${API_BASE}/users/delete/${userId}`, {
+        method: 'DELETE'
+      });
+      
+      if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+      
+      const result = await response.json();
+      if (result.success) {
+        setUsers(users.filter(user => user.id !== userId));
+      } else {
+        throw new Error(result.errorMessage || 'Failed to delete user');
+      }
+    } catch (error) {
+      console.error('Error deleting user:', error);
+      setError(error.message);
+    }
   };
 
   const handleEditClick = (user) => {
     setCurrentUser({ ...user });
     setIsEditModalOpen(true);
+    setError(null);
   };
 
-  const handleSaveEdit = () => {
-    setUsers(users.map(user => 
-      user.id === currentUser.id ? currentUser : user
-    ));
-    setIsEditModalOpen(false);
-    setCurrentUser(null);
+  const handleSaveEdit = async () => {
+    try {
+      const response = await fetch(`${API_BASE}/users/update/${currentUser.id}`, {
+        method: 'PATCH',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          firstName: currentUser.firstName,
+          lastName: currentUser.lastName,
+          email: currentUser.email,
+          role: currentUser.role
+        })
+      });
+      
+      if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+      
+      const result = await response.json();
+      if (result.success) {
+        setUsers(users.map(user => 
+          user.id === result.user.id ? result.user : user
+        ));
+        setIsEditModalOpen(false);
+        setCurrentUser(null);
+      } else {
+        throw new Error(result.errorMessage || 'Failed to update user');
+      }
+    } catch (error) {
+      console.error('Error updating user:', error);
+      setError(error.message);
+    }
   };
 
   const handleInputChange = (e) => {
@@ -145,6 +123,27 @@ const AdminUsers = () => {
       [name]: value
     }));
   };
+
+  if (isLoading) {
+    return (
+      <div className="container py-8">
+        <div className="flex justify-center items-center h-64">
+          <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-blue-500"></div>
+        </div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="container py-8">
+        <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative" role="alert">
+          <strong className="font-bold">Error!</strong>
+          <span className="block sm:inline"> {error}</span>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="container py-8">
@@ -188,10 +187,12 @@ const AdminUsers = () => {
                       ? 'bg-red-100 text-red-800' 
                       : 'bg-blue-100 text-blue-800'
                   }`}>
-                    {user.role}
+                    {user.role || 'student'}
                   </span>
                 </TableCell>
-                <TableCell>{new Date(user.createdAt).toLocaleDateString()}</TableCell>
+                <TableCell>
+                  {user.createdAt ? new Date(user.createdAt).toLocaleDateString() : 'N/A'}
+                </TableCell>
                 <TableCell className="text-right">
                   <Button 
                     variant="ghost" 
@@ -221,6 +222,11 @@ const AdminUsers = () => {
           <DialogHeader>
             <DialogTitle>Edit User</DialogTitle>
           </DialogHeader>
+          {error && (
+            <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-4">
+              {error}
+            </div>
+          )}
           {currentUser && (
             <div className="space-y-4">
               <div>
@@ -251,7 +257,7 @@ const AdminUsers = () => {
                 <label className="block text-sm font-medium mb-1">Role</label>
                 <select
                   name="role"
-                  value={currentUser.role}
+                  value={currentUser.role || 'student'}
                   onChange={handleInputChange}
                   className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
                 >

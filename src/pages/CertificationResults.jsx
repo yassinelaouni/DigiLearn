@@ -234,14 +234,6 @@ const CertificationResults = () => {
                         transition={{ delay: 0.2 }}
                     >
                         <Button
-                            variant="outline"
-                            size="lg"
-                            className="gap-2 w-full sm:w-auto"
-                        >
-                            <Share2 className="h-4 w-4 md:h-5 md:w-5" />
-                            Share
-                        </Button>
-                        <Button
                             size="lg"
                             className="gap-2 w-full sm:w-auto bg-gradient-to-r from-purple-600 to-blue-500 hover:opacity-90"
                             onClick={handleDownload}

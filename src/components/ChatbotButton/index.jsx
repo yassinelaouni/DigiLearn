@@ -1,36 +1,94 @@
-import { useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 
 export const ChatbotButton = () => {
   const [isOpen, setIsOpen] = useState(false);
   const [messages, setMessages] = useState([
-    { 
-      id: 1, 
-      text: "Welcome to DigiLearn Support! How can we help you today?", 
-      sender: "bot" 
-    }
+    {
+      id: 1,
+      text: 'Welcome to DigiLearn Support! How can we help you today?',
+      sender: 'bot',
+    },
   ]);
-  const [input, setInput] = useState("");
+  const [input, setInput] = useState('');
+  const socketRef = useRef(null);
+  const userId = useRef(`user_${Date.now()}`);
+  const messagesEndRef = useRef(null);
+
+  // Scroll to bottom of messages
+  const scrollToBottom = () => {
+    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+  };
+
+  useEffect(() => {
+    scrollToBottom();
+  }, [messages]);
+
+  useEffect(() => {
+    // Initialize WebSocket connection to Rasa
+    const socketUrl = 'ws://localhost:5005';
+    socketRef.current = new WebSocket(socketUrl);
+
+    socketRef.current.onopen = () => {
+      console.log('Connected to Rasa server via WebSocket');
+      // Send initial greeting
+      const initMessage = {
+        sender: userId.current,
+        message: '/greet'
+      };
+      socketRef.current.send(JSON.stringify(initMessage));
+    };
+
+    socketRef.current.onmessage = (event) => {
+      try {
+        const data = JSON.parse(event.data);
+        console.log('Bot response:', data);
+        
+        if (data.text) {
+          setMessages(prev => [
+            ...prev,
+            {
+              id: Date.now(),
+              text: data.text,
+              sender: 'bot',
+            },
+          ]);
+        }
+      } catch (error) {
+        console.error('Error parsing message:', error);
+      }
+    };
+
+    socketRef.current.onclose = () => {
+      console.log('Disconnected from Rasa');
+    };
+
+    socketRef.current.onerror = (error) => {
+      console.error('WebSocket error:', error);
+    };
+
+    return () => {
+      if (socketRef.current && socketRef.current.readyState === WebSocket.OPEN) {
+        socketRef.current.close();
+      }
+    };
+  }, []);
 
   const handleSend = () => {
-    if (input.trim()) {
-      const newMessage = { 
-        id: Date.now(), 
-        text: input, 
-        sender: "user" 
+    if (input.trim() && socketRef.current?.readyState === WebSocket.OPEN) {
+      const message = {
+        id: Date.now(),
+        text: input,
+        sender: 'user',
       };
-      setMessages([...messages, newMessage]);
-      setInput("");
-      
-      setTimeout(() => {
-        setMessages(prev => [
-          ...prev, 
-          { 
-            id: Date.now() + 1, 
-            text: "I'll help you with that. One moment please...", 
-            sender: "bot" 
-          }
-        ]);
-      }, 800);
+      setMessages(prev => [...prev, message]);
+
+      // Send message to Rasa
+      socketRef.current.send(JSON.stringify({
+        sender: userId.current,
+        message: input
+      }));
+
+      setInput('');
     }
   };
 
@@ -68,7 +126,7 @@ export const ChatbotButton = () => {
           boxShadow: '0 4px 12px rgba(0,0,0,0.15)',
           border: '1px solid #e5e7eb'
         }}>
-          {/* Header with custom gradient and rounded top corners */}
+          {/* Header */}
           <div 
             className="text-white p-4"
             style={{
@@ -108,7 +166,7 @@ export const ChatbotButton = () => {
             <p className="text-xs mt-1 opacity-90">How can I help you today?</p>
           </div>
           
-          {/* Messages with chat app-like spacing */}
+          {/* Messages */}
           <div className="flex-1 p-4 overflow-y-auto space-y-2 bg-white">
             {messages.map((message) => (
               <div 
@@ -130,9 +188,10 @@ export const ChatbotButton = () => {
                 {message.text}
               </div>
             ))}
+            <div ref={messagesEndRef} />
           </div>
           
-          {/* Input area with rounded bottom corners */}
+          {/* Input area */}
           <div className="p-3 bg-white" style={{
             borderBottomLeftRadius: '12px',
             borderBottomRightRadius: '12px',
@@ -144,10 +203,9 @@ export const ChatbotButton = () => {
                 value={input}
                 onChange={(e) => setInput(e.target.value)}
                 placeholder="Type your message..."
-                className="flex-1 border border-gray-300 px-3 py-2 text-sm focus:outline-none"
+                className="flex-1 border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-purple-500"
                 style={{
                   borderRadius: '20px',
-                  focusRingColor: '#7C66DC'
                 }}
                 onKeyDown={(e) => e.key === 'Enter' && handleSend()}
               />

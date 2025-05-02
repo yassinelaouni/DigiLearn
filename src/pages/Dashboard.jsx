@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { Link, useParams } from "react-router-dom";
 import Layout from "@/components/layout/Layout";
-import { BookOpen, FileText, Award, Clock, ChevronRight } from "lucide-react";
+import { BookOpen, Award, Clock, ChevronRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useToast } from '@/hooks/use-toast';
 
@@ -11,9 +11,8 @@ const UserDashboard = () => {
         name: "",
         stats: {
             tutorialsCompleted: 0,
-            quizzesTaken: 0,
             lessonsCompleted: 0
-        },
+        }, 
         recentCourses: []
     });
     const [loading, setLoading] = useState(true);
@@ -79,7 +78,7 @@ const UserDashboard = () => {
                 </div>
 
                 {/* Activity Stats */}
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-8">
                     <div className="bg-white rounded-lg border p-6 shadow-sm">
                         <div className="flex items-center gap-3">
                             <div className="bg-blue-100 p-3 rounded-full">
@@ -88,18 +87,6 @@ const UserDashboard = () => {
                             <div>
                                 <p className="text-sm text-muted-foreground">Certificates</p>
                                 <p className="text-xl font-bold">{userData.stats.tutorialsCompleted}</p>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div className="bg-white rounded-lg border p-6 shadow-sm">
-                        <div className="flex items-center gap-3">
-                            <div className="bg-purple-100 p-3 rounded-full">
-                                <FileText className="h-5 w-5 text-purple-600" />
-                            </div>
-                            <div>
-                                <p className="text-sm text-muted-foreground">Quizzes</p>
-                                <p className="text-xl font-bold">{userData.stats.quizzesTaken}</p>
                             </div>
                         </div>
                     </div>

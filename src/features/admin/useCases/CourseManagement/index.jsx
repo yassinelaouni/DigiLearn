@@ -1,5 +1,5 @@
-import React, { useState } from 'react';
-import { BookOpen, Search, Edit, Plus, Trash2 } from 'lucide-react';
+import React, { useState, useRef, useEffect } from 'react';
+import { BookOpen, Search, Edit, Plus, Trash2, FileText, Upload, CheckCircle, XCircle } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import {
@@ -20,8 +20,10 @@ import {
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Textarea } from '@/components/ui/textarea';
+import { useToast } from '@/components/ui/use-toast';
 
 const AdminCourses = () => {
+  const { toast } = useToast();
   const categories = [
     'Web Development',
     'Mobile Development',
@@ -31,44 +33,48 @@ const AdminCourses = () => {
   ];
 
   const lessonTypes = ['video', 'reading'];
+  const fileInputRef = useRef(null);
+  const [uploading, setUploading] = useState(false);
+  const [uploadProgress, setUploadProgress] = useState(0);
+  const [loading, setLoading] = useState(false);
 
-  const [courses, setCourses] = useState([
-    {
-      id: '1',
-      title: 'Marketing with Canva',
-      description: 'Learn to create stunning social media content with Canva',
-      category: 'Digital Marketing',
-      students: 210,
-      duration: '5 hours',
-      level: 'Beginner',
-      thumbnail: 'https://example.com/canva-thumbnail.jpg',
-      createdAt: '2023-03-10',
-      lessons: [
-        {
-          id: 'l1',
-          title: 'Welcome to Marketing with Canva',
-          duration: '15 min',
-          type: 'video',
-          videoUrl: 'https://www.youtube.com/embed/aKZIlPzX5s8',
-          description: 'Introduction to the course'
-        },
-        {
-          id: 'l2',
-          title: 'Managing your social media',
-          duration: '25 min',
-          type: 'video',
-          videoUrl: 'https://www.youtube.com/embed/aKZIlPzX5s8',
-          description: "Enhance your social media game with Canva's templates"
-        }
-      ]
-    }
-  ]);
-
+  const [courses, setCourses] = useState([]);
   const [searchTerm, setSearchTerm] = useState('');
   const [openCourseDialog, setOpenCourseDialog] = useState(false);
   const [openLessonDialog, setOpenLessonDialog] = useState(false);
+  const [openQuizDialog, setOpenQuizDialog] = useState(false);
   const [currentCourse, setCurrentCourse] = useState(initCourse());
   const [currentLesson, setCurrentLesson] = useState(initLesson());
+  const [currentQuiz, setCurrentQuiz] = useState(initQuiz());
+
+  useEffect(() => {
+    const fetchCourses = async () => {
+      setLoading(true);
+      try {
+        const response = await fetch('/api/courses');
+        const data = await response.json();
+        const coursesWithQuizQuestions = data.courses?.map(course => ({
+          ...course,
+          quiz: course.quiz ? {
+            ...course.quiz,
+            questions: course.quiz.questions || []
+          } : null
+        })) || [];
+        setCourses(coursesWithQuizQuestions);
+      } catch (error) {
+        toast({
+          title: 'Error',
+          description: 'Failed to fetch courses',
+          variant: 'destructive'
+        });
+        setCourses([]);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchCourses(); // Add this line to actually call the function
+  }, [toast]); // Add toast as dependency
 
   function initCourse() {
     return {
@@ -79,7 +85,8 @@ const AdminCourses = () => {
       duration: '',
       level: 'Beginner',
       thumbnail: '',
-      lessons: []
+      lessons: [],
+      quiz: null
     };
   }
 
@@ -90,79 +97,395 @@ const AdminCourses = () => {
       type: 'video',
       duration: '',
       videoUrl: '',
+      readingContent: '',
+      pdfUrl: '',
       description: '',
       courseId: ''
     };
   }
 
-  const handleSubmitCourse = (e) => {
-    e.preventDefault();
-    if (currentCourse.id) {
-      setCourses(courses.map(c => c.id === currentCourse.id ? currentCourse : c));
-    } else {
-      const newId = (courses.length + 1).toString();
-      setCourses([...courses, {
-        ...currentCourse,
-        id: newId,
-        students: 0,
-        createdAt: new Date().toISOString().split('T')[0],
-        lessons: []
-      }]);
+  function initQuiz() {
+    return {
+      id: '',
+      courseId: '',
+      questions: [
+        {
+          id: Date.now().toString(),
+          question: '',
+          options: ['', '', '', ''],
+          correctAnswer: 0,
+          feedback: ''
+        }
+      ]
+    };
+  }
+
+  const handleFileUpload = async (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+
+    setUploading(true);
+    setUploadProgress(0);
+
+    try {
+      const formData = new FormData();
+      formData.append('file', file);
+
+      const response = await fetch('/api/upload', {
+        method: 'POST',
+        body: formData
+      });
+
+      const data = await response.json();
+      if (data.success) {
+        setCurrentLesson(prev => ({ ...prev, pdfUrl: data.url }));
+        toast({
+          title: 'Success',
+          description: 'File uploaded successfully'
+        });
+      } else {
+        throw new Error(data.errorMessage || 'Upload failed');
+      }
+    } catch (error) {
+      toast({
+        title: 'Upload failed',
+        description: error.message,
+        variant: 'destructive'
+      });
+    } finally {
+      setUploading(false);
+      setUploadProgress(0);
     }
-    setOpenCourseDialog(false);
-    resetCourseForm();
   };
 
-  const handleSubmitLesson = (e) => {
+  const handleSubmitCourse = async (e) => {
     e.preventDefault();
-    const course = courses.find(c => c.id === currentLesson.courseId);
-    if (!course) return;
-
-    if (currentLesson.id) {
-      // Update lesson
-      const updatedLessons = course.lessons.map(l => 
-        l.id === currentLesson.id ? currentLesson : l
-      );
-      setCourses(courses.map(c => 
-        c.id === course.id ? {...c, lessons: updatedLessons} : c
-      ));
-    } else {
-      // Add new lesson
-      const newId = `l${course.lessons.length + 1}`;
-      setCourses(courses.map(c => 
-        c.id === course.id 
-          ? {...c, lessons: [...c.lessons, {...currentLesson, id: newId}]} 
-          : c
-      ));
+  
+    if (!currentCourse.title || !currentCourse.description || !currentCourse.category) {
+      toast({
+        title: 'Error',
+        description: 'Required fields are missing',
+        variant: 'destructive'
+      });
+      return;
     }
-    setOpenLessonDialog(false);
-    resetLessonForm();
+  
+    setLoading(true);
+    try {
+      const method = currentCourse.id ? 'PUT' : 'POST';
+      const url = currentCourse.id
+        ? `/api/courses/${currentCourse.id}`
+        : '/api/courses';
+  
+      const response = await fetch(url, {
+        method,
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          ...currentCourse,
+          // Don't send lessons and quiz as they're handled separately
+          lessons: undefined,
+          quiz: undefined
+        })
+      });
+  
+      const data = await response.json();
+  
+      if (!data.success) {
+        throw new Error(data.errorMessage || 'Operation failed');
+      }
+  
+      if (currentCourse.id) {
+        setCourses(courses.map(c => c.id === currentCourse.id ? data.course : c));
+      } else {
+        setCourses([...courses, data.course]);
+      }
+  
+      setOpenCourseDialog(false);
+      resetCourseForm();
+      toast({
+        title: 'Success',
+        description: `Course ${currentCourse.id ? 'updated' : 'created'} successfully`,
+      });
+    } catch (error) {
+      toast({
+        title: 'Error',
+        description: error.message,
+        variant: 'destructive'
+      });
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleSubmitLesson = async (e) => {
+    e.preventDefault();
+
+    // Add validation
+    if (!currentLesson.title || !currentLesson.duration ||
+      (currentLesson.type === 'video' && !currentLesson.videoUrl) ||
+      (currentLesson.type === 'reading' && !currentLesson.readingContent)) {
+      toast({
+        title: 'Error',
+        description: 'Please fill all required fields',
+        variant: 'destructive'
+      });
+      return;
+    }
+
+    setLoading(true);
+
+    try {
+      const method = currentLesson.id ? 'PUT' : 'POST';
+      const url = currentLesson.id
+        ? `/api/lessons/${currentLesson.id}`
+        : '/api/lessons';
+
+      const response = await fetch(url, {
+        method,
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(currentLesson)
+      });
+
+      const data = await response.json();
+
+      if (!data.success) {
+        throw new Error(data.errorMessage || 'Operation failed');
+      }
+
+      // Update the course with the new/updated lesson
+      const updatedCourses = courses.map(course => {
+        if (course.id === currentLesson.courseId) {
+          if (currentLesson.id) {
+            // Update existing lesson
+            const updatedLessons = course.lessons.map(l =>
+              l.id === currentLesson.id ? data.lesson : l
+            );
+            return { ...course, lessons: updatedLessons };
+          } else {
+            // Add new lesson
+            return { ...course, lessons: [...course.lessons, data.lesson] };
+          }
+        }
+        return course;
+      });
+
+      setCourses(updatedCourses);
+      setOpenLessonDialog(false);
+      resetLessonForm();
+      toast({
+        title: 'Success',
+        description: `Lesson ${currentLesson.id ? 'updated' : 'created'} successfully`,
+      });
+    } catch (error) {
+      toast({
+        title: 'Error',
+        description: error.message,
+        variant: 'destructive'
+      });
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleSubmitQuiz = async (e) => {
+    e.preventDefault();
+    setLoading(true);
+
+    try {
+      const method = currentQuiz.id ? 'PUT' : 'POST';
+      const url = currentQuiz.id
+        ? `/api/quizzes/${currentQuiz.id}`
+        : '/api/quizzes';
+
+      const response = await fetch(url, {
+        method,
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(currentQuiz)
+      });
+
+      const data = await response.json();
+
+      if (!data.success) {
+        throw new Error(data.errorMessage || 'Operation failed');
+      }
+
+      // Update the course with the new/updated quiz
+      setCourses(courses.map(c =>
+        c.id === currentQuiz.courseId ? { ...c, quiz: data.quiz } : c
+      ));
+
+      setOpenQuizDialog(false);
+      setCurrentQuiz(initQuiz());
+      toast({
+        title: 'Success',
+        description: `Quiz ${currentQuiz.id ? 'updated' : 'created'} successfully`,
+      });
+    } catch (error) {
+      toast({
+        title: 'Error',
+        description: error.message,
+        variant: 'destructive'
+      });
+    } finally {
+      setLoading(false);
+    }
   };
 
   const handleEditCourse = (course) => {
-    setCurrentCourse({...course});
+    setCurrentCourse({ ...course });
     setOpenCourseDialog(true);
   };
 
   const handleEditLesson = (courseId, lesson) => {
-    setCurrentLesson({...lesson, courseId});
+    setCurrentLesson({ ...lesson, courseId });
     setOpenLessonDialog(true);
   };
 
-  const handleDeleteCourse = (courseId) => {
-    setCourses(courses.filter(c => c.id !== courseId));
+  const handleEditQuiz = (courseId, quiz) => {
+    setCurrentQuiz({ ...quiz, courseId });
+    setOpenQuizDialog(true);
   };
 
-  const handleDeleteLesson = (courseId, lessonId) => {
-    setCourses(courses.map(c => 
-      c.id === courseId 
-        ? {...c, lessons: c.lessons.filter(l => l.id !== lessonId)} 
-        : c
-    ));
+  const handleDeleteCourse = async (courseId) => {
+    try {
+      const response = await fetch(`/api/courses/${courseId}`, {
+        method: 'DELETE'
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to delete course');
+      }
+
+      setCourses(courses.filter(c => c.id !== courseId));
+      toast({
+        title: 'Success',
+        description: 'Course deleted successfully',
+      });
+    } catch (error) {
+      toast({
+        title: 'Error',
+        description: error.message,
+        variant: 'destructive'
+      });
+    }
+  };
+
+  const handleDeleteLesson = async (courseId, lessonId) => {
+    try {
+      const response = await fetch(`/api/lessons/${lessonId}`, {
+        method: 'DELETE'
+      });
+  
+      if (!response.ok) {
+        throw new Error('Failed to delete lesson');
+      }
+  
+      setCourses(courses.map(c =>
+        c.id === courseId
+          ? { ...c, lessons: c.lessons.filter(l => l.id !== lessonId) }
+          : c
+      ));
+      toast({
+        title: 'Success',
+        description: 'Lesson deleted successfully',
+      });
+    } catch (error) {
+      toast({
+        title: 'Error',
+        description: error.message,
+        variant: 'destructive'
+      });
+    }
+  };
+
+  const handleDeleteQuiz = async (courseId) => {
+    try {
+      const course = courses.find(c => c.id === courseId);
+      if (!course?.quiz) return;
+
+      await fetch(`/api/quizzes/${course.quiz.id}`, {
+        method: 'DELETE'
+      });
+
+      setCourses(courses.map(c =>
+        c.id === courseId ? { ...c, quiz: null } : c
+      ));
+      toast({
+        title: 'Success',
+        description: 'Quiz deleted successfully',
+      });
+    } catch (error) {
+      toast({
+        title: 'Error',
+        description: 'Failed to delete quiz',
+        variant: 'destructive'
+      });
+    }
   };
 
   const resetCourseForm = () => setCurrentCourse(initCourse());
   const resetLessonForm = () => setCurrentLesson(initLesson());
+
+  const addQuestion = () => {
+    setCurrentQuiz({
+      ...currentQuiz,
+      questions: [
+        ...currentQuiz.questions,
+        {
+          id: Date.now().toString(),
+          question: '',
+          options: ['', '', '', ''],
+          correctAnswer: 0,
+          feedback: ''
+        }
+      ]
+    });
+  };
+
+  const removeQuestion = (questionId) => {
+    if (currentQuiz.questions.length <= 1) {
+      toast({
+        title: 'Warning',
+        description: 'A quiz must have at least one question',
+        variant: 'default'
+      });
+      return;
+    }
+
+    setCurrentQuiz({
+      ...currentQuiz,
+      questions: currentQuiz.questions.filter(q => q.id !== questionId)
+    });
+  };
+
+  const updateQuestion = (questionId, field, value) => {
+    setCurrentQuiz({
+      ...currentQuiz,
+      questions: currentQuiz.questions.map(q =>
+        q.id === questionId ? { ...q, [field]: value } : q
+      )
+    });
+  };
+
+  const updateOption = (questionId, optionIndex, value) => {
+    setCurrentQuiz({
+      ...currentQuiz,
+      questions: currentQuiz.questions.map(q => {
+        if (q.id === questionId) {
+          const newOptions = [...q.options];
+          newOptions[optionIndex] = value;
+          return { ...q, options: newOptions };
+        }
+        return q;
+      })
+    });
+  };
 
   return (
     <div className="container py-8">
@@ -187,23 +510,23 @@ const AdminCourses = () => {
                   <Label>Title*</Label>
                   <Input
                     value={currentCourse.title}
-                    onChange={(e) => setCurrentCourse({...currentCourse, title: e.target.value})}
+                    onChange={(e) => setCurrentCourse({ ...currentCourse, title: e.target.value })}
                     required
                   />
                 </div>
                 <div className="space-y-2">
                   <Label>Category*</Label>
-                  <Select 
-                    value={currentCourse.category} 
-                    onValueChange={(value) => setCurrentCourse({...currentCourse, category: value})}
+                  <Select
+                    value={currentCourse.category}
+                    onValueChange={(value) => setCurrentCourse({ ...currentCourse, category: value })}
                     required
                   >
                     <SelectTrigger>
                       <SelectValue placeholder="Select category" />
                     </SelectTrigger>
                     <SelectContent>
-                      {categories.map(cat => (
-                        <SelectItem key={cat} value={cat}>{cat}</SelectItem>
+                      {categories.map(category => (
+                        <SelectItem key={category} value={category}>{category}</SelectItem>
                       ))}
                     </SelectContent>
                   </Select>
@@ -213,19 +536,19 @@ const AdminCourses = () => {
               <div className="space-y-2">
                 <Label>Description*</Label>
                 <Textarea
-                  value={currentCourse.description}
-                  onChange={(e) => setCurrentCourse({...currentCourse, description: e.target.value})}
+                  value={currentCourse.description || ''} // Add fallback empty string
+                  onChange={(e) => setCurrentCourse({ ...currentCourse, description: e.target.value })}
                   required
-                  rows={3}
+                  rows={4}
                 />
               </div>
 
-              <div className="grid grid-cols-2 gap-4">
+              <div className="grid grid-cols-3 gap-4">
                 <div className="space-y-2">
                   <Label>Duration*</Label>
                   <Input
                     value={currentCourse.duration}
-                    onChange={(e) => setCurrentCourse({...currentCourse, duration: e.target.value})}
+                    onChange={(e) => setCurrentCourse({ ...currentCourse, duration: e.target.value })}
                     required
                   />
                 </div>
@@ -233,7 +556,8 @@ const AdminCourses = () => {
                   <Label>Level*</Label>
                   <Select
                     value={currentCourse.level}
-                    onValueChange={(value) => setCurrentCourse({...currentCourse, level: value})}
+                    onValueChange={(value) => setCurrentCourse({ ...currentCourse, level: value })}
+                    required
                   >
                     <SelectTrigger>
                       <SelectValue placeholder="Select level" />
@@ -245,21 +569,20 @@ const AdminCourses = () => {
                     </SelectContent>
                   </Select>
                 </div>
-              </div>
-
-              <div className="space-y-2">
-                <Label>Thumbnail URL</Label>
-                <Input
+                <div className="space-y-2">
+                  <Label>Thumbnail URL</Label>
+                  <Input
                     value={currentCourse.thumbnail}
-                    onChange={(e) => setCurrentCourse({...currentCourse, thumbnail: e.target.value})}
-                />
+                    onChange={(e) => setCurrentCourse({ ...currentCourse, thumbnail: e.target.value })}
+                  />
+                </div>
               </div>
 
               <div className="flex justify-end space-x-2 pt-4">
                 <Button variant="outline" onClick={() => setOpenCourseDialog(false)}>
                   Cancel
                 </Button>
-                <Button type="submit">
+                <Button type="submit" disabled={loading}>
                   {currentCourse.id ? 'Update Course' : 'Add Course'}
                 </Button>
               </div>
@@ -280,168 +603,451 @@ const AdminCourses = () => {
         </div>
       </div>
 
-      <div className="space-y-6">
-        {courses.map(course => (
-          <div key={course.id} className="border rounded-lg p-6">
-            <div className="flex justify-between items-start mb-4">
-              <div>
-                <h2 className="text-xl font-bold">{course.title}</h2>
-                <p className="text-muted-foreground">{course.category} • {course.level}</p>
-              </div>
-              <div className="flex space-x-2">
-                <Button 
-                  variant="ghost" 
-                  size="sm"
-                  onClick={() => handleEditCourse(course)}
-                >
-                  <Edit className="h-4 w-4" />
-                </Button>
-                <Button 
-                  variant="ghost" 
-                  size="sm"
-                  onClick={() => handleDeleteCourse(course.id)}
-                >
-                  <Trash2 className="h-4 w-4 text-red-500" />
-                </Button>
-              </div>
-            </div>
+      {loading && !courses.length ? (
+        <div className="flex justify-center items-center h-64">
+          <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-primary"></div>
+        </div>
+      ) : (
+        <div className="space-y-6">
+          {(courses || []).filter(course =>
+            (course?.title?.toLowerCase() || '').includes(searchTerm.toLowerCase()) ||
+            (course?.description?.toLowerCase() || '').includes(searchTerm.toLowerCase())
+          )
+            .map(course => (
+              <div key={course.id} className="border rounded-lg p-6">
+                <div className="flex justify-between items-start mb-4">
+                  <div>
+                    <h2 className="text-xl font-bold">{course.title}</h2>
+                    <p className="text-sm text-muted-foreground">{course.category} • {course.duration} • {course.level}</p>
+                    <p className="mt-2">{course.description}</p>
+                  </div>
+                  <div className="flex space-x-2">
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => handleEditCourse(course)}
+                    >
+                      <Edit className="h-4 w-4 mr-2" />
+                      Edit
+                    </Button>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => handleDeleteCourse(course.id)}
+                    >
+                      <Trash2 className="h-4 w-4 mr-2 text-red-500" />
+                      Delete
+                    </Button>
+                  </div>
+                </div>
 
-            <p className="mb-4">{course.description}</p>
-
-            <div className="flex justify-between items-center mb-4">
-              <h3 className="font-semibold">Lessons</h3>
-              <Dialog open={openLessonDialog} onOpenChange={setOpenLessonDialog}>
-                <DialogTrigger asChild>
-                  <Button 
-                    variant="outline" 
-                    size="sm"
-                    onClick={() => {
-                      resetLessonForm();
-                      setCurrentLesson({...initLesson(), courseId: course.id});
-                    }}
-                  >
-                    <Plus className="h-4 w-4 mr-2" />
-                    Add Lesson
-                  </Button>
-                </DialogTrigger>
-                <DialogContent>
-                  <DialogHeader>
-                    <DialogTitle>
-                      {currentLesson.id ? 'Edit Lesson' : 'Add Lesson'}
-                    </DialogTitle>
-                  </DialogHeader>
-                  <form onSubmit={handleSubmitLesson} className="space-y-4">
-                    <div className="space-y-2">
-                      <Label>Title*</Label>
-                      <Input
-                        value={currentLesson.title}
-                        onChange={(e) => setCurrentLesson({...currentLesson, title: e.target.value})}
-                        required
-                      />
-                    </div>
-                    <div className="grid grid-cols-2 gap-4">
-                      <div className="space-y-2">
-                        <Label>Type*</Label>
-                        <Select
-                          value={currentLesson.type}
-                          onValueChange={(value) => setCurrentLesson({...currentLesson, type: value})}
+                {/* Quiz Section */}
+                <div className="mb-6">
+                  <div className="flex justify-between items-center mb-4">
+                    <h3 className="font-semibold">Quiz</h3>
+                    {course.quiz ? (
+                      <div className="flex space-x-2">
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => handleEditQuiz(course.id, course.quiz)}
                         >
-                          <SelectTrigger>
-                            <SelectValue placeholder="Select type" />
-                          </SelectTrigger>
-                          <SelectContent>
-                            {lessonTypes.map(type => (
-                              <SelectItem key={type} value={type}>{type}</SelectItem>
-                            ))}
-                          </SelectContent>
-                        </Select>
+                          <Edit className="h-4 w-4 mr-2" />
+                          Edit Quiz
+                        </Button>
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => handleDeleteQuiz(course.id)}
+                        >
+                          <Trash2 className="h-4 w-4 mr-2 text-red-500" />
+                          Delete Quiz
+                        </Button>
                       </div>
-                      <div className="space-y-2">
-                        <Label>Duration*</Label>
-                        <Input
-                          value={currentLesson.duration}
-                          onChange={(e) => setCurrentLesson({...currentLesson, duration: e.target.value})}
-                          required
-                        />
-                      </div>
-                    </div>
-                    {currentLesson.type === 'video' && (
-                      <div className="space-y-2">
-                        <Label>Video URL*</Label>
-                        <Input
-                          value={currentLesson.videoUrl}
-                          onChange={(e) => setCurrentLesson({...currentLesson, videoUrl: e.target.value})}
-                          required={currentLesson.type === 'video'}
-                        />
-                      </div>
+                    ) : (
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => {
+                          setCurrentQuiz({ ...initQuiz(), courseId: course.id });
+                          setOpenQuizDialog(true);
+                        }}
+                      >
+                        <Plus className="h-4 w-4 mr-2" />
+                        Add Quiz
+                      </Button>
                     )}
-                    <div className="space-y-2">
-                      <Label>Description</Label>
-                      <Textarea
-                        value={currentLesson.description}
-                        onChange={(e) => setCurrentLesson({...currentLesson, description: e.target.value})}
-                        rows={3}
+                  </div>
+
+                  {course.quiz && (
+                    <div className="border rounded-lg p-4">
+                      <h4 className="font-medium mb-2">
+                        Quiz Questions ({course.quiz?.questions?.length || 0})
+                      </h4>
+                      <ul className="space-y-2">
+                        {course.quiz?.questions?.map((q, idx) => (
+                          <li key={q.id || idx} className="flex items-start">
+                            <span className="font-medium mr-2">{idx + 1}.</span>
+                            <span>{q.question || 'Untitled question'}</span>
+                          </li>
+                        )) ?? (
+                            <li className="text-muted-foreground">No questions available</li>
+                          )}
+                      </ul>
+                    </div>
+                  )}
+                </div>
+
+                {/* Lessons Section */}
+                <div className="flex justify-between items-center mb-4">
+                  <h3 className="font-semibold">Lessons</h3>
+                  <Dialog open={openLessonDialog} onOpenChange={setOpenLessonDialog}>
+                    <DialogTrigger asChild>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => {
+                          resetLessonForm();
+                          setCurrentLesson({ ...initLesson(), courseId: course.id });
+                        }}
+                      >
+                        <Plus className="h-4 w-4 mr-2" />
+                        Add Lesson
+                      </Button>
+                    </DialogTrigger>
+                    <DialogContent
+                      onInteractOutside={(e) => e.preventDefault()}
+                      onEscapeKeyDown={(e) => {
+                        if (!loading) {
+                          setOpenLessonDialog(false);
+                        } else {
+                          e.preventDefault();
+                        }
+                      }}
+                    >
+                      <DialogHeader>
+                        <DialogTitle id="lesson-dialog-title">
+                          {currentLesson.id ? 'Edit Lesson' : 'Add Lesson'}
+                        </DialogTitle>
+                      </DialogHeader>
+                      <form
+                        onSubmit={handleSubmitLesson}
+                        className="space-y-4"
+                        aria-labelledby="lesson-dialog-title"
+                      >
+                        <div className="space-y-2">
+                          <Label htmlFor="lesson-title">Title*</Label>
+                          <Input
+                            id="lesson-title"
+                            value={currentLesson.title}
+                            onChange={(e) => setCurrentLesson({ ...currentLesson, title: e.target.value })}
+                            required
+                            aria-required="true"
+                          />
+                        </div>
+
+                        <div className="grid grid-cols-2 gap-4">
+                          <div className="space-y-2">
+                            <Label htmlFor="lesson-type">Type*</Label>
+                            <Select
+                              value={currentLesson.type}
+                              onValueChange={(value) => setCurrentLesson({ ...currentLesson, type: value })}
+                              aria-required="true"
+                            >
+                              <SelectTrigger id="lesson-type" aria-label="Lesson type">
+                                <SelectValue placeholder="Select type" />
+                              </SelectTrigger>
+                              <SelectContent>
+                                {lessonTypes.map(type => (
+                                  <SelectItem key={type} value={type}>{type}</SelectItem>
+                                ))}
+                              </SelectContent>
+                            </Select>
+                          </div>
+
+                          <div className="space-y-2">
+                            <Label htmlFor="lesson-duration">Duration*</Label>
+                            <Input
+                              id="lesson-duration"
+                              value={currentLesson.duration}
+                              onChange={(e) => setCurrentLesson({ ...currentLesson, duration: e.target.value })}
+                              required
+                              aria-required="true"
+                            />
+                          </div>
+                        </div>
+
+                        {currentLesson.type === 'video' && (
+                          <div className="space-y-2">
+                            <Label htmlFor="video-url">Video URL*</Label>
+                            <Input
+                              id="video-url"
+                              value={currentLesson.videoUrl}
+                              onChange={(e) => setCurrentLesson({ ...currentLesson, videoUrl: e.target.value })}
+                              required={currentLesson.type === 'video'}
+                              aria-required={currentLesson.type === 'video'}
+                            />
+                          </div>
+                        )}
+
+                        {currentLesson.type === 'reading' && (
+                          <div className="space-y-2">
+                            <Label htmlFor="reading-content">Reading Content*</Label>
+                            <Textarea
+                              id="reading-content"
+                              value={currentLesson.readingContent}
+                              onChange={(e) => setCurrentLesson({ ...currentLesson, readingContent: e.target.value })}
+                              required={currentLesson.type === 'reading'}
+                              aria-required={currentLesson.type === 'reading'}
+                              rows={6}
+                            />
+                          </div>
+                        )}
+
+                        {/* PDF Attachment */}
+                        <div className="space-y-2">
+                          <Label htmlFor="pdf-upload">PDF Attachment (Optional)</Label>
+                          {currentLesson.pdfUrl ? (
+                            <div className="flex items-center gap-2">
+                              <FileText className="h-5 w-5" />
+                              <span className="text-sm">{currentLesson.pdfUrl.split('/').pop()}</span>
+                              <Button
+                                type="button"
+                                variant="ghost"
+                                size="sm"
+                                onClick={() => setCurrentLesson({ ...currentLesson, pdfUrl: '' })}
+                                aria-label="Remove PDF"
+                              >
+                                <Trash2 className="h-4 w-4 text-red-500" />
+                              </Button>
+                            </div>
+                          ) : (
+                            <div
+                              className="flex flex-col items-center justify-center border-2 border-dashed rounded-lg p-6"
+                              aria-describedby="pdf-instructions"
+                            >
+                              <input
+                                type="file"
+                                ref={fileInputRef}
+                                onChange={handleFileUpload}
+                                accept=".pdf"
+                                className="hidden"
+                                id="pdf-upload"
+                              />
+                              <Button
+                                type="button"
+                                variant="outline"
+                                onClick={() => fileInputRef.current.click()}
+                                disabled={uploading}
+                                aria-label="Upload PDF"
+                              >
+                                <Upload className="h-4 w-4 mr-2" />
+                                {uploading ? 'Uploading...' : 'Upload PDF'}
+                              </Button>
+                              {uploading && (
+                                <div
+                                  className="w-full bg-gray-200 rounded-full h-2.5 mt-4"
+                                  role="progressbar"
+                                  aria-valuenow={uploadProgress}
+                                  aria-valuemin="0"
+                                  aria-valuemax="100"
+                                >
+                                  <div
+                                    className="bg-blue-600 h-2.5 rounded-full"
+                                    style={{ width: `${uploadProgress}%` }}
+                                  ></div>
+                                </div>
+                              )}
+                              <p id="pdf-instructions" className="text-xs text-muted-foreground mt-2">
+                                PDF files only (max 10MB)
+                              </p>
+                            </div>
+                          )}
+                        </div>
+
+                        <div className="space-y-2">
+                          <Label htmlFor="lesson-description">Description</Label>
+                          <Textarea
+                            id="lesson-description"
+                            value={currentLesson.description}
+                            onChange={(e) => setCurrentLesson({ ...currentLesson, description: e.target.value })}
+                            rows={3}
+                          />
+                        </div>
+
+                        <div className="flex justify-end space-x-2 pt-4">
+                          <Button
+                            type="button"
+                            variant="outline"
+                            onClick={() => setOpenLessonDialog(false)}
+                            disabled={loading}
+                          >
+                            Cancel
+                          </Button>
+                          <Button
+                            type="submit"
+                            disabled={loading}
+                            aria-busy={loading}
+                          >
+                            {loading ? (
+                              <span className="flex items-center">
+                                <span className="animate-spin mr-2">↻</span>
+                                {currentLesson.id ? 'Updating...' : 'Adding...'}
+                              </span>
+                            ) : (
+                              currentLesson.id ? 'Update Lesson' : 'Add Lesson'
+                            )}
+                          </Button>
+                        </div>
+                      </form>
+                    </DialogContent>
+                  </Dialog>
+                </div>
+
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead>Lesson</TableHead>
+                      <TableHead>Type</TableHead>
+                      <TableHead>Duration</TableHead>
+                      <TableHead className="text-right">Actions</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {(course.lessons || []).map(lesson => (
+                      <TableRow key={lesson.id}>
+                        <TableCell className="font-medium">
+                          <div className="flex items-center gap-2">
+                            {lesson.type === 'video' && <BookOpen className="h-4 w-4" />}
+                            {lesson.type === 'reading' && <FileText className="h-4 w-4" />}
+                            {lesson.title}
+                          </div>
+                          {lesson.description && (
+                            <p className="text-sm text-muted-foreground">{lesson.description}</p>
+                          )}
+                        </TableCell>
+                        <TableCell>
+                          <span className="capitalize">{lesson.type}</span>
+                        </TableCell>
+                        <TableCell>{lesson.duration}</TableCell>
+                        <TableCell className="text-right">
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            className="mr-2"
+                            onClick={() => handleEditLesson(course.id, lesson)}
+                          >
+                            <Edit className="h-4 w-4" />
+                          </Button>
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => handleDeleteLesson(course.id, lesson.id)}
+                          >
+                            <Trash2 className="h-4 w-4 text-red-500" />
+                          </Button>
+                        </TableCell>
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
+              </div>
+            ))}
+        </div>
+      )}
+
+      {/* Quiz Dialog */}
+      <Dialog open={openQuizDialog} onOpenChange={setOpenQuizDialog}>
+        <DialogContent className="max-w-2xl max-h-[80vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle>
+              {currentQuiz.id ? 'Edit Quiz' : 'Add Quiz'}
+            </DialogTitle>
+          </DialogHeader>
+          <form onSubmit={handleSubmitQuiz} className="space-y-6">
+            {currentQuiz.questions.map((question, qIndex) => (
+              <div key={question.id} className="border rounded-lg p-4 space-y-4">
+                <div className="flex justify-between items-center">
+                  <h4 className="font-medium">Question {qIndex + 1}</h4>
+                  {currentQuiz.questions.length > 1 && (
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      type="button"
+                      onClick={() => removeQuestion(question.id)}
+                    >
+                      <Trash2 className="h-4 w-4 text-red-500" />
+                    </Button>
+                  )}
+                </div>
+
+                <div className="space-y-2">
+                  <Label>Question Text*</Label>
+                  <Input
+                    value={question.question}
+                    onChange={(e) => updateQuestion(question.id, 'question', e.target.value)}
+                    required
+                  />
+                </div>
+
+                <div className="space-y-2">
+                  <Label>Options*</Label>
+                  {question.options.map((option, oIndex) => (
+                    <div key={oIndex} className="flex items-center space-x-2">
+                      <input
+                        type="radio"
+                        name={`correct-answer-${question.id}`}
+                        checked={question.correctAnswer === oIndex}
+                        onChange={() => updateQuestion(question.id, 'correctAnswer', oIndex)}
+                        className="h-4 w-4"
+                      />
+                      <Input
+                        value={option}
+                        onChange={(e) => updateOption(question.id, oIndex, e.target.value)}
+                        required
+                        placeholder={`Option ${oIndex + 1}`}
                       />
                     </div>
-                    <div className="flex justify-end space-x-2 pt-4">
-                      <Button variant="outline" onClick={() => setOpenLessonDialog(false)}>
-                        Cancel
-                      </Button>
-                      <Button type="submit">
-                        {currentLesson.id ? 'Update Lesson' : 'Add Lesson'}
-                      </Button>
-                    </div>
-                  </form>
-                </DialogContent>
-              </Dialog>
-            </div>
+                  ))}
+                </div>
 
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>Lesson</TableHead>
-                  <TableHead>Type</TableHead>
-                  <TableHead>Duration</TableHead>
-                  <TableHead className="text-right">Actions</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {course.lessons.map(lesson => (
-                  <TableRow key={lesson.id}>
-                    <TableCell className="font-medium">
-                      {lesson.title}
-                      {lesson.description && (
-                        <p className="text-sm text-muted-foreground">{lesson.description}</p>
-                      )}
-                    </TableCell>
-                    <TableCell>
-                      <span className="capitalize">{lesson.type}</span>
-                    </TableCell>
-                    <TableCell>{lesson.duration}</TableCell>
-                    <TableCell className="text-right">
-                      <Button 
-                        variant="ghost" 
-                        size="sm" 
-                        className="mr-2"
-                        onClick={() => handleEditLesson(course.id, lesson)}
-                      >
-                        <Edit className="h-4 w-4" />
-                      </Button>
-                      <Button 
-                        variant="ghost" 
-                        size="sm"
-                        onClick={() => handleDeleteLesson(course.id, lesson.id)}
-                      >
-                        <Trash2 className="h-4 w-4 text-red-500" />
-                      </Button>
-                    </TableCell>
-                  </TableRow>
-                ))}
-              </TableBody>
-            </Table>
-          </div>
-        ))}
-      </div>
+                <div className="space-y-2">
+                  <Label>Feedback</Label>
+                  <Input
+                    value={question.feedback}
+                    onChange={(e) => updateQuestion(question.id, 'feedback', e.target.value)}
+                    placeholder="Explanation for the correct answer"
+                  />
+                </div>
+              </div>
+            ))}
+
+            <div className="flex justify-between">
+              <Button
+                type="button"
+                variant="outline"
+                onClick={addQuestion}
+              >
+                <Plus className="h-4 w-4 mr-2" />
+                Add Another Question
+              </Button>
+
+              <div className="flex space-x-2">
+                <Button
+                  variant="outline"
+                  type="button"
+                  onClick={() => setOpenQuizDialog(false)}
+                >
+                  Cancel
+                </Button>
+                <Button type="submit" disabled={loading}>
+                  {currentQuiz.id ? 'Update Quiz' : 'Add Quiz'}
+                </Button>
+              </div>
+            </div>
+          </form>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };

@@ -1,47 +1,51 @@
 import React from 'react';
 import { Users, BookOpen, Award } from 'lucide-react';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
+import { useQuery } from '@tanstack/react-query';
 
 const Dashboard = () => {
-  // Mock stats data (without trend indicators)
-  const stats = {
-    users: 1250,
-    courses: 45,
-    certificates: 890
+  const { data: stats, isLoading } = useQuery({
+    queryKey: ['dashboardStats'],
+    queryFn: async () => {
+      const response = await fetch('/api/admin/dashboard/stats');
+      if (!response.ok) throw new Error('Failed to fetch stats');
+      return response.json();
+    }
+  });
+
+  if (isLoading) {
+    return (
+      <div className="container py-8">
+        <div className="flex justify-center items-center h-64">
+          <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-blue-500"></div>
+        </div>
+      </div>
+    );
+  }
+
+  // Fallback data if API doesn't respond
+  const safeStats = stats || {
+    totalUsers: 0,
+    totalCourses: 0,
+    totalCertificates: 0
   };
 
-  // Recent activity mock data
-  const recentActivity = [
-    {
-      id: 1,
-      type: 'user',
-      action: 'New registration',
-      name: 'John Smith',
-      time: '2 minutes ago'
-    },
-    {
-      id: 2,
-      type: 'course',
-      action: 'Course completed',
-      name: 'Introduction to React',
-      user: 'Jane Doe',
-      time: '15 minutes ago'
-    },
-    {
-      id: 3,
-      type: 'certificate',
-      action: 'Certificate issued',
-      name: 'Advanced JavaScript',
-      user: 'Robert Johnson',
-      time: '1 hour ago'
-    }
-  ];
+  // Simple percentage bars for visualization
+  const ProgressBar = ({ value, max = 100, color = 'bg-blue-500' }) => (
+    <div className="w-full bg-gray-200 rounded-full h-2.5">
+      <div 
+        className={`h-2.5 rounded-full ${color}`} 
+        style={{ width: `${Math.min((value / max) * 100, 100)}%` }}
+      ></div>
+    </div>
+  );
 
   return (
     <div className="container py-8">
       <h1 className="text-2xl font-bold mb-8">Dashboard Overview</h1>
       
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+      {/* Stats Cards */}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
         {/* Users Card */}
         <Card>
           <CardHeader className="flex flex-row items-center justify-between pb-2">
@@ -51,7 +55,11 @@ const Dashboard = () => {
             </div>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{stats.users}</div>
+            <div className="text-2xl font-bold mb-2">{safeStats.totalUsers}</div>
+            <ProgressBar value={safeStats.totalUsers} max={500} />
+            <p className="text-xs text-muted-foreground mt-2">
+              {Math.min((safeStats.totalUsers / 500) * 100, 100).toFixed(0)}% of target
+            </p>
           </CardContent>
         </Card>
 
@@ -59,12 +67,16 @@ const Dashboard = () => {
         <Card>
           <CardHeader className="flex flex-row items-center justify-between pb-2">
             <CardTitle className="text-sm font-medium">Courses</CardTitle>
-            <div className="p-2 rounded-full bg-green-100">
-              <BookOpen className="h-4 w-4 text-green-600" />
+            <div className="p-2 rounded-full bg-purple-100">
+              <BookOpen className="h-4 w-4 text-purple-600" />
             </div>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{stats.courses}</div>
+            <div className="text-2xl font-bold mb-2">{safeStats.totalCourses}</div>
+            <ProgressBar value={safeStats.totalCourses} max={20} color="bg-purple-500" />
+            <p className="text-xs text-muted-foreground mt-2">
+              {Math.min((safeStats.totalCourses / 20) * 100, 100).toFixed(0)}% of goal
+            </p>
           </CardContent>
         </Card>
 
@@ -72,49 +84,52 @@ const Dashboard = () => {
         <Card>
           <CardHeader className="flex flex-row items-center justify-between pb-2">
             <CardTitle className="text-sm font-medium">Certificates</CardTitle>
-            <div className="p-2 rounded-full bg-purple-100">
-              <Award className="h-4 w-4 text-purple-600" />
+            <div className="p-2 rounded-full bg-orange-100">
+              <Award className="h-4 w-4 text-orange-600" />
             </div>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{stats.certificates}</div>
+            <div className="text-2xl font-bold mb-2">{safeStats.totalCertificates}</div>
+            <ProgressBar value={safeStats.totalCertificates} max={safeStats.totalUsers || 1} color="bg-orange-500" />
+            <p className="text-xs text-muted-foreground mt-2">
+              {safeStats.totalUsers > 0 
+                ? `${Math.round((safeStats.totalCertificates / safeStats.totalUsers) * 100)}% of users certified`
+                : 'No users yet'}
+            </p>
           </CardContent>
         </Card>
       </div>
 
-      {/* Recent Activity Section */}
-      <Card>
-        <CardHeader>
-          <CardTitle>Recent Activity</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="space-y-4">
-            {recentActivity.map(activity => (
-              <div key={activity.id} className="flex items-center justify-between p-4 border rounded-lg">
-                <div className="flex items-center gap-4">
-                  <div className={`p-2 rounded-full ${
-                    activity.type === 'user' ? 'bg-blue-100 text-blue-600' :
-                    activity.type === 'course' ? 'bg-green-100 text-green-600' :
-                    'bg-purple-100 text-purple-600'
-                  }`}>
-                    {activity.type === 'user' && <Users className="h-4 w-4" />}
-                    {activity.type === 'course' && <BookOpen className="h-4 w-4" />}
-                    {activity.type === 'certificate' && <Award className="h-4 w-4" />}
-                  </div>
-                  <div>
-                    <p className="font-medium">{activity.action}</p>
-                    <p className="text-sm text-muted-foreground">
-                      {activity.name}
-                      {activity.user && ` by ${activity.user}`}
-                    </p>
-                  </div>
-                </div>
-                <p className="text-sm text-muted-foreground">{activity.time}</p>
-              </div>
-            ))}
+      {/* Simple Visualization Section */}
+      <div className="bg-white rounded-lg border p-6 shadow-sm mb-8">
+        <h2 className="text-lg font-semibold mb-4">Certification Rate</h2>
+        <div className="flex items-center justify-between gap-4">
+          <div className="text-center">
+            <div className="text-3xl font-bold text-blue-600">
+              {safeStats.totalUsers}
+            </div>
+            <div className="text-sm text-muted-foreground">Total Users</div>
           </div>
-        </CardContent>
-      </Card>
+          <div className="flex-1 text-center">
+            <div className="h-2 bg-gray-200 rounded-full overflow-hidden">
+              <div 
+                className="h-full bg-orange-500" 
+                style={{ 
+                  width: `${safeStats.totalUsers > 0 
+                    ? Math.min((safeStats.totalCertificates / safeStats.totalUsers) * 100, 100) 
+                    : 0}%` 
+                }}
+              ></div>
+            </div>
+          </div>
+          <div className="text-center">
+            <div className="text-3xl font-bold text-orange-600">
+              {safeStats.totalCertificates}
+            </div>
+            <div className="text-sm text-muted-foreground">Certificates</div>
+          </div>
+        </div>
+      </div>
     </div>
   );
 };

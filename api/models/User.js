@@ -31,6 +31,14 @@ const UserSchema = new mongoose.Schema({
     type: Date,
     default: Date.now,
   },
+  certificates: [{
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'Certificate'
+  }],
+  progresses: [{
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'UserProgress'
+  }]
 });
 
 UserSchema.pre('save', async function (next) {

@@ -214,3 +214,35 @@ exports.verifyCertificate = async (req, res) => {
       });
     }
   };
+
+  // Get certificate by ID with user and course details
+exports.getCertificateById = async (req, res) => {
+  try {
+    const certificate = await Certificate.findById(req.params.id)
+      .populate('user', 'firstName lastName')
+      .populate('course', 'title');
+
+    if (!certificate) {
+      return res.status(404).json({
+        success: false,
+        errorMessage: "Certificate not found"
+      });
+    }
+
+    res.json({
+      success: true,
+      certificate: {
+        ...certificate._doc,
+        name: `${certificate.user.firstName} ${certificate.user.lastName}`,
+        courseTitle: certificate.course.title,
+        issuer: "DIGILEARN Academy",
+        title: "Course Instructor"
+      }
+    });
+  } catch (err) {
+    res.status(500).json({
+      success: false,
+      errorMessage: "Server error"
+    });
+  }
+};
