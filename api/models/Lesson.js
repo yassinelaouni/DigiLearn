@@ -3,40 +3,49 @@ const mongoose = require('mongoose');
 const LessonSchema = new mongoose.Schema({
   title: {
     type: String,
-    required: true,
+    required: true
   },
   moduleId: {
     type: mongoose.Schema.Types.ObjectId,
-    ref: 'Module',
-    required: true,
+    ref: 'Module'
+  },
+  courseId: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'Course'
   },
   duration: {
     type: String,
-    required: true,
+    default: '10 min'
   },
   type: {
     type: String,
-    enum: ['video', 'text', 'quiz'],
-    default: 'video',
+    enum: ['video', 'reading', 'quiz'],
+    default: 'video'
   },
   videoUrl: {
-    type: String,
+    type: String
+  },
+  readingContent: {
+    type: String
+  },
+  pdfUrl: {
+    type: String
   },
   description: {
-    type: String,
+    type: String
   },
   order: {
     type: Number,
-    required: true,
-  },
-  createdAt: {
-    type: Date,
-    default: Date.now,
+    required: true
   },
   progresses: [{
     type: mongoose.Schema.Types.ObjectId,
     ref: 'UserProgress'
-  }]
+  }],
+  createdAt: {
+    type: Date,
+    default: Date.now
+  }
 });
 
 module.exports = mongoose.model('Lesson', LessonSchema);

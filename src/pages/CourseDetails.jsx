@@ -1,7 +1,19 @@
 import { useState, useEffect } from 'react';
 import { useParams } from "react-router-dom";
 import Layout from "@/components/layout/Layout";
-import { ArrowLeft, Play, MessageSquareWarning, Clock, BarChart, Check, ChevronDown, ChevronUp, Award } from "lucide-react";
+import { 
+  ArrowLeft, 
+  Play, 
+  MessageSquareWarning, 
+  Clock, 
+  BarChart, 
+  Check, 
+  ChevronDown, 
+  ChevronUp, 
+  Award, 
+  FileText,
+  Download as DownloadIcon
+} from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Link } from "react-router-dom";
 import { Modal, IconButton } from '@mui/material';
@@ -30,8 +42,8 @@ const CourseDetails = () => {
           throw new Error(courseData.errorMessage || 'Course not found');
         }
 
-        // Fetch user progress - using a mock userId for now
-        const userId = '1'; // Replace with actual user ID from auth context
+        // Fetch user progress
+        const userId = '1';
         const progressResponse = await fetch(`/api/user/progress?userId=${userId}`);
         const progressData = await progressResponse.json();
 
@@ -54,16 +66,13 @@ const CourseDetails = () => {
 
       // Optimistic update
       setUserProgress(prev => {
-        // Check if already completed
         if (prev.some(p => p.lessonId === lessonId && p.completed)) {
           return prev;
         }
 
-        // Add new progress record
         return [...prev, {
           lessonId,
           completed: true,
-          // Add temporary flag for optimistic update
           _optimistic: true
         }];
       });
@@ -77,13 +86,11 @@ const CourseDetails = () => {
       const data = await response.json();
 
       if (data.success) {
-        // Replace optimistic record with server response
         setUserProgress(prev => [
           ...prev.filter(p => !(p.lessonId === lessonId && p._optimistic)),
           { lessonId, completed: true }
         ]);
       } else {
-        // Revert on failure
         setUserProgress(prev => prev.filter(p => p.lessonId !== lessonId));
         console.error('Failed to mark complete:', data.error);
       }
@@ -93,15 +100,9 @@ const CourseDetails = () => {
     }
   };
 
-  // Enhanced completion check
   const isLessonCompleted = (lessonId) => {
     return userProgress.some(p => p.lessonId === lessonId && p.completed);
   };
-
-  // Debug effect
-  useEffect(() => {
-    console.log('Current progress:', userProgress);
-  }, [userProgress]);
 
   const toggleLesson = (lessonId) => {
     setExpandedLessons(prev => ({
@@ -119,7 +120,6 @@ const CourseDetails = () => {
     setIsVideoOpen(false);
     setCurrentVideo(null);
   };
-
 
   if (loading) {
     return (
@@ -173,11 +173,6 @@ const CourseDetails = () => {
               </p>
 
               <div className="flex items-center gap-4 mb-6">
-                <div className="flex items-center">
-                  <span className="text-yellow-400 mr-1">★</span>
-                  <span className="font-medium">{course.rating}</span>
-                </div>
-
                 <div className="flex items-center gap-1 text-muted-foreground">
                   <Clock className="h-4 w-4" />
                   <span>{course.duration}</span>
@@ -228,77 +223,99 @@ const CourseDetails = () => {
                 <div className="p-6">
                   <h3 className="font-medium text-lg mb-4">{module.title}</h3>
                   <div className="space-y-3">
-                    {course.modules?.map((module) => (
-                      <div key={module.id} className="border-b last:border-b-0">
-                        <div className="p-6">
-                          <div className="space-y-3">
-                            {module.lessons?.map((lesson) => {
-                              const completed = isLessonCompleted(lesson.id);
+                    {module.lessons?.map((lesson) => {
+                      const completed = isLessonCompleted(lesson.id);
 
-                              return (
-                                <div key={lesson.id} className="rounded-lg overflow-hidden border border-gray-200">
-                                  {/* Lesson Header */}
-                                  <div
-                                    className={`flex items-center justify-between p-4 ${completed ? 'bg-green-50' : 'bg-gray-50'
-                                      } hover:bg-gray-100 cursor-pointer transition-colors`}
-                                    onClick={() => toggleLesson(lesson.id)}
-                                  >
-                                    <div className="flex items-center gap-3">
-                                      {completed ? (
-                                        <Check className="h-4 w-4 text-green-600 flex-shrink-0" />
-                                      ) : (
-                                        <Play className="h-4 w-4 text-purple-600 flex-shrink-0" />
-                                      )}
-                                      <div>
-                                        <h4 className="font-medium">{lesson.title}</h4>
-                                        {lesson.duration && (
-                                          <span className="text-xs text-muted-foreground">
-                                            {lesson.duration}
-                                          </span>
-                                        )}
-                                      </div>
-                                    </div>
-                                    {expandedLessons[lesson.id] ? (
-                                      <ChevronUp className="h-4 w-4 text-muted-foreground" />
-                                    ) : (
-                                      <ChevronDown className="h-4 w-4 text-muted-foreground" />
-                                    )}
-                                  </div>
-
-                                  {/* Lesson Content */}
-                                  {expandedLessons[lesson.id] && (
-                                    <div className="p-4 bg-white">
-                                      {lesson.description && (
-                                        <p className="text-muted-foreground mb-4">
-                                          {lesson.description}
-                                        </p>
-                                      )}
-                                      <div className="flex gap-2">
-                                        <Button
-                                          variant="outline"
-                                          onClick={() => handleVideoOpen(lesson.videoUrl)}
-                                        >
-                                          <Play className="h-4 w-4 mr-2" />
-                                          Watch Video
-                                        </Button>
-                                        {!completed && (
-                                          <Button
-                                            variant="default"
-                                            onClick={() => markLessonComplete(lesson.id)}
-                                          >
-                                            Mark as Complete
-                                          </Button>
-                                        )}
-                                      </div>
-                                    </div>
-                                  )}
-                                </div>
-                              );
-                            })}
+                      return (
+                        <div key={lesson.id} className="rounded-lg overflow-hidden border border-gray-200">
+                          {/* Lesson Header */}
+                          <div
+                            className={`flex items-center justify-between p-4 ${completed ? 'bg-green-50' : 'bg-gray-50'
+                              } hover:bg-gray-100 cursor-pointer transition-colors`}
+                            onClick={() => toggleLesson(lesson.id)}
+                          >
+                            <div className="flex items-center gap-3">
+                              {completed ? (
+                                <Check className="h-4 w-4 text-green-600 flex-shrink-0" />
+                              ) : lesson.type === 'video' ? (
+                                <Play className="h-4 w-4 text-purple-600 flex-shrink-0" />
+                              ) : (
+                                <FileText className="h-4 w-4 text-blue-600 flex-shrink-0" />
+                              )}
+                              <div>
+                                <h4 className="font-medium">{lesson.title}</h4>
+                                {lesson.duration && (
+                                  <span className="text-xs text-muted-foreground">
+                                    {lesson.duration} • {lesson.type === 'video' ? 'Video' : 'Reading'}
+                                  </span>
+                                )}
+                              </div>
+                            </div>
+                            {expandedLessons[lesson.id] ? (
+                              <ChevronUp className="h-4 w-4 text-muted-foreground" />
+                            ) : (
+                              <ChevronDown className="h-4 w-4 text-muted-foreground" />
+                            )}
                           </div>
+
+                          {/* Lesson Content */}
+                          {expandedLessons[lesson.id] && (
+                            <div className="p-4 bg-white">
+                              {lesson.description && (
+                                <p className="text-muted-foreground mb-4">
+                                  {lesson.description}
+                                </p>
+                              )}
+                              
+                              {/* Reading content */}
+                              {lesson.type === 'reading' && lesson.readingContent && (
+                                <div className="prose max-w-none mb-4 whitespace-pre-line">
+                                  {lesson.readingContent}
+                                </div>
+                              )}
+                              
+                              {/* PDF download */}
+                              {lesson.pdfUrl && (
+                                <div className="mb-4">
+                                  <Button variant="outline" asChild>
+                                    <a 
+                                      href={lesson.pdfUrl} 
+                                      target="_blank" 
+                                      rel="noopener noreferrer"
+                                      className="flex items-center gap-2"
+                                    >
+                                      <DownloadIcon className="h-4 w-4" />
+                                      Download PDF
+                                    </a>
+                                  </Button>
+                                </div>
+                              )}
+                              
+                              <div className="flex gap-2">
+                                {lesson.type === 'video' ? (
+                                  <Button
+                                    variant="outline"
+                                    onClick={() => handleVideoOpen(lesson.videoUrl)}
+                                  >
+                                    <Play className="h-4 w-4 mr-2" />
+                                    Watch Video
+                                  </Button>
+                                ) : null}
+                                
+                                {!completed && (
+                                  <Button
+                                    variant="default"
+                                    onClick={() => markLessonComplete(lesson.id)}
+                                  >
+                                    Mark as Complete
+                                  </Button>
+                                )}
+                              </div>
+                            </div>
+                          )}
                         </div>
-                      </div>
-                    ))}
+                      );
+                    })}
                   </div>
                 </div>
               </div>

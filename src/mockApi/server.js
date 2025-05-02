@@ -472,40 +472,6 @@ createServer({
       };
     });
 
-    // Get course by slug
-    this.get('/courses/:slug', (schema, request) => {
-      const slug = request.params.slug;
-      const course = schema.courses.findBy({ slug });
-
-      if (!course) {
-        return {
-          success: false,
-          course: null,
-          errorCode: "CourseNotFound",
-          errorMessage: "Course not found",
-          errors: {}
-        };
-      }
-
-      // Load related data
-      const modules = schema.modules.where({ courseId: course.id });
-      const courseData = {
-        ...course.attrs,
-        modules: modules.models.map(module => ({
-          ...module.attrs,
-          lessons: schema.lessons.where({ moduleId: module.id }).models.map(lesson => lesson.attrs)
-        })),
-        learningOutcomes: course.learningOutcomes || []
-      };
-
-      return {
-        success: true,
-        course: courseData,
-        errorCode: "",
-        errorMessage: "",
-        errors: {}
-      };
-    });
 
     // Get all featured courses
     this.get('/courses/featured', (schema) => {
@@ -684,6 +650,45 @@ createServer({
           lessonId: p.lessonId,
           completed: p.completed
         }))
+      };
+    });
+
+    // Add this POST endpoint
+    this.post('/user/progress', (schema, request) => {
+      const attrs = JSON.parse(request.requestBody);
+      const { userId, lessonId } = attrs;
+
+      // Check if progress already exists
+      const existingProgress = schema.userProgresses.findBy({
+        userId,
+        lessonId
+      });
+
+      if (existingProgress) {
+        // Update existing progress
+        existingProgress.update({ completed: true });
+        return {
+          success: true,
+          progress: {
+            lessonId: existingProgress.lessonId,
+            completed: existingProgress.completed
+          }
+        };
+      }
+
+      // Create new progress
+      const newProgress = schema.userProgresses.create({
+        userId,
+        lessonId,
+        completed: true
+      });
+
+      return {
+        success: true,
+        progress: {
+          lessonId: newProgress.lessonId,
+          completed: newProgress.completed
+        }
       };
     });
 
@@ -999,6 +1004,20 @@ createServer({
       return { success: true };
     });
 
+    // DELETE quiz endpoint
+    this.delete('/quizzes/:id', (schema, request) => {
+      const id = request.params.id;
+      schema.quizzes.find(id).destroy();
+      return new Response(204);
+    });
+
+    // DELETE questions by quizId endpoint
+    this.delete('/questions', (schema, request) => {
+      const quizId = request.queryParams.quizId;
+      schema.questions.where({ quizId }).destroy();
+      return new Response(204);
+    });
+
     // File Upload Endpoint (simulated)
     this.post('/upload', (schema, request) => {
       // This is a simulation - in a real app, you'd handle file uploads differently
@@ -1027,6 +1046,141 @@ createServer({
         errorCode: "",
         errorMessage: "",
         errors: {}
+      };
+    });
+
+    // In your Mirage server setup
+    this.get('/certificates', (schema) => {
+      return schema.certificates.all().models.map(cert => {
+        // Find related user and course
+        const user = schema.users.find(cert.userId);
+        const course = schema.courses.find(cert.courseId);
+
+        return {
+          id: cert.id,
+          certificateId: cert.certificateId,
+          userId: cert.userId,
+          userName: user ? `${user.firstName} ${user.lastName}` : 'Unknown User',
+          courseId: cert.courseId,
+          courseTitle: course ? course.title : 'Unknown Course',
+          issueDate: cert.issueDate,
+          isVerified: cert.isVerified,
+          score: cert.score
+        };
+      });
+    });
+
+    // In your Mirage server setup
+    this.get('/admin', (schema) => {
+      const admin = schema.admins.first();
+      return {
+        admin: {
+          id: admin.id,
+          firstName: admin.firstName,
+          lastName: admin.lastName,
+          email: admin.email,
+          // Don't return password in GET request
+          createdAt: admin.createdAt,
+          avatar: admin.avatar
+        }
+      };
+    });
+
+    // Update admin details
+    this.patch('/admin', (schema, request) => {
+      const attrs = JSON.parse(request.requestBody);
+      const admin = schema.admins.first();
+
+      // Basic validation
+      if (attrs.newPassword && attrs.newPassword !== attrs.confirmPassword) {
+        return new Response(400, {}, {
+          error: 'New password and confirmation do not match'
+        });
+      }
+
+      // Verify current password if changing password
+      if (attrs.currentPassword && attrs.currentPassword !== admin.password) {
+        return new Response(400, {}, {
+          error: 'Current password is incorrect'
+        });
+      }
+
+      // Update admin
+      admin.update({
+        firstName: attrs.firstName || admin.firstName,
+        lastName: attrs.lastName || admin.lastName,
+        email: attrs.email || admin.email,
+        password: attrs.newPassword || admin.password
+      });
+
+      return admin;
+    });
+
+    // Add this to your Mirage routes
+    this.get('/pdfs/:filename', () => {
+      return new Response(404, {}, { error: 'PDF not found in mock server' });
+    });
+
+    // Or to mock PDF downloads:
+    this.get('/pdfs/:filename', () => {
+      return new Response(200, {
+        'Content-Type': 'application/pdf',
+        'Content-Disposition': 'attachment'
+      }, 'Mock PDF content');
+    });
+
+    this.get('/courses/:slug', (schema, request) => {
+      const slug = request.params.slug;
+      const course = schema.courses.findBy({ slug });
+    
+      if (!course) {
+        return new Response(404, {}, {
+          success: false,
+          error: 'Course not found'
+        });
+      }
+    
+      const modules = schema.modules.where({ courseId: course.id });
+    
+      return {
+        success: true,
+        course: {
+          ...course.attrs,
+          modules: modules.models.map(module => ({
+            ...module.attrs,
+            lessons: schema.lessons.where({ moduleId: module.id }).models.map(lesson => {
+              // Base lesson object with all common fields
+              const baseLesson = {
+                id: lesson.id,
+                title: lesson.title,
+                duration: lesson.duration || '10 min',
+                type: lesson.type || 'video',
+                description: lesson.description || '',
+                moduleId: module.id,
+                courseId: course.id
+              };
+    
+              // Handle reading lessons
+              if (lesson.type === 'reading') {
+                return {
+                  ...baseLesson,
+                  readingContent: lesson.readingContent || 'Default reading content...',
+                  pdfUrl: lesson.attrs.pdfUrl || "https://www.cs.cmu.edu/afs/cs.cmu.edu/user/gchen/www/download/java/LearnJava.pdf"
+                };
+              }
+    
+              // Handle video lessons
+              if (lesson.type === 'video') {
+                return {
+                  ...baseLesson,
+                  videoUrl: lesson.videoUrl || 'https://www.youtube.com/embed/dQw4w9WgXcQ'
+                };
+              }
+    
+              return baseLesson;
+            })
+          }))
+        }
       };
     });
   },
@@ -1379,7 +1533,56 @@ createServer({
         ],
         modules: []
       },
-
+      {
+        id: '12',
+        title: 'Effective Business Writing',
+        slug: 'business-writing',
+        category: 'Professional Skills',
+        thumbnail: 'https://images.unsplash.com/photo-1454165804606-c3d57bc86b40?auto=format&fit=crop&w=800&q=80',
+        rating: 4.7,
+        duration: '75 mins',
+        level: 'Beginner',
+        featured: true,
+        learningOutcomes: [
+          "Write clear business emails",
+          "Structure professional reports",
+          "Create persuasive proposals",
+          "Edit for clarity and conciseness",
+          "Adapt tone for different audiences"
+        ],
+        modules: [
+          {
+            id: 'm12',
+            title: 'Business Writing Fundamentals',
+            lessons: [
+              {
+                id: 'l21',
+                title: 'Principles of Effective Writing',
+                duration: '20 min',
+                type: 'video',
+                videoUrl: 'https://www.youtube.com/embed/dQw4w9WgXcQ',
+                description: "Learn the core principles that make business writing effective"
+              },
+              {
+                id: 'l22',
+                title: 'Email Etiquette Guide',
+                duration: '15 min',
+                type: 'reading',
+                readingContent: 'This comprehensive guide covers all aspects of professional email communication...',
+                pdfUrl: "https://www.cs.cmu.edu/afs/cs.cmu.edu/user/gchen/www/download/java/LearnJava.pdf"
+              },
+              {
+                id: 'l23',
+                title: 'Report Writing Workshop',
+                duration: '25 min',
+                type: 'reading',
+                readingContent: 'Step-by-step instructions for creating professional business reports...'
+                // No PDF for this one
+              }
+            ]
+          }
+        ]
+      }
       // Continue this pattern up to Course 20...
       // Each course would have similar structure with appropriate details
     ];
@@ -1420,6 +1623,7 @@ createServer({
         });
       });
     });
+
     server.create('certificate', {
       id: 'cert-1',
       certificateId: 'CERT-ABC123',
@@ -1433,7 +1637,7 @@ createServer({
     server.create('certificate', {
       id: 'cert-2',
       certificateId: 'CERT-DEF456',
-      userId: '1',
+      userId: '2',
       courseId: '3', // Mastering Microsoft Office Essentials
       issueDate: new Date('2024-02-20').toISOString(),
       isVerified: true,
@@ -1443,7 +1647,7 @@ createServer({
     server.create('certificate', {
       id: 'cert-3',
       certificateId: 'CERT-GHI789',
-      userId: '1',
+      userId: '3',
       courseId: '10', // Web Development Fundamentals
       issueDate: new Date('2024-03-10').toISOString(),
       isVerified: false, // Pending verification
@@ -1451,10 +1655,10 @@ createServer({
     });
 
     // In your seeds function:
-const quiz1 = server.create('quiz', {
-  id: `quiz-${uuidv4()}`,
-  courseId: '1'
-});
+    const quiz1 = server.create('quiz', {
+      id: `quiz-${uuidv4()}`,
+      courseId: '1'
+    });
 
 
     // Create questions with unique IDs
@@ -1468,7 +1672,7 @@ const quiz1 = server.create('quiz', {
     });
 
     server.create('question', {
-  id: `q-${uuidv4()}`,
+      id: `q-${uuidv4()}`,
       quizId: quiz1.id,
       question: "How can you transfer designs between devices in Canva?",
       options: ["Option A", "Option B", "Option C", "Option D"],

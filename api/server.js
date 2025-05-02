@@ -9,8 +9,9 @@ const authRoutes = require('./routes/authRoutes');
 const userRoutes = require('./routes/userRoutes');
 const adminRoutes = require('./routes/adminRoutes');
 const courseRoutes = require('./routes/courseRoutes');
-const certificateRoutes = require('./routes/certificateRoutes');
+const lessonRoutes = require('./routes/lessonRoutes');
 const quizRoutes = require('./routes/quizRoutes');
+const certificateRoutes = require('./routes/certificateRoutes');
 
 // Connect to database
 connectDB();
@@ -27,8 +28,9 @@ app.use('/api', authRoutes);
 app.use('/api', userRoutes);
 app.use('/api', adminRoutes);
 app.use('/api', courseRoutes);
-app.use('/api', certificateRoutes);
+app.use('/api', lessonRoutes);
 app.use('/api', quizRoutes);
+app.use('/api', certificateRoutes);
 
 // Error handling middleware
 app.use((err, req, res, next) => {
@@ -36,7 +38,7 @@ app.use((err, req, res, next) => {
   res.status(500).json({
     success: false,
     errorMessage: 'Server error',
-    errors: err.message,
+    errors: err.message
   });
 });
 

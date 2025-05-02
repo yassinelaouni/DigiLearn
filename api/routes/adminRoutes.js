@@ -1,11 +1,14 @@
 const express = require('express');
 const router = express.Router();
 const { protect, adminProtect } = require('../middlewares/auth');
-const { getAllUsers } = require('../controllers/userController');
-const { getAllCertificates, adminVerifyCertificate } = require('../controllers/certificateController');
+const {
+  getAdminDashboardStats,
+  getAdminProfile,
+  updateAdminProfile
+} = require('../controllers/adminController');
 
-router.get('/users/get/all', protect, adminProtect, getAllUsers);
-router.get('/admin/certificates', protect, adminProtect, getAllCertificates);
-router.patch('/admin/certificates/verify/:certificateId', protect, adminProtect, adminVerifyCertificate);
+router.get('/admin/dashboard/stats', protect, adminProtect, getAdminDashboardStats);
+router.get('/admin/profile', protect, adminProtect, getAdminProfile);
+router.patch('/admin/profile', protect, adminProtect, updateAdminProfile);
 
 module.exports = router;

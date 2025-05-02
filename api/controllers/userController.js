@@ -2,6 +2,7 @@ const User = require('../models/User');
 const Certificate = require('../models/Certificate');
 const UserProgress = require('../models/UserProgress');
 const Course = require('../models/Course');
+const Lesson = require('../models/Lesson');
 
 // Update user avatar
 exports.updateAvatar = async (req, res) => {
@@ -12,9 +13,9 @@ exports.updateAvatar = async (req, res) => {
       return res.status(404).json({
         success: false,
         updated: {},
-        errorCode: 'UserNotFound',
-        errorMessage: `User with ID ${req.user.id} not found`,
-        errors: {},
+        errorCode: "UserNotFound",
+        errorMessage: `User not found`,
+        errors: {}
       });
     }
 
@@ -24,15 +25,15 @@ exports.updateAvatar = async (req, res) => {
     res.json({
       success: true,
       updated: { avatar: user.avatar, userId: user._id },
-      errorCode: '',
-      errorMessage: 'Avatar updated successfully',
-      errors: {},
+      errorCode: "",
+      errorMessage: "Avatar updated successfully",
+      errors: {}
     });
   } catch (err) {
     res.status(500).json({
       success: false,
       errorMessage: 'Server error',
-      errors: err.message,
+      errors: err.message
     });
   }
 };
@@ -46,9 +47,9 @@ exports.updateFirstName = async (req, res) => {
       return res.status(404).json({
         success: false,
         updated: {},
-        errorCode: 'UserNotFound',
-        errorMessage: `User with ID ${req.user.id} not found`,
-        errors: {},
+        errorCode: "UserNotFound",
+        errorMessage: `User not found`,
+        errors: {}
       });
     }
 
@@ -58,15 +59,15 @@ exports.updateFirstName = async (req, res) => {
     res.json({
       success: true,
       updated: { firstName: user.firstName, userId: user._id },
-      errorCode: '',
-      errorMessage: 'First name updated successfully',
-      errors: {},
+      errorCode: "",
+      errorMessage: "First name updated successfully",
+      errors: {}
     });
   } catch (err) {
     res.status(500).json({
       success: false,
       errorMessage: 'Server error',
-      errors: err.message,
+      errors: err.message
     });
   }
 };
@@ -80,9 +81,9 @@ exports.updateLastName = async (req, res) => {
       return res.status(404).json({
         success: false,
         updated: {},
-        errorCode: 'UserNotFound',
-        errorMessage: `User with ID ${req.user.id} not found`,
-        errors: {},
+        errorCode: "UserNotFound",
+        errorMessage: `User not found`,
+        errors: {}
       });
     }
 
@@ -92,15 +93,15 @@ exports.updateLastName = async (req, res) => {
     res.json({
       success: true,
       updated: { lastName: user.lastName, userId: user._id },
-      errorCode: '',
-      errorMessage: 'Last name updated successfully',
-      errors: {},
+      errorCode: "",
+      errorMessage: "Last name updated successfully",
+      errors: {}
     });
   } catch (err) {
     res.status(500).json({
       success: false,
       errorMessage: 'Server error',
-      errors: err.message,
+      errors: err.message
     });
   }
 };
@@ -114,27 +115,34 @@ exports.updatePassword = async (req, res) => {
       return res.status(404).json({
         success: false,
         updated: {},
-        errorCode: 'UserNotFound',
-        errorMessage: `User with ID ${req.user.id} not found`,
-        errors: {},
+        errorCode: "UserNotFound",
+        errorMessage: `User not found`,
+        errors: {}
       });
     }
 
-    user.password = req.body.password;
+    if (!(await bcrypt.compare(req.body.currentPassword, user.password))) {
+      return res.status(400).json({
+        success: false,
+        errorMessage: 'Current password is incorrect'
+      });
+    }
+
+    user.password = req.body.newPassword;
     await user.save();
 
     res.json({
       success: true,
       updated: { userId: user._id },
-      errorCode: '',
-      errorMessage: 'Password updated successfully',
-      errors: {},
+      errorCode: "",
+      errorMessage: "Password updated successfully",
+      errors: {}
     });
   } catch (err) {
     res.status(500).json({
       success: false,
       errorMessage: 'Server error',
-      errors: err.message,
+      errors: err.message
     });
   }
 };
@@ -148,9 +156,9 @@ exports.getProfile = async (req, res) => {
       return res.status(404).json({
         success: false,
         user: {},
-        errorCode: 'UserNotFound',
-        errorMessage: `User with ID ${req.user.id} not found`,
-        errors: {},
+        errorCode: "UserNotFound",
+        errorMessage: `User not found`,
+        errors: {}
       });
     }
 
@@ -163,16 +171,18 @@ exports.getProfile = async (req, res) => {
         lastName: user.lastName,
         balance: user.balance,
         avatar: user.avatar,
+        role: user.role,
+        createdAt: user.createdAt
       },
-      errorCode: '',
-      errorMessage: '',
-      errors: {},
+      errorCode: "",
+      errorMessage: "",
+      errors: {}
     });
   } catch (err) {
     res.status(500).json({
       success: false,
       errorMessage: 'Server error',
-      errors: err.message,
+      errors: err.message
     });
   }
 };
@@ -190,16 +200,63 @@ exports.getAllUsers = async (req, res) => {
         firstName: user.firstName,
         lastName: user.lastName,
         avatar: user.avatar,
+        role: user.role || 'student',
+        createdAt: user.createdAt
       })),
-      errorCode: '',
-      errorMessage: '',
-      errors: {},
+      errorCode: "",
+      errorMessage: "",
+      errors: {}
     });
   } catch (err) {
     res.status(500).json({
       success: false,
       errorMessage: 'Server error',
-      errors: err.message,
+      errors: err.message
+    });
+  }
+};
+
+// Delete user (admin only)
+exports.deleteUser = async (req, res) => {
+  try {
+    await User.findByIdAndDelete(req.params.id);
+    
+    res.json({
+      success: true,
+      errorCode: "",
+      errorMessage: "",
+      errors: {}
+    });
+  } catch (err) {
+    res.status(500).json({
+      success: false,
+      errorMessage: 'Server error',
+      errors: err.message
+    });
+  }
+};
+
+// Update user (admin only)
+exports.updateUser = async (req, res) => {
+  try {
+    const user = await User.findByIdAndUpdate(
+      req.params.id,
+      req.body,
+      { new: true }
+    ).select('-password');
+
+    res.json({
+      success: true,
+      user,
+      errorCode: "",
+      errorMessage: "",
+      errors: {}
+    });
+  } catch (err) {
+    res.status(500).json({
+      success: false,
+      errorMessage: 'Server error',
+      errors: err.message
     });
   }
 };
@@ -248,7 +305,7 @@ exports.getUserDashboard = async (req, res) => {
         name: `${user.firstName} ${user.lastName}`,
         stats: {
           tutorialsCompleted: certificates.length,
-          quizzesTaken: 0, // You'll need a Quiz model for this
+          quizzesTaken: 0, // You'll need to implement this
           lessonsCompleted: userProgress.length
         },
         recentCourses

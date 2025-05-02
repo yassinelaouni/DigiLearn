@@ -6,30 +6,35 @@ const UserSchema = new mongoose.Schema({
     type: String,
     required: true,
     unique: true,
+    trim: true,
+    lowercase: true
   },
   password: {
     type: String,
-    required: true,
+    required: true
   },
   firstName: {
     type: String,
     required: true,
+    trim: true
   },
   lastName: {
     type: String,
     required: true,
-  },
-  balance: {
-    type: Number,
-    default: 0,
+    trim: true
   },
   avatar: {
     type: String,
-    default: null,
+    default: null
   },
-  createdAt: {
-    type: Date,
-    default: Date.now,
+  balance: {
+    type: Number,
+    default: 0
+  },
+  role: {
+    type: String,
+    enum: ['student', 'instructor', 'admin'],
+    default: 'student'
   },
   certificates: [{
     type: mongoose.Schema.Types.ObjectId,
@@ -38,10 +43,14 @@ const UserSchema = new mongoose.Schema({
   progresses: [{
     type: mongoose.Schema.Types.ObjectId,
     ref: 'UserProgress'
-  }]
+  }],
+  createdAt: {
+    type: Date,
+    default: Date.now
+  }
 });
 
-UserSchema.pre('save', async function (next) {
+UserSchema.pre('save', async function(next) {
   if (!this.isModified('password')) return next();
   this.password = await bcrypt.hash(this.password, 10);
   next();

@@ -1,5 +1,5 @@
-import React, { useState } from 'react';
-import { Award, Search, Check, X, Download } from 'lucide-react';
+import React, { useState, useEffect } from 'react';
+import { Search, Download } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import {
@@ -12,54 +12,44 @@ import {
 } from '@/components/ui/table';
 
 const AdminCertificates = () => {
-  // Mock certificates data
-  const [certificates, setCertificates] = useState([
-    {
-      certificateId: 'CERT-001',
-      userId: '1',
-      userName: 'John Doe',
-      courseId: 'COURSE-101',
-      courseTitle: 'Introduction to React',
-      issueDate: '2023-05-01T00:00:00Z',
-      isVerified: true
-    },
-    {
-      certificateId: 'CERT-002',
-      userId: '2',
-      userName: 'Jane Smith',
-      courseId: 'COURSE-102',
-      courseTitle: 'Advanced JavaScript',
-      issueDate: '2023-05-15T00:00:00Z',
-      isVerified: false
-    },
-    {
-      certificateId: 'CERT-003',
-      userId: '3',
-      userName: 'Robert Johnson',
-      courseId: 'COURSE-103',
-      courseTitle: 'Node.js Fundamentals',
-      issueDate: '2023-06-01T00:00:00Z',
-      isVerified: true
-    }
-  ]);
-
+  const [certificates, setCertificates] = useState([]);
   const [searchTerm, setSearchTerm] = useState('');
+  const [loading, setLoading] = useState(true);
 
-  const filteredCerts = certificates.filter(cert =>
-    cert.userName.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    cert.courseTitle.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    cert.certificateId.toLowerCase().includes(searchTerm.toLowerCase())
-  );
+  useEffect(() => {
+    const fetchCertificates = async () => {
+      try {
+        const response = await fetch('/api/certificates');
+        if (!response.ok) throw new Error('Failed to fetch certificates');
+        const data = await response.json();
+        setCertificates(data);
+      } catch (error) {
+        console.error('Error:', error);
+      } finally {
+        setLoading(false);
+      }
+    };
 
-  const handleVerify = (certificateId) => {
-    setCertificates(certs => certs.map(c => 
-      c.certificateId === certificateId ? { ...c, isVerified: true } : c
-    ));
-  };
+    fetchCertificates();
+  }, []);
 
-  const handleDelete = (certificateId) => {
-    setCertificates(certs => certs.filter(c => c.certificateId !== certificateId));
-  };
+  const filteredCerts = certificates.filter(cert => {
+    const search = searchTerm.toLowerCase();
+    return (
+      (cert.userName || '').toLowerCase().includes(search) ||
+      (cert.courseTitle || '').toLowerCase().includes(search) ||
+      (cert.certificateId || '').toLowerCase().includes(search) ||
+      (cert.score || '').toLowerCase().includes(search)
+    );
+  });
+
+  if (loading) {
+    return (
+      <div className="container py-8 flex justify-center items-center h-64">
+        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-primary"></div>
+      </div>
+    );
+  }
 
   return (
     <div className="container py-8">
@@ -85,52 +75,21 @@ const AdminCertificates = () => {
               <TableHead>User</TableHead>
               <TableHead>Course</TableHead>
               <TableHead>Issued On</TableHead>
-              <TableHead>Status</TableHead>
-              <TableHead className="text-right">Actions</TableHead>
+              <TableHead>Score</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
             {filteredCerts.map((cert) => (
-              <TableRow key={cert.certificateId}>
+              <TableRow key={cert.id}>
                 <TableCell className="font-medium">
                   {cert.certificateId}
                 </TableCell>
                 <TableCell>{cert.userName}</TableCell>
                 <TableCell>{cert.courseTitle}</TableCell>
-                <TableCell>{new Date(cert.issueDate).toLocaleDateString()}</TableCell>
                 <TableCell>
-                  {cert.isVerified ? (
-                    <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
-                      Verified
-                    </span>
-                  ) : (
-                    <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800">
-                      Pending
-                    </span>
-                  )}
+                  {new Date(cert.issueDate).toLocaleDateString()}
                 </TableCell>
-                <TableCell className="text-right">
-                  {!cert.isVerified && (
-                    <Button 
-                      variant="ghost" 
-                      size="sm" 
-                      className="mr-2"
-                      onClick={() => handleVerify(cert.certificateId)}
-                    >
-                      <Check className="h-4 w-4 text-green-500" />
-                    </Button>
-                  )}
-                  <Button variant="ghost" size="sm" className="mr-2">
-                    <Download className="h-4 w-4" />
-                  </Button>
-                  <Button 
-                    variant="ghost" 
-                    size="sm"
-                    onClick={() => handleDelete(cert.certificateId)}
-                  >
-                    <X className="h-4 w-4 text-red-500" />
-                  </Button>
-                </TableCell>
+                <TableCell>{cert.score}</TableCell>
               </TableRow>
             ))}
           </TableBody>

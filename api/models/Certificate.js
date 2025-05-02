@@ -4,30 +4,33 @@ const CertificateSchema = new mongoose.Schema({
   certificateId: {
     type: String,
     required: true,
-    unique: true,
+    unique: true
   },
   userId: {
     type: mongoose.Schema.Types.ObjectId,
     ref: 'User',
-    required: true,
+    required: true
   },
   courseId: {
     type: mongoose.Schema.Types.ObjectId,
     ref: 'Course',
-    required: true,
+    required: true
   },
   issueDate: {
     type: Date,
-    default: Date.now,
+    default: Date.now
   },
   isVerified: {
     type: Boolean,
-    default: false,
+    default: false
+  },
+  score: {
+    type: String
   },
   createdAt: {
     type: Date,
-    default: Date.now,
-  },
+    default: Date.now
+  }
 });
 
 module.exports = mongoose.model('Certificate', CertificateSchema);

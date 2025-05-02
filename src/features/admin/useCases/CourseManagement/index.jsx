@@ -289,7 +289,7 @@ const AdminCourses = () => {
     } finally {
       setLoading(false);
     }
-  };
+  }; 
 
   const handleSubmitQuiz = async (e) => {
     e.preventDefault();
@@ -408,22 +408,34 @@ const AdminCourses = () => {
     try {
       const course = courses.find(c => c.id === courseId);
       if (!course?.quiz) return;
-
-      await fetch(`/api/quizzes/${course.quiz.id}`, {
+  
+      // First delete all questions associated with the quiz
+      await fetch(`/api/questions?quizId=${course.quiz.id}`, {
         method: 'DELETE'
       });
-
+  
+      // Then delete the quiz itself
+      const response = await fetch(`/api/quizzes/${course.quiz.id}`, {
+        method: 'DELETE'
+      });
+  
+      if (!response.ok) {
+        throw new Error('Failed to delete quiz');
+      }
+  
       setCourses(courses.map(c =>
         c.id === courseId ? { ...c, quiz: null } : c
       ));
+      
       toast({
         title: 'Success',
         description: 'Quiz deleted successfully',
       });
     } catch (error) {
+      console.error('Delete quiz error:', error);
       toast({
         title: 'Error',
-        description: 'Failed to delete quiz',
+        description: error.message || 'Failed to delete quiz',
         variant: 'destructive'
       });
     }

@@ -58,8 +58,7 @@ const CourseCard = ({ course }) => {
 
         <div className="flex items-center justify-between mb-4">
           <div className="flex items-center gap-1">
-            <div className="text-yellow-400">★</div>
-            <div className="text-sm font-medium">{course.rating}</div>
+            
           </div>
 
           <div className="flex items-center gap-1 text-sm text-gray-500">

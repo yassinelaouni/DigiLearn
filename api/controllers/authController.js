@@ -3,14 +3,12 @@ const bcrypt = require('bcryptjs');
 const User = require('../models/User');
 const Admin = require('../models/Admin');
 
-// Generate JWT token
 const generateToken = (id, role) => {
   return jwt.sign({ id, role }, process.env.JWT_SECRET, {
-    expiresIn: '30d',
+    expiresIn: '30d'
   });
 };
 
-// User login
 exports.userLogin = async (req, res) => {
   const { email, password } = req.body;
 
@@ -27,32 +25,32 @@ exports.userLogin = async (req, res) => {
           lastName: user.lastName,
           balance: user.balance,
           avatar: user.avatar,
+          role: user.role
         },
         token: generateToken(user._id, 'user'),
-        errorCode: '',
-        errorMessage: 'Login successful',
-        errors: {},
+        errorCode: "",
+        errorMessage: "Login successful",
+        errors: {}
       });
     } else {
       res.status(401).json({
         success: false,
         user: {},
-        token: '',
-        errorCode: 'InvalidCredentials',
+        token: "",
+        errorCode: "InvalidCredentials",
         errorMessage: 'Invalid email or password',
-        errors: {},
+        errors: {}
       });
     }
   } catch (err) {
     res.status(500).json({
       success: false,
       errorMessage: 'Server error',
-      errors: err.message,
+      errors: err.message
     });
   }
 };
 
-// Admin login
 exports.adminLogin = async (req, res) => {
   const { email, password } = req.body;
 
@@ -67,33 +65,32 @@ exports.adminLogin = async (req, res) => {
           email: admin.email,
           firstName: admin.firstName,
           lastName: admin.lastName,
-          avatar: admin.avatar,
+          avatar: admin.avatar
         },
         token: generateToken(admin._id, 'admin'),
-        errorCode: '',
-        errorMessage: 'Admin login successful',
-        errors: {},
+        errorCode: "",
+        errorMessage: "Admin login successful",
+        errors: {}
       });
     } else {
       res.status(401).json({
         success: false,
         user: {},
-        token: '',
-        errorCode: 'InvalidCredentials',
+        token: "",
+        errorCode: "InvalidCredentials",
         errorMessage: 'Invalid admin credentials',
-        errors: {},
+        errors: {}
       });
     }
   } catch (err) {
     res.status(500).json({
       success: false,
       errorMessage: 'Server error',
-      errors: err.message,
+      errors: err.message
     });
   }
 };
 
-// User registration
 exports.userRegister = async (req, res) => {
   const { email, password, firstName, lastName } = req.body;
 
@@ -104,10 +101,10 @@ exports.userRegister = async (req, res) => {
       return res.status(400).json({
         success: false,
         user: {},
-        token: '',
-        errorCode: 'UserExists',
+        token: "",
+        errorCode: "UserExists",
         errorMessage: 'User with this email already exists',
-        errors: {},
+        errors: {}
       });
     }
 
@@ -115,7 +112,7 @@ exports.userRegister = async (req, res) => {
       email,
       password,
       firstName,
-      lastName,
+      lastName
     });
 
     res.status(201).json({
@@ -126,17 +123,18 @@ exports.userRegister = async (req, res) => {
         firstName: user.firstName,
         lastName: user.lastName,
         avatar: user.avatar,
+        createdAt: user.createdAt
       },
       token: generateToken(user._id, 'user'),
-      errorCode: '',
-      errorMessage: 'Registration successful',
-      errors: {},
+      errorCode: "",
+      errorMessage: "Registration successful",
+      errors: {}
     });
   } catch (err) {
     res.status(500).json({
       success: false,
       errorMessage: 'Server error',
-      errors: err.message,
+      errors: err.message
     });
   }
 };
