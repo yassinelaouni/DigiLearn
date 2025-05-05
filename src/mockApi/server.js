@@ -652,7 +652,7 @@ createServer({
         }))
       };
     });
-
+ 
     // Add this POST endpoint
     this.post('/user/progress', (schema, request) => {
       const attrs = JSON.parse(request.requestBody);

@@ -4,12 +4,11 @@ const {
   getAllCourses,
   getCourseBySlug,
   getFeaturedCourses,
-  createCourse,
+  createCourse, 
   updateCourse,
   deleteCourse,
   getCourseLessons
 } = require('../controllers/courseController');
-const { protect, adminProtect } = require('../middlewares/auth');
 
 // Public routes
 router.get('/courses', getAllCourses);
@@ -18,8 +17,8 @@ router.get('/courses/:slug', getCourseBySlug);
 router.get('/courses/:courseId/lessons', getCourseLessons);
 
 // Admin protected routes
-router.post('/courses', protect, adminProtect, createCourse);
-router.put('/courses/:id', protect, adminProtect, updateCourse);
-router.delete('/courses/:id', protect, adminProtect, deleteCourse);
+router.post('/courses',  createCourse);
+router.put('/courses/:id', updateCourse);
+router.delete('/courses/:id',  deleteCourse);
 
 module.exports = router;

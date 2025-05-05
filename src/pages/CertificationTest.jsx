@@ -33,7 +33,7 @@ const CertificationTest = ({ courseTitle }) => {
 
         // 🆕 Save certificate if passed
         if (passed && currentUser && course) {
-            await fetch('/api/certificates', {
+            await fetch('http://localhost:5000/api/certificates', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
@@ -69,19 +69,20 @@ const CertificationTest = ({ courseTitle }) => {
                 </div>
             </Layout>
         );
-};
+}; 
 
     useEffect(() => {
         const fetchQuizData = async () => {
             try {
-                const response = await fetch(`/api/courses/${slug}`);
+                const response = await fetch(`http://localhost:5000/api/courses/${slug}`);
                 const courseData = await response.json();
 
                 if (courseData.success) {
                     setCourse(courseData.course);
 
-                    const quizResponse = await fetch(`/api/quiz?courseId=${courseData.course.id}`);
+                    const quizResponse = await fetch(`http://localhost:5000/api/courses/68152e9b92f42938445d56d2/quiz`);
                     const quizData = await quizResponse.json();
+                    console.log(quizData); 
 
                     if (quizData.success && quizData.questions?.length > 0) {
                         setQuizQuestions(quizData.questions); // ✅ correct

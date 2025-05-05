@@ -51,7 +51,7 @@ const AdminCourses = () => {
     const fetchCourses = async () => {
       setLoading(true);
       try {
-        const response = await fetch('/api/courses');
+        const response = await fetch('http://localhost:5000/api/courses');
         const data = await response.json();
         const coursesWithQuizQuestions = data.courses?.map(course => ({
           ...course,
@@ -131,7 +131,7 @@ const AdminCourses = () => {
       const formData = new FormData();
       formData.append('file', file);
 
-      const response = await fetch('/api/upload', {
+      const response = await fetch('http://localhost:5000/api/upload', {
         method: 'POST',
         body: formData
       });
@@ -175,7 +175,7 @@ const AdminCourses = () => {
       const method = currentCourse.id ? 'PUT' : 'POST';
       const url = currentCourse.id
         ? `/api/courses/${currentCourse.id}`
-        : '/api/courses';
+        : 'http://localhost:5000/api/courses';
   
       const response = await fetch(url, {
         method,
@@ -240,7 +240,7 @@ const AdminCourses = () => {
       const method = currentLesson.id ? 'PUT' : 'POST';
       const url = currentLesson.id
         ? `/api/lessons/${currentLesson.id}`
-        : '/api/lessons';
+        : 'http://localhost:5000/api/lessons';
 
       const response = await fetch(url, {
         method,
@@ -299,7 +299,7 @@ const AdminCourses = () => {
       const method = currentQuiz.id ? 'PUT' : 'POST';
       const url = currentQuiz.id
         ? `/api/quizzes/${currentQuiz.id}`
-        : '/api/quizzes';
+        : 'http://localhost:5000/api/quizzes';
 
       const response = await fetch(url, {
         method,

@@ -34,24 +34,38 @@ const CourseDetails = () => {
     const fetchData = async () => {
       try {
         setLoading(true);
+        setError(null);
+        
         // Fetch course data
-        const courseResponse = await fetch(`/api/courses/${slug}`);
+        const courseResponse = await fetch(`http://localhost:5000/api/courses/${slug}`);
+        
+        if (!courseResponse.ok) {
+          throw new Error(`HTTP error! status: ${courseResponse.status}`);
+        }
+        
         const courseData = await courseResponse.json();
+        console.log('Course Data:', courseData);
 
         if (!courseData.success) {
           throw new Error(courseData.errorMessage || 'Course not found');
         }
 
         // Fetch user progress
-        const userId = '1';
-        const progressResponse = await fetch(`/api/user/progress?userId=${userId}`);
+        const userId = '68152e9b92f42938445d56d0'; // Replace with actual user ID
+        const progressResponse = await fetch(`http://localhost:5000/api/user/progress?userId=${userId}`);
+        
+        if (!progressResponse.ok) {
+          console.warn('Failed to fetch progress, continuing without it');
+          setCourse(courseData.course);
+          return;
+        }
+        
         const progressData = await progressResponse.json();
-
         setCourse(courseData.course);
         setUserProgress(progressData.success ? progressData.progress : []);
       } catch (err) {
-        setError(err.message || 'Failed to fetch data');
         console.error('Error fetching data:', err);
+        setError(err.message || 'Failed to fetch data');
       } finally {
         setLoading(false);
       }
@@ -62,13 +76,15 @@ const CourseDetails = () => {
 
   const markLessonComplete = async (lessonId) => {
     try {
-      const userId = '1';
+      const userId = '68152e9b92f42938445d56ce';
 
       // Optimistic update
       setUserProgress(prev => {
         if (prev.some(p => p.lessonId === lessonId && p.completed)) {
           return prev;
         }
+
+    
 
         return [...prev, {
           lessonId,
@@ -77,7 +93,7 @@ const CourseDetails = () => {
         }];
       });
 
-      const response = await fetch('/api/user/progress', {
+      const response = await fetch('http://localhost:5000/api/user/progress', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ userId, lessonId })

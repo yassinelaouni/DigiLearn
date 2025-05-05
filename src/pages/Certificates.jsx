@@ -16,7 +16,7 @@ const Certificates = () => {
         const fetchCertificates = async () => {
             try {
                 // Replace '1' with actual user ID from your auth system
-                const response = await fetch('/api/users/1/certificates');
+                const response = await fetch('http://localhost:5000/api/users/68152e9b92f42938445d56d0/certificates');
                 const data = await response.json();
 
                 if (data.success) {
@@ -42,7 +42,7 @@ const Certificates = () => {
         // Fetch suggested courses
         const fetchSuggestedCourses = async () => {
             try {
-                const response = await fetch('/api/courses/suggested');
+                const response = await fetch('http://localhost:5000/api/courses/suggested');
                 const data = await response.json();
 
                 if (data.success) {

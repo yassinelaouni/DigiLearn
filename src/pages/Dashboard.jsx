@@ -22,7 +22,7 @@ const UserDashboard = () => {
         const fetchDashboardData = async () => {
             try {
                 // Make sure this matches your MirageJS route exactly
-                const response = await fetch(`/api/user/dashboard/${userId || '1'}`);
+                const response = await fetch(`http://localhost:5000/api/user/dashboard/${userId || '68152e9b92f42938445d56d0'}`);
 
                 if (!response.ok) {
                     console.log(`HTTP error! status: ${response.status}`);

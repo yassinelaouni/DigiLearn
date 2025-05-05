@@ -29,7 +29,7 @@ const CourseSchema = new mongoose.Schema({
   duration: {
     type: String,
     required: true
-  },
+  }, 
   level: {
     type: String,
     enum: ['Beginner', 'Intermediate', 'Advanced', 'All Levels', 'Beginner to Intermediate'],
@@ -40,6 +40,10 @@ const CourseSchema = new mongoose.Schema({
     default: false
   },
   learningOutcomes: [String],
+  quiz: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'Quiz'
+  },
   modules: [{
     type: mongoose.Schema.Types.ObjectId,
     ref: 'Module'

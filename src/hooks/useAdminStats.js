@@ -18,10 +18,10 @@ export const useAdminStats = () => {
         setStats(prev => ({ ...prev, loading: true }));
         
         const [usersRes, coursesRes, certsRes, adminsRes] = await Promise.all([
-          fetch('/api/users/get/all'),
-          fetch('/api/courses'),
-          fetch('/api/admin/certificates'),
-          fetch('/api/admins')
+          fetch('http://localhost:5000/api/users/get/all'),
+          fetch('http://localhost:5000/api/courses'),
+          fetch('http://localhost:5000/api/admin/certificates'),
+          fetch('http://localhost:5000/api/admins')
         ]);
 
         if (!usersRes.ok || !coursesRes.ok || !certsRes.ok || !adminsRes.ok) {

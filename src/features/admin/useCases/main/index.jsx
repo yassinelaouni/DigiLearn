@@ -7,7 +7,7 @@ const Dashboard = () => {
   const { data: stats, isLoading } = useQuery({
     queryKey: ['dashboardStats'],
     queryFn: async () => {
-      const response = await fetch('/api/admin/dashboard/stats');
+      const response = await fetch('http://localhost:5000/api/admin/dashboard/stats');
       if (!response.ok) throw new Error('Failed to fetch stats');
       return response.json();
     }

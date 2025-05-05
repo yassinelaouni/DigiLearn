@@ -1,3 +1,4 @@
+const mongoose = require('mongoose');
 require('dotenv').config();
 const express = require('express');
 const bodyParser = require('body-parser');
@@ -32,14 +33,10 @@ app.use('/api', lessonRoutes);
 app.use('/api', quizRoutes);
 app.use('/api', certificateRoutes);
 
-// Error handling middleware
+// Error handling middleware should come after routes
 app.use((err, req, res, next) => {
   console.error(err.stack);
-  res.status(500).json({
-    success: false,
-    errorMessage: 'Server error',
-    errors: err.message
-  });
+  res.status(500).send('Something broke!');
 });
 
 const PORT = process.env.PORT || 5000;
