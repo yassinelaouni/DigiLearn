@@ -1,15 +1,26 @@
 import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import { Link } from "react-router-dom";
-import { ArrowRight, Clock, Monitor,Shield,
-  FileText, Globe, Briefcase, Code, Megaphone, Database, Palette, Bitcoin
- } from "lucide-react";
+import {
+  ArrowRight,
+  Clock,
+  Monitor,
+  Shield,
+  FileText,
+  Globe,
+  Briefcase,
+  Code,
+  Megaphone,
+  Database,
+  Palette,
+  Bitcoin,
+  Keyboard,
+  MessageSquareWarning
+} from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 
 const CourseCard = ({ course }) => {
-  if (!course) return null;
-
   return (
     <motion.div
       initial={{ opacity: 0, y: 20 }}
@@ -20,13 +31,13 @@ const CourseCard = ({ course }) => {
     >
       <div className="relative">
         <img
-          src={course.thumbnail || '/default-course.jpg'}
+          src={course.thumbnail}
           alt={course.title}
           className="w-full h-48 object-cover transition-transform duration-500 group-hover:scale-105"
         />
         <div className="absolute top-4 left-4">
           <div className="bg-white/90 backdrop-blur-sm text-xs font-medium px-3 py-1 rounded-full">
-            {course.category || 'Uncategorized'}
+            {course.category}
           </div>
         </div>
         {course.featured && (
@@ -40,24 +51,25 @@ const CourseCard = ({ course }) => {
 
       <div className="p-5">
         <h3 className="font-bold text-lg mb-3 leading-tight">
-          <Link 
-            to={`/courses/${course.slug || '#'}`} 
-            className="hover:text-purple-600 transition-colors"
-          >
-            {course.title || 'Untitled Course'}
+          <Link to={`/courses/${course.slug}`} className="hover:text-purple-600 transition-colors">
+            {course.title}
           </Link>
         </h3>
 
         <div className="flex items-center justify-between mb-4">
+          <div className="flex items-center gap-1">
+            
+          </div>
+
           <div className="flex items-center gap-1 text-sm text-gray-500">
             <Clock className="h-4 w-4" />
-            <span>{course.duration || 'Duration not specified'}</span>
+            <span>{course.duration}</span>
           </div>
         </div>
 
         <div className="border-t pt-4">
           <Button asChild variant="outline" size="sm" className="rounded-full w-full">
-            <Link to={`/courses/${course.slug || '#'}`}>
+            <Link to={`/courses/${course.slug}`}>
               View Course
               <ArrowRight className="ml-1 h-3.5 w-3.5" />
             </Link>
@@ -72,26 +84,17 @@ const FeaturedCourses = () => {
   const [activeCategory, setActiveCategory] = useState("all");
   const [courses, setCourses] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
 
   useEffect(() => {
     const fetchFeaturedCourses = async () => {
       try {
-        const response = await fetch('http://localhost:5000/api/courses/featured');
-        if (!response.ok) {
-          throw new Error(`HTTP error! status: ${response.status}`);
-        }
+        const response = await fetch('/api/courses/featured');
         const data = await response.json();
-        console.log('API Response:', data);
-        
-        if (data.success && Array.isArray(data.courses)) {
+        if (data.success) {
           setCourses(data.courses);
-        } else {
-          throw new Error('Invalid data format');
         }
       } catch (error) {
-        console.error('Fetch error:', error);
-        setError(error.message);
+        console.error('Error fetching featured courses:', error);
       } finally {
         setLoading(false);
       }
@@ -199,19 +202,6 @@ const FeaturedCourses = () => {
     );
   }
 
-  if (error) {
-    return (
-      <section className="py-16 md:py-24 bg-gray-50">
-        <div className="container">
-          <div className="text-center">
-            <p className="text-red-500">Error: {error}</p>
-          </div>
-        </div>
-      </section>
-    );
-  }
-
-
   return (
     <section className="py-16 md:py-24 bg-gray-50">
       <div className="container">
@@ -262,20 +252,19 @@ const FeaturedCourses = () => {
         </div>
 
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 md:gap-8">
-        {loading ? (
-          [...Array(6)].map((_, i) => (
-            <div key={i} className="bg-gray-100 rounded-xl h-96 animate-pulse"></div>
-          ))
-        ) : filteredCourses.length > 0 ? (
-          filteredCourses.map((course) => (
-            <CourseCard key={course._id || course.id} course={course} />
-          ))
-        ) : (
-          <div className="col-span-3 py-12 text-center">
-            <p className="text-gray-500">No courses found</p>
-          </div>
-        )}
-      </div>
+          {filteredCourses.length > 0 ? (
+            filteredCourses.map((course) => (
+              <CourseCard key={course.id} course={course} />
+            ))
+          ) : (
+            <div className="col-span-3 py-12 text-center">
+              <div className="flex flex-col items-center justify-center gap-3">
+                <MessageSquareWarning className="h-12 w-12 text-gray-400" />
+                <p className="text-muted-foreground text-lg">No courses found for this category. Check back soon!</p>
+              </div>
+            </div>
+          )}
+        </div>
 
         <div className="mt-12 text-center">
           <Button asChild size="lg" className="rounded-full bg-gradient-to-r from-purple-600 to-blue-500 text-white hover:opacity-90">

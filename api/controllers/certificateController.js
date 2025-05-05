@@ -200,44 +200,37 @@ exports.verifyCertificate = async (req, res) => {
 // Get all certificates (admin only)
 exports.getAllCertificates = async (req, res) => {
   try {
-    const certificates = await Certificate.find().sort({ issueDate: -1 });
-    const populatedCertificates = await Promise.all(
-      certificates.map(async cert => {
-        const user = await User.findById(cert.userId).select('firstName lastName email');
-        const course = await Course.findById(cert.courseId).select('title');
-        
-        return {
-          ...cert.toObject(),
-          user: user || null,
-          course: course || null
-        };
-      })
-    );
-
-    const formatted = populatedCertificates.map(cert => ({
-      id: cert._id,
-      certificateId: cert.certificateId,
-      userId: cert.user?._id || cert.userId,
-      userEmail: cert.user?.email || 'N/A',
-      userName: cert.user 
-        ? `${cert.user.firstName} ${cert.user.lastName}` 
-        : 'User not found',
-      courseId: cert.course?._id || cert.courseId,
-      courseTitle: cert.course?.title || 'Course not found',
-      issueDate: cert.issueDate,
-      isVerified: cert.isVerified,
-      score: cert.score
-    }));
+    const certificates = await Certificate.find()
+      .populate('user', 'firstName lastName email')
+      .populate('course', 'title')
+      .sort({ issueDate: -1 });
 
     return res.json({
       success: true,
-      certificates: formatted
+      certificates: certificates.map(cert => ({
+        id: cert._id,
+        certificateId: cert.certificateId,
+        userId: cert.user._id,
+        userEmail: cert.user.email,
+        userName: `${cert.user.firstName} ${cert.user.lastName}`,
+        courseId: cert.course._id,
+        courseTitle: cert.course.title,
+        issueDate: cert.issueDate,
+        isVerified: cert.isVerified,
+        score: cert.score
+      })),
+      errorCode: "",
+      errorMessage: "",
+      errors: {}
     });
+
   } catch (err) {
-    console.error(err);
+    console.error('Error fetching all certificates:', err);
     return res.status(500).json({
       success: false,
-      errorMessage: "Server error"
+      errorCode: "ServerError",
+      errorMessage: "Failed to fetch certificates",
+      errors: err.message
     });
   }
 };
@@ -286,95 +279,53 @@ exports.adminVerifyCertificate = async (req, res) => {
 };
 
 // Get certificate by ID
-exports.getAllCertificates = async (req, res) => {
-  try {
-    const certificates = await Certificate.find()
-      .populate('userId', 'firstName lastName email')  // Changed from 'user'
-      .populate('courseId', 'title')  // Changed from 'course'
-      .sort({ issueDate: -1 });
-
-    if (!certificates.length) {
-      return res.status(404).json({
-        success: false,
-        errorMessage: "No certificates found"
-      });
-    }
-
-    const formatted = certificates.map(cert => ({
-      id: cert._id,
-      certificateId: cert.certificateId,
-      user: cert.userId ? {
-        id: cert.userId._id,
-        email: cert.userId.email,
-        name: `${cert.userId.firstName} ${cert.userId.lastName}`
-      } : null,
-      course: cert.courseId ? {
-        id: cert.courseId._id,
-        title: cert.courseId.title
-      } : null,
-      issueDate: cert.issueDate,
-      isVerified: cert.isVerified,
-      score: cert.score
-    }));
-
-    return res.json({ success: true, certificates: formatted });
-    
-  } catch (err) {
-    console.error(err);
-    return res.status(500).json({
-      success: false,
-      errorMessage: "Server error: " + err.message
-    });
-  }
-};
-
 exports.getCertificateById = async (req, res) => {
   try {
-    const { id } = req.params;
+    const certificateId = req.params.id;
 
-    if (!mongoose.Types.ObjectId.isValid(id)) {
+    if (!mongoose.Types.ObjectId.isValid(certificateId)) {
       return res.status(400).json({
         success: false,
-        errorMessage: "Invalid certificate ID format"
+        errorCode: "InvalidIdFormat",
+        errorMessage: "Invalid certificate ID format",
+        errors: {}
       });
     }
 
-    const certificate = await Certificate.findById(id)
-      .populate('userId', 'firstName lastName email')
-      .populate('courseId', 'title');
+    const certificate = await Certificate.findById(certificateId)
+      .populate('user', 'firstName lastName')
+      .populate('course', 'title');
 
     if (!certificate) {
       return res.status(404).json({
         success: false,
-        errorMessage: "Certificate not found"
+        errorCode: "CertificateNotFound",
+        errorMessage: "Certificate not found",
+        errors: {}
       });
     }
 
     return res.json({
       success: true,
       certificate: {
-        id: certificate._id,
-        certificateId: certificate.certificateId,
-        user: certificate.userId ? {
-          id: certificate.userId._id,
-          email: certificate.userId.email,
-          name: `${certificate.userId.firstName} ${certificate.userId.lastName}`
-        } : null,
-        course: certificate.courseId ? {
-          id: certificate.courseId._id,
-          title: certificate.courseId.title
-        } : null,
-        issueDate: certificate.issueDate,
-        isVerified: certificate.isVerified,
-        score: certificate.score
-      }
+        ...certificate._doc,
+        name: `${certificate.user.firstName} ${certificate.user.lastName}`,
+        courseTitle: certificate.course.title,
+        issuer: "DIGILEARN Academy",
+        title: "Course Instructor"
+      },
+      errorCode: "",
+      errorMessage: "",
+      errors: {}
     });
 
   } catch (err) {
-    console.error('Error in getCertificateById:', err);
+    console.error('Error fetching certificate by ID:', err);
     return res.status(500).json({
       success: false,
-      errorMessage: "Server error: " + err.message
+      errorCode: "ServerError",
+      errorMessage: "Failed to fetch certificate",
+      errors: err.message
     });
   }
 };

@@ -1,4 +1,3 @@
-const mongoose = require('mongoose');
 const User = require('../models/User');
 const Certificate = require('../models/Certificate');
 const UserProgress = require('../models/UserProgress');
@@ -265,14 +264,6 @@ exports.updateUser = async (req, res) => {
 // Get user dashboard
 exports.getUserDashboard = async (req, res) => {
   try {
-    // Validate ID format first
-    if (!mongoose.Types.ObjectId.isValid(req.params.userId)) {
-      return res.status(400).json({ 
-        success: false,
-        errorMessage: "Invalid user ID format" 
-      });
-    }
-
     const user = await User.findById(req.params.userId);
     if (!user) {
       return res.status(404).json({
@@ -321,7 +312,6 @@ exports.getUserDashboard = async (req, res) => {
       }
     });
   } catch (err) {
-    console.error('Dashboard error:', err);
     res.status(500).json({
       success: false,
       errorMessage: "Server error"

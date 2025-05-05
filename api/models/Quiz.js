@@ -6,18 +6,14 @@ const QuizSchema = new mongoose.Schema({
     ref: 'Course',
     required: true
   },
-  title: {
-    type: String,
-    required: true
-  },
   questions: [{
     type: mongoose.Schema.Types.ObjectId,
     ref: 'Question'
   }],
-  passingScore: {
-    type: Number,
-    default: 70
+  createdAt: {
+    type: Date,
+    default: Date.now
   }
-}, { timestamps: true });
+});
 
 module.exports = mongoose.model('Quiz', QuizSchema);

@@ -17,7 +17,7 @@ import {
   DialogTitle,
 } from '@/components/ui/dialog';
 
-const API_BASE = 'http://localhost:5000/api'; // Added base API path
+const API_BASE = '/api'; // Added base API path
 
 const AdminUsers = () => {
   const [users, setUsers] = useState([]);

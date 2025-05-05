@@ -23,7 +23,7 @@ const SettingsPage = () => {
   useEffect(() => {
     const fetchAdminData = async () => {
       try {
-        const response = await fetch('http://localhost:5000/api/admin');
+        const response = await fetch('/api/admin');
         const data = await response.json();
         
         if (!response.ok) {
@@ -70,7 +70,7 @@ const SettingsPage = () => {
     setLoading(prev => ({ ...prev, submitting: true }));
 
     try {
-      const response = await fetch('http://localhost:5000/api/admin', {
+      const response = await fetch('/api/admin', {
         method: 'PATCH',
         headers: {
           'Content-Type': 'application/json',

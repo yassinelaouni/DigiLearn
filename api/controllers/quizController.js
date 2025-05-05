@@ -3,26 +3,20 @@ const Quiz = require('../models/Quiz');
 // Get quiz for course
 exports.getQuizForCourse = async (req, res) => {
   try {
-    const quiz = await Quiz.findOne({ courseId: req.params.courseId })
-      .populate({
-        path: 'questions',
-        model: 'Question', // Explicitly specify the model
-        select: '-__v -createdAt -updatedAt' // Exclude unnecessary fields
-      });
+    const quiz = await Quiz.findOne({ courseId: req.params.courseId });
 
     res.json({
       success: true,
-      quiz: quiz ? {
-        ...quiz.toObject(),
-        questions: quiz.questions || []
-      } : null
+      quiz: quiz || null,
+      errorCode: "",
+      errorMessage: "",
+      errors: {}
     });
-    
   } catch (err) {
-    console.error('Error fetching quiz:', err);
     res.status(500).json({
       success: false,
-      errorMessage: 'Server error'
+      errorMessage: 'Server error',
+      errors: err.message
     });
   }
 };

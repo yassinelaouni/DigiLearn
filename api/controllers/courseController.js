@@ -15,30 +15,33 @@ exports.getAllCourses = async (req, res) => {
       })
       .populate({
         path: 'quiz',
-        select: '-__v', // Exclude version key
-        model: 'Quiz' // Explicitly specify model
+        populate: {
+          path: 'questions'
+        }
       });
 
     const coursesWithRelations = courses.map(course => {
-      const moduleLessons = course.modules?.flatMap(module => module.lessons) || [];
+      // Get all lessons (both direct and through modules)
+      const moduleLessons = course.modules.flatMap(module => module.lessons);
       const directLessons = course.lessons || [];
       const allLessons = [...moduleLessons, ...directLessons];
 
       return {
-        ...course.toObject(),
+        ...course._doc,
         modules: course.modules,
         lessons: allLessons,
-        quiz: course.quiz || null // Handle case where quiz doesn't exist
+        quiz: course.quiz
       };
     });
 
     res.json({
       success: true,
-      courses: coursesWithRelations
+      courses: coursesWithRelations,
+      errorCode: "",
+      errorMessage: "",
+      errors: {}
     });
-    
   } catch (err) {
-    console.error('Error fetching courses:', err);
     res.status(500).json({
       success: false,
       errorMessage: 'Server error',
