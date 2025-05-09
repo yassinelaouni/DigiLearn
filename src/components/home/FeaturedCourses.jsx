@@ -88,7 +88,7 @@ const FeaturedCourses = () => {
   useEffect(() => {
     const fetchFeaturedCourses = async () => {
       try {
-        const response = await fetch('/api/courses/featured');
+        const response = await fetch('http://localhost:5000/api/courses/featured');
         const data = await response.json();
         if (data.success) {
           setCourses(data.courses);

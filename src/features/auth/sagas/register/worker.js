@@ -9,7 +9,7 @@ export default function* registerWorker({ payload, meta = {} }) {
     try {
         response = yield call(helpers.sagas.worker, {
             method: "POST",
-            url: `api/users/register`,
+            url: `http://localhost:5000/api/users/register`,
             data: payload,
             loadingId: meta.id,
         });

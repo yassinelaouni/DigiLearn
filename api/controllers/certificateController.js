@@ -114,20 +114,28 @@ exports.getUserCertificates = async (req, res) => {
       });
     }
 
-    const certificates = await Certificate.find({ user: userId })
-      .populate('course', 'title description')
-      .sort({ issueDate: -1 });
+    // Correct population using 'courseId' to match your schema
+    const certificates = await Certificate.find({ userId: userId })
+      .populate({
+        path: 'courseId',  // This matches your schema field name
+        select: 'title description',  // Only get these fields from Course
+        options: { lean: true }  // Better performance
+      })
+      .sort({ issueDate: -1 })
+      .lean();  // Convert to plain JS objects
 
     return res.json({
       success: true,
       certificates: certificates.map(cert => ({
         id: cert._id,
         certificateId: cert.certificateId,
-        courseId: cert.course._id,
-        courseTitle: cert.course.title,
+        courseId: cert.courseId?._id || null,
+        courseTitle: cert.courseId?.title || 'Unknown Course',
+        courseDescription: cert.courseId?.description || '',
         issueDate: cert.issueDate,
         isVerified: cert.isVerified,
-        score: cert.score
+        score: cert.score,
+        createdAt: cert.createdAt
       })),
       errorCode: "",
       errorMessage: "",
@@ -283,18 +291,9 @@ exports.getCertificateById = async (req, res) => {
   try {
     const certificateId = req.params.id;
 
-    if (!mongoose.Types.ObjectId.isValid(certificateId)) {
-      return res.status(400).json({
-        success: false,
-        errorCode: "InvalidIdFormat",
-        errorMessage: "Invalid certificate ID format",
-        errors: {}
-      });
-    }
-
-    const certificate = await Certificate.findById(certificateId)
-      .populate('user', 'firstName lastName')
-      .populate('course', 'title');
+    const certificate = await Certificate.findOne({ certificateId: certificateId })
+      .populate('userId', 'firstName lastName')
+      .populate('courseId', 'title');
 
     if (!certificate) {
       return res.status(404).json({
@@ -309,8 +308,8 @@ exports.getCertificateById = async (req, res) => {
       success: true,
       certificate: {
         ...certificate._doc,
-        name: `${certificate.user.firstName} ${certificate.user.lastName}`,
-        courseTitle: certificate.course.title,
+        name: `${certificate.userId.firstName} ${certificate.userId.lastName}`,
+        courseTitle: certificate.courseId.title,
         issuer: "DIGILEARN Academy",
         title: "Course Instructor"
       },

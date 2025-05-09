@@ -8,6 +8,6 @@ const {
 
 router.post('/users/login', userLogin);
 router.post('/users/admin/login', adminLogin);
-router.post('/users/register', userRegister);
+router.post('/users/register', userRegister); 
 
 module.exports = router;

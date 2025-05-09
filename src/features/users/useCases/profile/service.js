@@ -1,83 +1,28 @@
 import { useState, useRef, useEffect } from "react";
-import { useDispatch, useSelector } from "react-redux";
 import Cookies from 'js-cookie';
-import selectAuthUser from "../../../../features/auth/selectors/user";
-import actions from "../../../../features/auth/actions";
 import helpers from "../../../../helpers";
 
+const API_BASE_URL = "http://localhost:5000/api";
 const STORAGE_KEYS = {
   PROFILE: 'userProfile',
   AVATAR: 'userAvatar'
-}; 
+};
 
 export default function useProfileService() {
-  const dispatch = useDispatch();
-  const currentUser = useSelector(selectAuthUser);
+  const [profile, setProfile] = useState({
+    id: '',
+    firstName: '',
+    lastName: '', 
+    email: '',
+    avatar: null,
+    balance: 0,
+    role: 'student'
+  });
 
-  // Debug current user data
-  useEffect(() => {
-    console.log("Current User from Redux:", currentUser);
-  }, [currentUser]);
-
-  // Initialize state from storage or Redux with proper email handling
-  const getInitialState = () => {
-    try {
-      // Try localStorage first
-      const localStorageProfile = localStorage.getItem(STORAGE_KEYS.PROFILE);
-      if (localStorageProfile) {
-        const parsed = JSON.parse(localStorageProfile);
-        console.log("Loaded from localStorage:", parsed);
-        return parsed;
-      }
-
-      // Fallback to cookies
-      const cookieProfile = Cookies.get(STORAGE_KEYS.PROFILE);
-      if (cookieProfile) {
-        const parsed = JSON.parse(cookieProfile);
-        console.log("Loaded from cookies:", parsed);
-        return parsed;
-      }
-
-      // Final fallback to Redux with proper email handling
-      const initialState = {
-        id: currentUser?.id || '',
-        firstName: currentUser?.firstName || '',
-        lastName: currentUser?.lastName || '',
-        email: currentUser?.email || '', // Important: Empty string as default
-        avatar: currentUser?.avatar || null
-      };
-      console.log("Created initial state:", initialState);
-      return initialState;
-
-    } catch (error) {
-      console.error('Error loading profile data:', error);
-      return {
-        id: '',
-        firstName: '',
-        lastName: '',
-        email: '',
-        avatar: null,
-      };
-    }
-  };
-
-  // State declarations
-  const [profile, setProfile] = useState(getInitialState());
   const [editValues, setEditValues] = useState({ ...profile });
-  const [editing, setEditing] = useState({
-    firstName: false,
-    lastName: false,
-  });
-  const [password, setPassword] = useState({
-    old: "",
-    new: "",
-    confirmation: ""
-  });
-  const [showPasswords, setShowPasswords] = useState({
-    old: false,
-    new: false,
-    confirmation: false
-  });
+  const [editing, setEditing] = useState({ firstName: false, lastName: false });
+  const [password, setPassword] = useState({ old: "", new: "", confirmation: "" });
+  const [showPasswords, setShowPasswords] = useState({ old: false, new: false, confirmation: false });
   const [errors, setErrors] = useState({
     firstName: null,
     lastName: null,
@@ -85,74 +30,36 @@ export default function useProfileService() {
     passwordNew: null,
     passwordConfirmation: null
   });
-  const [canSave, setCanSave] = useState({
-    profile: false,
-    password: false
-  });
-
+  const [canSave, setCanSave] = useState({ profile: false, password: false });
   const fileInputRef = useRef(null);
 
-  // Enhanced profile persistence with email handling
+  // Fetch profile on mount
   useEffect(() => {
-    if (!profile.id) {
-      console.log("Skipping profile save - no user ID");
-      return;
-    }
-
-    try {
-      console.log("Saving profile:", profile);
-      const profileData = JSON.stringify(profile);
-      localStorage.setItem(STORAGE_KEYS.PROFILE, profileData);
-      Cookies.set(STORAGE_KEYS.PROFILE, profileData, {
-        expires: 7,
-        secure: process.env.NODE_ENV === 'production',
-        sameSite: 'strict'
-      });
-
-      if (profile.avatar) {
-        localStorage.setItem(STORAGE_KEYS.AVATAR, profile.avatar);
-      }
-    } catch (error) {
-      console.error('Error saving profile data:', error);
-    }
-  }, [profile]);
-
-  // Enhanced Redux sync with email verification
-  useEffect(() => {
-    if (currentUser?.id) {
-      console.log("Syncing with Redux user data:", currentUser);
-      
-      if (!currentUser.email) {
-        console.warn("Email missing from currentUser!");
-      }
-
-      setProfile(prev => {
-        // Only update if something actually changed
-        if (currentUser.id !== prev.id || 
-            currentUser.firstName !== prev.firstName ||
-            currentUser.lastName !== prev.lastName ||
-            currentUser.email !== prev.email ||
-            currentUser.avatar !== prev.avatar) {
-          return {
-            id: currentUser.id,
-            firstName: currentUser.firstName || prev.firstName,
-            lastName: currentUser.lastName || prev.lastName,
-            email: currentUser.email || prev.email || '', // Proper email fallback
-            avatar: currentUser.avatar || prev.avatar
-          };
+    const fetchProfile = async () => {
+      try {
+        const token = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjY4MTUyZTliOTJmNDI5Mzg0NDVkNTZkMCIsInJvbGUiOiJzdHVkZW50IiwiaWF0IjoxNzQ2ODE4MTMzLCJleHAiOjE3NDk0MTAxMzN9.Th_BOvtwEgpxNYhVBDMGfpFqK0jF58NGr_JJoijmLaI";
+        const response = await fetch(`${API_BASE_URL}/users/get/profile`, {
+          headers: { Authorization: `Bearer ${token}` }
+        });
+        const data = await response.json();
+        if (response.ok && data.success) {
+          setProfile(data.user);
+          setEditValues(data.user); // Initialize edit values
         }
-        return prev;
-      });
-    }
-  }, [currentUser]);
+      } catch (error) {
+        console.error("Failed to fetch profile:", error);
+      }
+    };
+    fetchProfile();
+  }, []);
 
-  // Validation effect (unchanged)
+  // Field validation
   useEffect(() => {
     const profileValid = (
       helpers.validator.isName(editValues.firstName) &&
       helpers.validator.isName(editValues.lastName) &&
       (editValues.firstName !== profile.firstName ||
-        editValues.lastName !== profile.lastName)
+       editValues.lastName !== profile.lastName)
     );
 
     const passwordValid = (
@@ -169,34 +76,97 @@ export default function useProfileService() {
     setErrors({
       firstName: helpers.validator.isName(editValues.firstName) ? null : "Invalid first name",
       lastName: helpers.validator.isName(editValues.lastName) ? null : "Invalid last name",
-      passwordOld: (!helpers.validator.isEmptyString(password.old) &&
-        !helpers.validator.isPassword(password.old)) ? "Enter current password" : null,
-      passwordNew: (!helpers.validator.isEmptyString(password.new) &&
-        !helpers.validator.isPassword(password.new)) ? "Password must be at least 8 characters" : null,
-      passwordConfirmation: (!helpers.validator.isEmptyString(password.new) &&
-        !helpers.validator.isPasswordMatch({
-          password: password.new,
-          confirmPassword: password.confirmation
-        })) ? "Passwords don't match" : null
+      passwordOld: !helpers.validator.isEmptyString(password.old) ? null : "Enter current password",
+      passwordNew: helpers.validator.isPassword(password.new) ? null : "Password must be 8+ chars with special characters",
+      passwordConfirmation: helpers.validator.isPasswordMatch({
+        password: password.new,
+        confirmPassword: password.confirmation
+      }) ? null : "Passwords don't match"
     });
   }, [editValues, password, profile]);
 
-  // Avatar handling (unchanged)
-  const handleAvatarUpload = (e) => {
-    const file = e.target.files[0];
-    if (file) {
-      const reader = new FileReader();
-      reader.onload = (event) => {
-        const newAvatar = event.target.result;
-        const newProfile = { ...profile, avatar: newAvatar };
-        setProfile(newProfile);
-        dispatch(actions.changeAvatar({ userId: profile.id, avatar: newAvatar }));
-      };
-      reader.readAsDataURL(file);
+  // API: Update profile field (firstName/lastName)
+  const updateProfileField = async (field, value) => {
+    try {
+      const token = Cookies.get('token');
+      const endpoint = field === 'firstName' ? 'firstName' : 'lastName';
+      const response = await fetch(`${API_BASE_URL}/users/update/${endpoint}`, {
+        method: 'PATCH',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`
+        },
+        body: JSON.stringify({ [field]: value })
+      });
+      
+      const data = await response.json();
+      return data.success;
+    } catch (error) {
+      console.error(`Failed to update ${field}:`, error);
+      return false;
     }
   };
 
-  // Edit functions (unchanged)
+  // API: Upload avatar
+  const handleAvatarUpload = async (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+
+    const formData = new FormData();
+    formData.append('avatar', file);
+
+    try {
+      const token = Cookies.get('token');
+      const response = await fetch(`${API_BASE_URL}/users/update/avatar`, {
+        method: 'PATCH',
+        headers: { Authorization: `Bearer ${token}` },
+        body: formData
+      });
+      
+      const data = await response.json();
+      if (data.success) {
+        setProfile(prev => ({ ...prev, avatar: data.updated.avatar }));
+      }
+    } catch (error) {
+      console.error("Failed to upload avatar:", error);
+    }
+  };
+
+  // API: Change password
+  const handleChangePassword = async () => {
+    if (!canSave.password) return;
+
+    try {
+      const token = Cookies.get('token');
+      const response = await fetch(`${API_BASE_URL}/users/update/password`, {
+        method: 'PATCH',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`
+        },
+        body: JSON.stringify({
+          currentPassword: password.old,
+          newPassword: password.new
+        })
+      });
+      
+      const data = await response.json();
+      if (data.success) {
+        setPassword({ old: "", new: "", confirmation: "" });
+        alert("Password updated successfully!");
+        return true;
+      } else {
+        alert(data.errorMessage || "Failed to update password");
+        return false;
+      }
+    } catch (error) {
+      console.error("Failed to change password:", error);
+      alert("An error occurred while updating password");
+      return false;
+    }
+  };
+
+  // Edit handlers
   const handleEditChange = (e) => {
     const { name, value } = e.target;
     setEditValues(prev => ({ ...prev, [name]: value }));
@@ -206,24 +176,14 @@ export default function useProfileService() {
     setEditing(prev => ({ ...prev, [field]: true }));
   };
 
-  const saveEdit = (field) => {
-    const updates = { [field]: editValues[field] };
-    const newProfile = { ...profile, ...updates };
-
-    setProfile(newProfile);
-    setEditing(prev => ({ ...prev, [field]: false }));
-
-    if (field === 'firstName') {
-      dispatch(actions.changeFirstName({
-        userId: profile.id,
-        firstName: updates[field]
-      }));
-    } else if (field === 'lastName') {
-      dispatch(actions.changeLastName({
-        userId: profile.id,
-        lastName: updates[field]
-      }));
+  const saveEdit = async (field) => {
+    const success = await updateProfileField(field, editValues[field]);
+    if (success) {
+      setProfile(prev => ({ ...prev, [field]: editValues[field] }));
+      setEditing(prev => ({ ...prev, [field]: false }));
+      return true;
     }
+    return false;
   };
 
   const cancelEdit = (field) => {
@@ -231,7 +191,7 @@ export default function useProfileService() {
     setEditing(prev => ({ ...prev, [field]: false }));
   };
 
-  // Password functions (unchanged)
+  // Password handlers
   const handlePasswordChange = (e) => {
     const { name, value } = e.target;
     setPassword(prev => ({ ...prev, [name]: value }));
@@ -241,18 +201,7 @@ export default function useProfileService() {
     setShowPasswords(prev => ({ ...prev, [field]: !prev[field] }));
   };
 
-  const handleChangePassword = () => {
-    if (canSave.password) {
-      dispatch(actions.changePassword({
-        userId: profile.id,
-        oldPassword: password.old,
-        newPassword: password.new
-      }));
-      setPassword({ old: "", new: "", confirmation: "" });
-    }
-  };
-
-  // Helper functions
+  // Helpers
   const getInitials = () => {
     return `${profile.firstName?.[0] || ''}${profile.lastName?.[0] || ''}`.toUpperCase();
   };
@@ -264,18 +213,6 @@ export default function useProfileService() {
     localStorage.removeItem(STORAGE_KEYS.AVATAR);
     Cookies.remove(STORAGE_KEYS.PROFILE);
   };
-
-  // Cleanup effect
-  useEffect(() => {
-    return () => {
-      dispatch(errors.actions.cleaned());
-    };
-  }, [dispatch]);
-
-  // Debug current profile state
-  useEffect(() => {
-    console.log("Current profile state:", profile);
-  }, [profile]);
 
   return {
     profile,

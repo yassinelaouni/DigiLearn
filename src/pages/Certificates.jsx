@@ -10,13 +10,13 @@ const Certificates = () => {
     const [suggestedCourses, setSuggestedCourses] = useState([]);
     const [loading, setLoading] = useState(true);
     const { toast } = useToast();
+    const userId = "68152e9b92f42938445d56ce";
 
     useEffect(() => {
-        // Fetch user certificates
         const fetchCertificates = async () => {
             try {
-                // Replace '1' with actual user ID from your auth system
-                const response = await fetch('/api/users/1/certificates');
+                // Correct way to include the userId in the endpoint
+                const response = await fetch(`http://localhost:5000/api/users/${userId}/certificates`);
                 const data = await response.json();
 
                 if (data.success) {
@@ -40,16 +40,19 @@ const Certificates = () => {
         };
 
         // Fetch suggested courses
+        // In your fetchSuggestedCourses function
         const fetchSuggestedCourses = async () => {
             try {
-                const response = await fetch('/api/courses/suggested');
+                const response = await fetch(
+                    `http://localhost:5000/api/courses/suggested?userId=${userId}&limit=3`
+                );
                 const data = await response.json();
 
                 if (data.success) {
-                    setSuggestedCourses(data.courses);
+                    setSuggestedCourses(data.courses.slice(0, 3)); // Double ensure only 3
                 }
             } catch (error) {
-                console.error("Failed to fetch suggested courses", error);
+                setSuggestedCourses([]);
             }
         };
 
@@ -146,11 +149,11 @@ const Certificates = () => {
                                             <p className="text-sm text-muted-foreground">
                                                 Certificate ID: {cert.certificateId}
                                             </p>
-                                        </div> 
+                                        </div>
                                         <div className="p-4 bg-gray-50 h-18"> {/* Fixed button container height */}
                                             <Button className="w-full" asChild>
                                                 <Link
-                                                    to={`/certificates/${cert.id}`}
+                                                    to={`/certificates/${cert.certificateId}`}
                                                     state={{ certificateData: cert }}
                                                 >
                                                     View Certificate

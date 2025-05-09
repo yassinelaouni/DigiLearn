@@ -19,6 +19,6 @@ const UserProgressSchema = new mongoose.Schema({
     type: Date,
     default: Date.now
   }
-});
+}, { timestamps: true }); // Adds createdAt and updatedAt
 
 module.exports = mongoose.model('UserProgress', UserProgressSchema);

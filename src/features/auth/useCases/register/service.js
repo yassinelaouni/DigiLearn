@@ -90,14 +90,12 @@ export default function useRegister() {
       !helpers.validator.isEmptyString(data.password) &&
       !helpers.validator.isEmptyString(data.passwordConfirmation) &&
       !helpers.validator.isEmptyString(data.firstName) &&
-      !helpers.validator.isEmptyString(data.lastName) &&
-      !helpers.validator.isEmptyString(data.phone) &&
+      !helpers.validator.isEmptyString(data.lastName) &&  // Remove phone check
       !localeErrors.email &&
       !localeErrors.password &&
       !localeErrors.passwordConfirmation &&
       !localeErrors.firstName &&
-      !localeErrors.lastName &&
-      !localeErrors.phone
+      !localeErrors.lastName;  // Remove phone error check
 
     setCanRegister(canRegister);
   }, [data, localeErrors]);

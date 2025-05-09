@@ -23,23 +23,35 @@ const CertificateDetail = () => {
     const [loading, setLoading] = useState(true);
     const [isGenerating, setIsGenerating] = useState(false);
 
-
     useEffect(() => {
         const fetchCertificate = async () => {
             try {
-                const response = await fetch(`/api/certificates/${id}`);
+                const response = await fetch(`http://localhost:5000/api/certificates/${id}`);
+
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+
                 const data = await response.json();
-                console.log(data);
+                console.log('API Response:', data);
 
                 if (data.success) {
+                    // Map the API response to match your component's expected structure
                     setCertificate({
                         ...data.certificate,
-                        skill: data.certificate.courseTitle
+                        name: data.certificate.name, // Already formatted in backend
+                        skill: data.certificate.courseTitle, // From backend
+                        courseTitle: data.certificate.courseTitle, // From backend
+                        issuer: data.certificate.issuer || "DIGILEARN Academy", // From backend
+                        title: data.certificate.title || "Course Instructor", // From backend
+                        issueDate: data.certificate.issueDate || data.certificate.createdAt,
+                        score: data.certificate.score || "N/A"
                     });
                 } else {
                     throw new Error(data.errorMessage || 'Certificate not found');
                 }
             } catch (error) {
+                console.error('Fetch error:', error);
                 toast({
                     title: "Error loading certificate",
                     description: error.message,
@@ -76,33 +88,29 @@ const CertificateDetail = () => {
                         if (loaded === images.length) resolve();
                     } else {
                         img.addEventListener('load', onLoad);
-                        img.addEventListener('error', onLoad); // Continue even if some images fail
+                        img.addEventListener('error', onLoad);
                     }
                 });
             });
     
             const canvas = await html2canvas(input, {
-                scale: 1, // Try with lower scale first
+                scale: 2, // Increased scale for better quality
                 useCORS: true,
-                logging: true, // Enable to see console logs
+                logging: true,
                 backgroundColor: null,
-                onclone: (clonedDoc) => {
-                    // This can help with styling issues
-                    clonedDoc.getElementById('certificate-container').style.visibility = 'visible';
+                // Remove the onclone callback or update it to match your actual DOM
+                onclone: (clonedDoc, element) => {
+                    // Optional: Add any specific styling you need for the cloned version
+                    element.style.visibility = 'visible';
                 }
             });
     
             const pdf = new jsPDF('l', 'mm', 'a4');
             const imgData = canvas.toDataURL('image/png');
             const imgWidth = pdf.internal.pageSize.getWidth();
-            const pageHeight = pdf.internal.pageSize.getHeight();
             const imgHeight = (canvas.height * imgWidth) / canvas.width;
             
-            // Center the image vertically if it's smaller than page height
-            const heightLeft = imgHeight;
-            let position = 0;
-            
-            pdf.addImage(imgData, 'PNG', 0, position, imgWidth, imgHeight);
+            pdf.addImage(imgData, 'PNG', 0, 0, imgWidth, imgHeight);
             pdf.save(`${certificate.name.replace(/\s+/g, '_')}_certificate.pdf`);
     
             toast({
@@ -183,7 +191,7 @@ const CertificateDetail = () => {
                         <div
                             ref={certificateRef}
                             className="relative w-full aspect-[10/7] bg-white"
-                            style={{ minHeight: '500px' }}
+                            style={{ minHeight: '490px' }}
                         >
                             <img
                                 src={certificateBg}

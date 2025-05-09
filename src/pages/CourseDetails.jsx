@@ -35,7 +35,7 @@ const CourseDetails = () => {
       try {
         setLoading(true);
         // Fetch course data
-        const courseResponse = await fetch(`/api/courses/${slug}`);
+        const courseResponse = await fetch(`http://localhost:5000/api/courses/${slug}`);
         const courseData = await courseResponse.json();
 
         if (!courseData.success) {
@@ -43,8 +43,8 @@ const CourseDetails = () => {
         }
 
         // Fetch user progress
-        const userId = '1';
-        const progressResponse = await fetch(`/api/user/progress?userId=${userId}`);
+        const userId = '68152e9b92f42938445d56cc';
+        const progressResponse = await fetch(`http://localhost:5000/api/user/progress?userId=${userId}`);
         const progressData = await progressResponse.json();
 
         setCourse(courseData.course);
@@ -61,30 +61,31 @@ const CourseDetails = () => {
   }, [slug]);
 
   const markLessonComplete = async (lessonId) => {
-    try {
-      const userId = '1';
 
+    try {
+      const userId = '68152e9b92f42938445d56cc';
+  
       // Optimistic update
       setUserProgress(prev => {
         if (prev.some(p => p.lessonId === lessonId && p.completed)) {
           return prev;
         }
-
+  
         return [...prev, {
           lessonId,
           completed: true,
           _optimistic: true
         }];
       });
-
-      const response = await fetch('/api/user/progress', {
+  
+      const response = await fetch('http://localhost:5000/api/user/progress', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ userId, lessonId })
+        body: JSON.stringify({ userId, lessonId:lessonId }) // Use the actual lessonId parameter here
       });
-
+  
       const data = await response.json();
-
+  
       if (data.success) {
         setUserProgress(prev => [
           ...prev.filter(p => !(p.lessonId === lessonId && p._optimistic)),
@@ -224,15 +225,15 @@ const CourseDetails = () => {
                   <h3 className="font-medium text-lg mb-4">{module.title}</h3>
                   <div className="space-y-3">
                     {module.lessons?.map((lesson) => {
-                      const completed = isLessonCompleted(lesson.id);
+                      const completed = isLessonCompleted(lesson._id);
 
                       return (
-                        <div key={lesson.id} className="rounded-lg overflow-hidden border border-gray-200">
+                        <div key={lesson._id} className="rounded-lg overflow-hidden border border-gray-200">
                           {/* Lesson Header */}
                           <div
                             className={`flex items-center justify-between p-4 ${completed ? 'bg-green-50' : 'bg-gray-50'
                               } hover:bg-gray-100 cursor-pointer transition-colors`}
-                            onClick={() => toggleLesson(lesson.id)}
+                            onClick={() => toggleLesson(lesson._id)}
                           >
                             <div className="flex items-center gap-3">
                               {completed ? (
@@ -251,7 +252,7 @@ const CourseDetails = () => {
                                 )}
                               </div>
                             </div>
-                            {expandedLessons[lesson.id] ? (
+                            {expandedLessons[lesson._id] ? (
                               <ChevronUp className="h-4 w-4 text-muted-foreground" />
                             ) : (
                               <ChevronDown className="h-4 w-4 text-muted-foreground" />
@@ -259,7 +260,7 @@ const CourseDetails = () => {
                           </div>
 
                           {/* Lesson Content */}
-                          {expandedLessons[lesson.id] && (
+                          {expandedLessons[lesson._id] && (
                             <div className="p-4 bg-white">
                               {lesson.description && (
                                 <p className="text-muted-foreground mb-4">
@@ -305,7 +306,7 @@ const CourseDetails = () => {
                                 {!completed && (
                                   <Button
                                     variant="default"
-                                    onClick={() => markLessonComplete(lesson.id)}
+                                    onClick={() => markLessonComplete(lesson._id)}
                                   >
                                     Mark as Complete
                                   </Button>

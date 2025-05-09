@@ -12,8 +12,8 @@ const { protect, adminProtect } = require('../middlewares/auth');
 router.get('/courses/:courseId/quiz', getQuizForCourse);
 
 // Admin protected routes
-router.post('/quizzes', protect, adminProtect, createQuiz);
-router.put('/quizzes/:id', protect, adminProtect, updateQuiz);
-router.delete('/quizzes/:id', protect, adminProtect, deleteQuiz);
+router.post('/quizzes', createQuiz);
+router.put('/quizzes/:id',  updateQuiz);
+router.delete('/quizzes/:id',deleteQuiz);
 
 module.exports = router;

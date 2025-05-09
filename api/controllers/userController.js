@@ -261,64 +261,6 @@ exports.updateUser = async (req, res) => {
   }
 };
 
-// Get user dashboard
-exports.getUserDashboard = async (req, res) => {
-  try {
-    const user = await User.findById(req.params.userId);
-    if (!user) {
-      return res.status(404).json({
-        success: false,
-        errorMessage: "User not found"
-      });
-    }
-
-    const [certificates, userProgress, allCourses] = await Promise.all([
-      Certificate.find({ userId: req.params.userId }),
-      UserProgress.find({ userId: req.params.userId, completed: true }),
-      Course.find().populate({
-        path: 'modules',
-        populate: {
-          path: 'lessons'
-        }
-      })
-    ]);
-
-    const recentCourses = allCourses.slice(0, 2).map(course => {
-      const courseLessons = course.modules.flatMap(module => module.lessons);
-      const completedLessons = courseLessons.filter(lesson => 
-        userProgress.some(progress => progress.lessonId.equals(lesson._id))
-      );
-
-      return {
-        id: course._id,
-        title: course.title,
-        slug: course.slug,
-        thumbnail: course.thumbnail,
-        progress: completedLessons.length,
-        total: courseLessons.length
-      };
-    });
-
-    res.json({
-      success: true,
-      data: {
-        name: `${user.firstName} ${user.lastName}`,
-        stats: {
-          tutorialsCompleted: certificates.length,
-          quizzesTaken: 0, // You'll need to implement this
-          lessonsCompleted: userProgress.length
-        },
-        recentCourses
-      }
-    });
-  } catch (err) {
-    res.status(500).json({
-      success: false,
-      errorMessage: "Server error"
-    });
-  }
-};
-
 // Get user progress
 exports.getUserProgress = async (req, res) => {
   try {
@@ -337,7 +279,7 @@ exports.getUserProgress = async (req, res) => {
       errorMessage: "Server error"
     });
   }
-};
+}; 
 
 // Mark lesson complete
 exports.markLessonComplete = async (req, res) => {
@@ -361,6 +303,96 @@ exports.markLessonComplete = async (req, res) => {
       }
     });
   } catch (err) {
+    res.status(500).json({
+      success: false,
+      errorMessage: "Server error"
+    });
+  }
+};
+
+// Get user dashboard
+exports.getUserDashboard = async (req, res) => {
+  try {
+    const user = await User.findById(req.params.userId);
+    if (!user) {
+      return res.status(404).json({
+        success: false,
+        errorMessage: "User not found"
+      });
+    }
+
+    const [certificates, userProgress, allCourses] = await Promise.all([
+      Certificate.find({ userId: req.params.userId }),
+      UserProgress.find({ userId: req.params.userId }),
+      Course.find().populate({
+        path: 'modules',
+        populate: {
+          path: 'lessons'
+        }
+      })
+    ]);
+
+    // Process all courses with progress data
+    const processedCourses = allCourses
+      .map(course => {
+        const courseLessons = course.modules.flatMap(module => module.lessons);
+        const totalLessons = courseLessons.length;
+        const completedLessons = courseLessons.filter(lesson => 
+          userProgress.some(p => p.lessonId.equals(lesson._id) && p.completed)
+        ).length;
+        
+        // Get latest interaction date for sorting
+        const latestProgress = userProgress
+          .filter(p => courseLessons.some(l => l._id.equals(p.lessonId)))
+          .sort((a, b) => b.updatedAt - a.updatedAt)[0];
+
+        return {
+          id: course._id,
+          title: course.title,
+          slug: course.slug,
+          thumbnail: course.thumbnail,
+          progress: completedLessons,
+          total: totalLessons,
+          hasLessons: totalLessons > 0, // Flag for courses with lessons
+          isCompleted: totalLessons > 0 && completedLessons === totalLessons,
+          lastAccessed: latestProgress?.updatedAt || null
+        };
+      })
+      // Filter out courses with no lessons or progress < 1
+      .filter(course => course.hasLessons && (course.progress >= 1 || course.isCompleted));
+
+    // Sort courses: completed first, then by last accessed, then others
+    const sortedCourses = processedCourses.sort((a, b) => {
+      // Completed courses first
+      if (a.isCompleted && !b.isCompleted) return -1;
+      if (!a.isCompleted && b.isCompleted) return 1;
+      
+      // Then by last accessed date (most recent first)
+      if (a.lastAccessed && b.lastAccessed) {
+        return b.lastAccessed - a.lastAccessed;
+      }
+      if (a.lastAccessed) return -1;
+      if (b.lastAccessed) return 1;
+      
+      // Finally by course title
+      return a.title.localeCompare(b.title);
+    });
+
+    res.json({
+      success: true,
+      data: {
+        name: `${user.firstName} ${user.lastName}`,
+        stats: {
+          certificates: certificates.length,
+          lessonsCompleted: userProgress.filter(p => p.completed).length,
+          completedCourses: processedCourses.filter(c => c.isCompleted).length,
+          totalCourses: sortedCourses.length // Count of filtered courses
+        },
+        allCourses: sortedCourses
+      }
+    });
+  } catch (err) {
+    console.error('Dashboard error:', err);
     res.status(500).json({
       success: false,
       errorMessage: "Server error"

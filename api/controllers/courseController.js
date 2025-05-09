@@ -2,6 +2,7 @@ const Course = require('../models/Course');
 const Module = require('../models/Module');
 const Lesson = require('../models/Lesson');
 const Quiz = require('../models/Quiz');
+const Certificate = require('../models/Certificate');
 
 // Get all courses
 exports.getAllCourses = async (req, res) => {
@@ -247,6 +248,38 @@ exports.getCourseLessons = async (req, res) => {
       success: false,
       errorMessage: 'Server error',
       errors: err.message
+    });
+  }
+};
+
+// Get suggested courses (for a user)
+exports.getSuggestedCourses = async (req, res) => {
+  try {
+    const userId = req.query.userId;
+
+    // 1. Get user's completed course IDs (if userId exists)
+    const completedCourseIds = userId 
+      ? await Certificate.distinct('courseId', { userId })
+      : [];
+
+    // 2. Find all non-completed courses (limit to 3)
+    const suggestedCourses = await Course.find({
+      _id: { $nin: completedCourseIds }
+    })
+    .select('title slug thumbnail category level duration')
+    .limit(3)
+    .lean();
+
+    return res.json({
+      success: true,
+      courses: suggestedCourses
+    });
+
+  } catch (err) {
+    console.error('Error in getSuggestedCourses:', err);
+    return res.status(500).json({
+      success: false,
+      error: "Failed to fetch suggested courses"
     });
   }
 };

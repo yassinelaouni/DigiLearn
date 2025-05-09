@@ -1,19 +1,21 @@
 import { useState, useEffect } from 'react';
 import { Link, useParams } from "react-router-dom";
 import Layout from "@/components/layout/Layout";
-import { BookOpen, Award, Clock, ChevronRight } from "lucide-react";
+import { BookOpen, Award, Clock, ChevronRight, CheckCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useToast } from '@/hooks/use-toast';
 
 const UserDashboard = () => {
-    const { userId } = useParams(); // Get userId from URL params
+    const userId = "68152e9b92f42938445d56cc";
     const [userData, setUserData] = useState({
         name: "",
         stats: {
-            tutorialsCompleted: 0,
-            lessonsCompleted: 0
+            certificates: 0,
+            lessonsCompleted: 0,
+            completedCourses: 0,
+            totalCourses: 0
         }, 
-        recentCourses: []
+        allCourses: []
     });
     const [loading, setLoading] = useState(true);
     const { toast } = useToast();
@@ -21,15 +23,9 @@ const UserDashboard = () => {
     useEffect(() => {
         const fetchDashboardData = async () => {
             try {
-                // Make sure this matches your MirageJS route exactly
-                const response = await fetch(`/api/user/dashboard/${userId || '1'}`);
-
-                if (!response.ok) {
-                    console.log(`HTTP error! status: ${response.status}`);
-                }
-
+                const response = await fetch(`http://localhost:5000/api/user/dashboard/${userId}`);
                 const data = await response.json();
-
+                
                 if (data.success) {
                     setUserData(data.data);
                 } else {
@@ -40,10 +36,9 @@ const UserDashboard = () => {
                     });
                 }
             } catch (error) {
-                console.error('Fetch error:', error);
                 toast({
                     title: "Network error",
-                    description: error.message, // Show actual error message
+                    description: error.message,
                     variant: "destructive",
                 });
             } finally {
@@ -78,7 +73,7 @@ const UserDashboard = () => {
                 </div>
 
                 {/* Activity Stats */}
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-8">
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
                     <div className="bg-white rounded-lg border p-6 shadow-sm">
                         <div className="flex items-center gap-3">
                             <div className="bg-blue-100 p-3 rounded-full">
@@ -86,7 +81,7 @@ const UserDashboard = () => {
                             </div>
                             <div>
                                 <p className="text-sm text-muted-foreground">Certificates</p>
-                                <p className="text-xl font-bold">{userData.stats.tutorialsCompleted}</p>
+                                <p className="text-xl font-bold">{userData.stats.certificates}</p>
                             </div>
                         </div>
                     </div>
@@ -102,53 +97,89 @@ const UserDashboard = () => {
                             </div>
                         </div>
                     </div>
+
+                    <div className="bg-white rounded-lg border p-6 shadow-sm">
+                        <div className="flex items-center gap-3">
+                            <div className="bg-purple-100 p-3 rounded-full">
+                                <CheckCircle className="h-5 w-5 text-purple-600" />
+                            </div>
+                            <div>
+                                <p className="text-sm text-muted-foreground">Completed Courses</p>
+                                <p className="text-xl font-bold">{userData.stats.completedCourses}/{userData.stats.totalCourses}</p>
+                            </div>
+                        </div>
+                    </div>
                 </div>
 
-                {/* Continue Learning Section */}
+                {/* Courses Section */}
                 <div className="mb-8">
-                    <div className="flex justify-between items-center mb-4">
-                        <h2 className="text-xl font-bold">Continue learning</h2>
-                    </div>
+                    <h2 className="text-xl font-bold mb-4">Your Courses</h2>
+                    
+                    {userData.allCourses.length === 0 ? (
+                        <div className="bg-white rounded-lg border p-8 text-center">
+                            <BookOpen className="h-12 w-12 mx-auto text-gray-400 mb-4" />
+                            <h3 className="text-lg font-medium mb-2">No active courses found</h3>
+                            <p className="text-muted-foreground mb-4">
+                                You haven't started any courses yet or all courses are empty.
+                            </p>
+                            <Button asChild>
+                                <Link to="/courses">Browse Courses</Link>
+                            </Button>
+                        </div>
+                    ) : (
+                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                            {userData.allCourses.map((course) => {
+                                // Calculate progress percentage safely
+                                const progressPercent = course.total > 0 
+                                    ? Math.round((course.progress / course.total) * 100)
+                                    : 0;
 
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        {userData.recentCourses.map((course) => (
-                            <div key={course.id} className="bg-white rounded-lg border overflow-hidden shadow-sm">
-                                <div className="flex">
-                                    <div className="w-1/3 bg-gray-100">
-                                        <img
-                                            src={course.thumbnail}
-                                            alt={course.title}
-                                            className="w-full h-full object-cover"
-                                        />
-                                    </div>
-                                    <div className="w-2/3 p-4">
-                                        <h3 className="font-bold mb-2">{course.title}</h3>
-                                        <div className="flex items-center gap-2 text-sm text-muted-foreground mb-3">
-                                            <Clock className="h-4 w-4" />
-                                            <span>{course.progress}/{course.total} lessons</span>
+                                return (
+                                    <div key={course.id} className={`bg-white rounded-lg border overflow-hidden shadow-sm ${course.isCompleted ? 'border-green-200' : ''}`}>
+                                        <div className="flex">
+                                            <div className="w-1/3 bg-gray-100 relative">
+                                                <img
+                                                    src={course.thumbnail}
+                                                    alt={course.title}
+                                                    className="w-full h-full object-cover"
+                                                />
+                                                {course.isCompleted && (
+                                                    <div className="absolute top-2 right-2 bg-green-500 text-white text-xs px-2 py-1 rounded-full flex items-center">
+                                                        <CheckCircle className="h-3 w-3 mr-1" />
+                                                        Completed
+                                                    </div>
+                                                )}
+                                            </div>
+                                            <div className="w-2/3 p-4">
+                                                <h3 className="font-bold mb-2">{course.title}</h3>
+                                                <div className="flex items-center gap-2 text-sm text-muted-foreground mb-3">
+                                                    <Clock className="h-4 w-4" />
+                                                    <span>{course.progress}/{course.total} lessons ({progressPercent}%)</span>
+                                                </div>
+                                                <div className="w-full bg-gray-200 rounded-full h-2">
+                                                    <div
+                                                        className={`h-2 rounded-full ${course.isCompleted ? 'bg-green-500' : 'bg-blue-600'}`}
+                                                        style={{ width: `${progressPercent}%` }}
+                                                    ></div>
+                                                </div>
+                                                <Button
+                                                    variant={course.isCompleted ? "secondary" : "outline"}
+                                                    size="sm"
+                                                    className="mt-4 w-full flex items-center justify-between"
+                                                    asChild
+                                                >
+                                                    <Link to={`/courses/${course.slug}`}>
+                                                        {course.isCompleted ? 'View Course' : 'Continue'}
+                                                        <ChevronRight className="h-4 w-4" />
+                                                    </Link>
+                                                </Button>
+                                            </div>
                                         </div>
-                                        <div className="w-full bg-gray-200 rounded-full h-2">
-                                            <div
-                                                className="bg-blue-600 h-2 rounded-full"
-                                                style={{ width: `${(course.progress / course.total) * 100}%` }}
-                                            ></div>
-                                        </div>
-                                        <Button
-                                            variant="outline"
-                                            size="sm"
-                                            className="mt-4 w-full flex items-center justify-between"
-                                            asChild
-                                        >
-                                            <Link to={`/courses/${course.slug}`}>
-                                                Continue
-                                                <ChevronRight className="h-4 w-4" />
-                                            </Link>
-                                        </Button>
                                     </div>
-                                </div>
-                            </div>
-                        ))}
-                    </div>
+                                );
+                            })}
+                        </div>
+                    )}
                 </div>
             </div>
         </Layout>
