@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { BookOpen, Search, Edit, Plus, Trash2, FileText, Upload, CheckCircle, XCircle } from 'lucide-react';
+import { BookOpen, Search, Edit, Plus, Trash2, FileText, Upload, CheckCircle, XCircle,PlayCircle } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import {
@@ -10,15 +10,23 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table';
+import { Badge } from "@/components/ui/badge";
 import {
   Dialog,
   DialogContent,
   DialogHeader,
   DialogTitle,
-  DialogTrigger
-} from '@/components/ui/dialog';
+  DialogTrigger,
+  DialogFooter
+} from "@/components/ui/dialog" // Adjust the import path based on your project
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select"
 import { Label } from '@/components/ui/label';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Textarea } from '@/components/ui/textarea';
 import { useToast } from '@/components/ui/use-toast';
 
@@ -54,24 +62,42 @@ const AdminCourses = () => {
       try {
         const response = await fetch('http://localhost:5000/api/courses');
         const data = await response.json();
-
+  
         if (data.success && data.courses) {
-          const formattedCourses = data.courses.map(course => ({
-            ...course,
-            // Use allLessons from backend processing
-            lessons: course.allLessons || [],
-            // Ensure quiz exists and has questions array
-            quiz: course.quiz ? {
-              ...course.quiz,
-              questions: course.quiz.questions || []
-            } : null
-          }));
-          setCourses(formattedCourses);
+          const transformedCourses = data.courses.map(course => {
+            // Flatten modules into lessons while preserving module context
+            const lessons = course.modules?.reduce((acc, module) => {
+              const moduleLessons = module.lessons?.map(lesson => ({
+                ...lesson,
+                moduleId: module._id,
+                moduleTitle: module.title,
+                moduleOrder: module.order
+              })) || [];
+              return [...acc, ...moduleLessons];
+            }, []) || [];
+  
+            return {
+              id: course._id,
+              title: course.title,
+              description: course.description,
+              thumbnail: course.thumbnail,
+              lessons, // This now contains all lessons from all modules
+              modules: course.modules || [],
+              quiz: course.quiz || null,
+              // Include other course properties as needed
+              ...course
+            };
+          });
+  
+          setCourses(transformedCourses);
+        } else {
+          setCourses([]);
         }
       } catch (error) {
+        console.error('Failed to fetch courses:', error);
         toast({
           title: 'Error',
-          description: error.message,
+          description: 'Failed to load courses',
           variant: 'destructive'
         });
         setCourses([]);
@@ -79,7 +105,7 @@ const AdminCourses = () => {
         setLoading(false);
       }
     };
-
+  
     fetchCourses();
   }, [toast]);
 
@@ -152,27 +178,66 @@ const AdminCourses = () => {
     });
   }, [courses]);
 
+  const handleSaveLesson = async () => {
+    try {
+      const url = currentLesson._id 
+        ? `http://localhost:5000/api/courses/${currentCourse.id}/lessons/${currentLesson._id}`
+        : `http://localhost:5000/api/courses/${currentCourse.id}/lessons`;
+  
+      const method = currentLesson._id ? 'PUT' : 'POST';
+  
+      const response = await fetch(url, {
+        method,
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          ...currentLesson,
+          moduleId: currentLesson.moduleId || null
+        }),
+      });
+  
+      if (response.ok) {
+        // Refresh course data
+        fetchCourses();
+        setOpenLessonDialog(false);
+        toast({
+          title: 'Success',
+          description: `Lesson ${currentLesson._id ? 'updated' : 'created'} successfully`,
+        });
+      } else {
+        throw new Error('Failed to save lesson');
+      }
+    } catch (error) {
+      toast({
+        title: 'Error',
+        description: error.message,
+        variant: 'destructive',
+      });
+    }
+  };
+
   // In your AdminCourses component
   const handleDeleteQuestion = async (questionId) => {
     try {
       const response = await fetch(`http://localhost:5000/api/questions/${questionId}`, {
         method: 'DELETE'
       });
-  
+
       if (!response.ok) throw new Error('Failed to delete question');
-  
+
       // Refresh quiz data
       const course = courses.find(c => c.quiz && quizzes[c.id]?.questions.some(q => q.id === questionId));
       if (course) {
         fetchQuizDetails(course.id, course.quiz._id);
       }
-  
+
       toast({ title: 'Success', description: 'Question deleted' });
     } catch (error) {
       toast({ title: 'Error', description: error.message, variant: 'destructive' });
     }
   };
-  
+
   const handleCreateQuiz = async (courseId) => {
     try {
       const response = await fetch('http://localhost:5000/api/quizzes', {
@@ -181,10 +246,10 @@ const AdminCourses = () => {
         body: JSON.stringify({ courseId })
       });
       const data = await response.json();
-  
+
       if (data.success) {
         // Update local state
-        setCourses(courses.map(c => 
+        setCourses(courses.map(c =>
           c.id === courseId ? { ...c, quiz: data.quiz } : c
         ));
         fetchQuizDetails(courseId, data.quiz._id);
@@ -747,12 +812,9 @@ const AdminCourses = () => {
         </div>
       ) : (
         <div className="space-y-6">
-          {(courses || []).filter(course =>
-            (course?.title?.toLowerCase() || '').includes(searchTerm.toLowerCase()) ||
-            (course?.description?.toLowerCase() || '').includes(searchTerm.toLowerCase())
-          )
-            .map(course => (
+          {(courses || []).map(course => (
               <div key={course.id} className="border rounded-lg p-6">
+                {console.log("course :",course)}
                 <div className="flex justify-between items-start mb-4">
                   <div>
                     <h2 className="text-xl font-bold">{course.title}</h2>
@@ -1092,7 +1154,7 @@ const AdminCourses = () => {
                 <Table>
                   <TableHeader>
                     <TableRow>
-                      <TableHead>Lesson</TableHead>
+                      <TableHead>Title</TableHead>
                       <TableHead>Module</TableHead>
                       <TableHead>Type</TableHead>
                       <TableHead>Duration</TableHead>
@@ -1100,44 +1162,60 @@ const AdminCourses = () => {
                     </TableRow>
                   </TableHeader>
                   <TableBody>
-                    {course.lessons.map(lesson => (
-                      <TableRow key={lesson._id || lesson.id}>
-                        <TableCell className="font-medium">
-                          <div className="flex items-center gap-2">
-                            {lesson.type === 'video' && <BookOpen className="h-4 w-4" />}
-                            {lesson.type === 'reading' && <FileText className="h-4 w-4" />}
-                            {lesson.title}
-                          </div>
-                          {lesson.description && (
-                            <p className="text-sm text-muted-foreground">{lesson.description}</p>
-                          )}
-                        </TableCell>
-                        <TableCell>
-                          {lesson.moduleTitle || 'No module'}
-                        </TableCell>
-                        <TableCell>
-                          <span className="capitalize">{lesson.type}</span>
-                        </TableCell>
-                        <TableCell>{lesson.duration}</TableCell>
-                        <TableCell className="text-right">
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            className="mr-2"
-                            onClick={() => handleEditLesson(course.id, lesson)}
-                          >
-                            <Edit className="h-4 w-4" />
-                          </Button>
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            onClick={() => handleDeleteLesson(course.id, lesson.id)}
-                          >
-                            <Trash2 className="h-4 w-4 text-red-500" />
-                          </Button>
+                    {course?.lessons?.length > 0 ? (
+                      course.lessons.map((lesson) => (
+                        <TableRow key={lesson._id}>
+                          <TableCell className="font-medium">
+                            <div className="flex items-center gap-2">
+                              {lesson.type === 'video' && <PlayCircle className="h-4 w-4" />}
+                              {lesson.type === 'reading' && <FileText className="h-4 w-4" />}
+                              {lesson.title}
+                            </div>
+                            {lesson.description && (
+                              <p className="text-sm text-muted-foreground">
+                                {lesson.description}
+                              </p>
+                            )}
+                          </TableCell>
+                          <TableCell>
+                            {lesson.moduleTitle || 'Unassigned'}
+                          </TableCell>
+                          <TableCell>
+                            <Badge variant="outline" className="capitalize">
+                              {lesson.type}
+                            </Badge>
+                          </TableCell>
+                          <TableCell>
+                            {lesson.duration ? `${lesson.duration}` : 'N/A'}
+                          </TableCell>
+                
+                          <TableCell className="text-right">
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              className="h-8 w-8 p-0"
+                              onClick={() => handleEditLesson(lesson)}
+                            >
+                              <Edit className="h-4 w-4" />
+                            </Button>
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              className="h-8 w-8 p-0"
+                              onClick={() => handleDeleteLesson(lesson._id)}
+                            >
+                              <Trash2 className="h-4 w-4 text-red-500" />
+                            </Button>
+                          </TableCell>
+                        </TableRow>
+                      ))
+                    ) : (
+                      <TableRow>
+                        <TableCell colSpan={6} className="h-24 text-center">
+                          No lessons found
                         </TableCell>
                       </TableRow>
-                    ))}
+                    )}
                   </TableBody>
                 </Table>
               </div>
@@ -1147,94 +1225,80 @@ const AdminCourses = () => {
 
       {/* Quiz Dialog */}
       <Dialog open={openQuizDialog} onOpenChange={setOpenQuizDialog}>
-        <DialogContent className="max-w-2xl max-h-[80vh] overflow-y-auto">
+        <DialogContent>
           <DialogHeader>
             <DialogTitle>
-              {currentQuiz.id ? 'Edit Quiz' : 'Add Quiz'}
+              {currentLesson?._id ? 'Edit Lesson' : 'Create Lesson'}
             </DialogTitle>
           </DialogHeader>
-          <form onSubmit={handleSubmitQuiz} className="space-y-6">
-            {currentQuiz.questions.map((question, qIndex) => (
-              <div key={question.id} className="border rounded-lg p-4 space-y-4">
-                <div className="flex justify-between items-center">
-                  <h4 className="font-medium">Question {qIndex + 1}</h4>
-                  {currentQuiz.questions.length > 1 && (
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      type="button"
-                      onClick={() => removeQuestion(question.id)}
-                    >
-                      <Trash2 className="h-4 w-4 text-red-500" />
-                    </Button>
-                  )}
-                </div>
-
-                <div className="space-y-2">
-                  <Label>Question Text*</Label>
-                  <Input
-                    value={question.question}
-                    onChange={(e) => updateQuestion(question.id, 'question', e.target.value)}
-                    required
-                  />
-                </div>
-
-                <div className="space-y-2">
-                  <Label>Options*</Label>
-                  {question.options.map((option, oIndex) => (
-                    <div key={oIndex} className="flex items-center space-x-2">
-                      <input
-                        type="radio"
-                        name={`correct-answer-${question.id}`}
-                        checked={question.correctAnswer === oIndex}
-                        onChange={() => updateQuestion(question.id, 'correctAnswer', oIndex)}
-                        className="h-4 w-4"
-                      />
-                      <Input
-                        value={option}
-                        onChange={(e) => updateOption(question.id, oIndex, e.target.value)}
-                        required
-                        placeholder={`Option ${oIndex + 1}`}
-                      />
-                    </div>
-                  ))}
-                </div>
-
-                <div className="space-y-2">
-                  <Label>Feedback</Label>
-                  <Input
-                    value={question.feedback}
-                    onChange={(e) => updateQuestion(question.id, 'feedback', e.target.value)}
-                    placeholder="Explanation for the correct answer"
-                  />
-                </div>
-              </div>
-            ))}
-
-            <div className="flex justify-between">
-              <Button
-                type="button"
-                variant="outline"
-                onClick={addQuestion}
-              >
-                <Plus className="h-4 w-4 mr-2" />
-                Add Another Question
-              </Button>
-
-              <div className="flex space-x-2">
-                <Button
-                  variant="outline"
-                  type="button"
-                  onClick={() => setOpenQuizDialog(false)}
-                >
-                  Cancel
-                </Button>
-                <Button type="submit" disabled={loading}>
-                  {currentQuiz.id ? 'Update Quiz' : 'Add Quiz'}
-                </Button>
-              </div>
+          <div className="grid gap-4 py-4">
+            <div className="grid grid-cols-4 items-center gap-4">
+              <Label htmlFor="title" className="text-right">
+                Title
+              </Label>
+              <Input
+                id="title"
+                value={currentLesson?.title || ''}
+                onChange={(e) => setCurrentLesson({
+                  ...currentLesson,
+                  title: e.target.value
+                })}
+                className="col-span-3"
+              />
             </div>
-          </form>
+
+            <div className="grid grid-cols-4 items-center gap-4">
+              <Label htmlFor="module" className="text-right">
+                Module
+              </Label>
+              <Select
+                value={currentLesson?.moduleId || ''}
+                onValueChange={(value) => setCurrentLesson({
+                  ...currentLesson,
+                  moduleId: value
+                })}
+              >
+                <SelectTrigger className="col-span-3">
+                  <SelectValue placeholder="Select module" />
+                </SelectTrigger>
+                <SelectContent>
+                  {currentCourse?.modules?.map((module) => (
+                    <SelectItem key={module._id} value={module._id}>
+                      {module.title}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+
+            <div className="grid grid-cols-4 items-center gap-4">
+              <Label htmlFor="type" className="text-right">
+                Type
+              </Label>
+              <Select
+                value={currentLesson?.type || ''}
+                onValueChange={(value) => setCurrentLesson({
+                  ...currentLesson,
+                  type: value
+                })}
+              >
+                <SelectTrigger className="col-span-3">
+                  <SelectValue placeholder="Select type" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="video">Video</SelectItem>
+                  <SelectItem value="reading">Reading</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+
+            {/* Add additional fields as needed */}
+          </div>
+          <DialogFooter>
+            <Button type="submit" onClick={handleSaveLesson}>
+              Save changes
+            </Button>
+          </DialogFooter>
         </DialogContent>
       </Dialog>
     </div>

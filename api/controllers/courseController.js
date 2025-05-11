@@ -1,101 +1,81 @@
-const Course = require('../models/Course');
-const Module = require('../models/Module');
-const Lesson = require('../models/Lesson');
-const Quiz = require('../models/Quiz');
-const Question = require('../models/Question');
-const Certificate = require('../models/Certificate');
+const { Course, Module, Lesson, Quiz, Question, Certificate } = require('../models');
 const slugify = require('slugify'); // Install with: npm install slugify
 
 
 // Get all courses
-// Get all courses with optional filtering and pagination
 exports.getAllCourses = async (req, res) => {
   try {
-    // Basic query
-    let query = Course.find();
-    
-    // Populate quiz data with selected fields
-    query = query.populate({
-      path: 'quiz',
-      select: 'title description duration passingScore attemptsAllowed createdAt',
-      populate: {
-        path: 'questions',
-        model: 'Question',
-        select: 'question options correctAnswer feedback points questionType' // Only necessary fields
-      }
-    });
-    
-    // Populate modules and lessons
-    query = query.populate({
-      path: 'modules',
-      select: 'title order lessons duration',
-      populate: {
-        path: 'lessons',
-        model: 'Lesson',
-        select: 'title videoUrl duration order content' // Only necessary fields
-      }
-    });
-    
-    // Optional: Add sorting (newest first)
-    query = query.sort({ createdAt: -1 });
-    
-    // Execute the query
-    const courses = await query.exec();
-    
-    // If no courses found (not necessarily an error)
-    if (!courses || courses.length === 0) {
+    const courses = await Course.find()
+      .populate({
+        path: 'quiz',
+        model: 'Quiz',
+        select: 'title description duration passingScore attemptsAllowed createdAt',
+        populate: {
+          path: 'questions',
+          model: 'Question',
+          select: 'question options correctAnswer feedback points questionType'
+        }
+      })
+      .populate({
+        path: 'modules',
+        model: 'Module',
+        select: 'title order lessons duration',
+        populate: {
+          path: 'lessons',
+          model: 'Lesson',
+          select: 'title videoUrl duration order content type readingContent pdfUrl'
+        }
+      })
+      .sort({ createdAt: -1 })
+      .lean(); // Use lean() for better performance
+
+    if (!courses.length) {
       return res.status(200).json({
         success: true,
         courses: [],
         message: 'No courses found'
       });
     }
-    
-    // Transform data for frontend
-    const processedCourses = courses.map(course => {
-      const courseObj = course.toObject();
-      
-      return {
-        ...courseObj,
-        id: courseObj._id,
-        quiz: courseObj.quiz ? {
-          ...courseObj.quiz,
-          id: courseObj.quiz._id,
-          questions: courseObj.quiz.questions?.map(q => ({
-            ...q,
-            id: q._id
-          })) || []
-        } : null,
-        modules: courseObj.modules?.map(module => ({
-          ...module,
-          id: module._id,
-          lessons: module.lessons?.map(lesson => ({
-            ...lesson,
-            id: lesson._id
-          })) || []
+
+    // Process the data
+    const processedCourses = courses.map(course => ({
+      ...course,
+      id: course._id,
+      quiz: course.quiz ? {
+        ...course.quiz,
+        id: course.quiz._id,
+        questions: course.quiz.questions?.map(q => ({
+          ...q,
+          id: q._id
         })) || []
-      };
-    });
-    
+      } : null,
+      modules: course.modules?.map(module => ({
+        ...module,
+        id: module._id,
+        lessons: module.lessons?.map(lesson => ({
+          ...lesson,
+          id: lesson._id
+        })) || []
+      })) || []
+    }));
+
     res.status(200).json({
       success: true,
       count: processedCourses.length,
       courses: processedCourses
     });
-    
+
   } catch (err) {
     console.error('Error fetching courses:', err);
     
-    // More specific error handling
-    let errorMessage = 'Failed to load course data';
     let statusCode = 500;
+    let errorMessage = 'Failed to load course data';
     
-    if (err.name === 'CastError') {
+    if (err.name === 'CastError' || err.name === 'ValidationError') {
+      statusCode = 400;
       errorMessage = 'Invalid data format';
-      statusCode = 400;
-    } else if (err.name === 'ValidationError') {
-      errorMessage = 'Data validation failed';
-      statusCode = 400;
+    } else if (err.name === 'MissingSchemaError') {
+      errorMessage = 'Database configuration error';
     }
     
     res.status(statusCode).json({
