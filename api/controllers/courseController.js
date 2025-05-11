@@ -9,11 +9,11 @@ exports.getAllCourses = async (req, res) => {
     .populate({
       path: 'quiz',
       model: 'Quiz',
-      select: 'title description duration passingScore attemptsAllowed createdAt questions',
+      select: 'title description questions',
       populate: {
         path: 'questions',
         model: 'Question',
-        select: 'question options correctAnswer feedback points questionType'
+        select: 'question options correctAnswer feedback'
       }
     })
       .populate({
