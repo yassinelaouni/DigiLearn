@@ -6,16 +6,16 @@ const slugify = require('slugify'); // Install with: npm install slugify
 exports.getAllCourses = async (req, res) => {
   try {
     const courses = await Course.find()
-      .populate({
-        path: 'quiz',
-        model: 'Quiz',
-        select: 'title description duration passingScore attemptsAllowed createdAt',
-        populate: {
-          path: 'questions',
-          model: 'Question',
-          select: 'question options correctAnswer feedback points questionType'
-        }
-      })
+    .populate({
+      path: 'quiz',
+      model: 'Quiz',
+      select: 'title description duration passingScore attemptsAllowed createdAt questions',
+      populate: {
+        path: 'questions',
+        model: 'Question',
+        select: 'question options correctAnswer feedback points questionType'
+      }
+    })
       .populate({
         path: 'modules',
         model: 'Module',
@@ -297,46 +297,47 @@ exports.getSuggestedCourses = async (req, res) => {
 // Create course
 exports.createCourse = async (req, res) => {
   try {
-    const { title, description, category, duration, level, learningOutcomes } = req.body;
+    const { title, description, category, duration, level } = req.body;
+    let learningOutcomes = [];
+    
+    // Handle learning outcomes if they exist
+    if (req.body.learningOutcomes) {
+      if (Array.isArray(req.body.learningOutcomes)) {
+        learningOutcomes = req.body.learningOutcomes;
+      } else {
+        learningOutcomes = Object.values(req.body)
+          .filter(val => typeof val === 'string' && val.startsWith('learningOutcomes['))
+          .map(val => val.split(']=')[1]);
+      }
+    }
 
-    // Generate slug from title
-    const slug = slugify(title, { 
-      lower: true,
-      strict: true
-    });
+    // Handle file upload
+    let thumbnail = 'defaults/course-thumbnail.jpg';
+    if (req.file) {
+      thumbnail = `/uploads/${req.file.filename}`;
+    }
 
-    // Handle thumbnail
-    const thumbnail = req.file ? req.file.path : 'defaults/course-thumbnail.jpg';
+    const slug = slugify(title, { lower: true, strict: true });
 
-    const courseData = {
+    const course = await Course.create({
       title,
       slug,
+      description,
       category,
-      thumbnail,
       duration,
-      description: description || 'Course description here',
-      level: level || 'Beginner',
-      learningOutcomes: learningOutcomes || [],
-      rating: 0 // Default rating
-    };
-
-    const course = await Course.create(courseData);
+      level,
+      thumbnail,
+      learningOutcomes
+    });
 
     res.status(201).json({
       success: true,
-      course: {
-        id: course._id,
-        title: course.title,
-        slug: course.slug,
-        thumbnail: course.thumbnail,
-        category: course.category,
-        duration: course.duration,
-        level: course.level,
-        learningOutcomes: course.learningOutcomes,
-        createdAt: course.createdAt
-      }
+      course
     });
   } catch (err) {
-    // Error handling
+    res.status(500).json({
+      success: false,
+      errorMessage: err.message
+    });
   }
 };

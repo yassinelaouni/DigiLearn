@@ -300,7 +300,15 @@ const AdminCourses = () => {
   const handleSubmitCourse = async (e) => {
     e.preventDefault();
 
-    if (!currentCourse.title || !currentCourse.description || !currentCourse.category) {
+    // Validate all required fields
+    if (
+      !currentCourse.title ||
+      !currentCourse.description ||
+      !currentCourse.category ||
+      !currentCourse.thumbnail ||
+      !currentCourse.duration ||
+      !currentCourse.level
+    ) {
       toast({
         title: 'Error',
         description: 'Required fields are missing',
@@ -320,8 +328,14 @@ const AdminCourses = () => {
       const payload = {
         title: currentCourse.title,
         description: currentCourse.description,
-        category: currentCourse.category
-        // Add other required fields here
+        category: currentCourse.category,
+        slug: currentCourse.title.toLowerCase().replace(/\s+/g, '-'),
+        thumbnail: currentCourse.thumbnail,
+        duration: currentCourse.duration,
+        level: currentCourse.level,
+        learningOutcomes: currentCourse.learningOutcomes,
+        lessons: currentCourse.lessons,
+        quiz: currentCourse.quiz
       };
 
       const response = await fetch(url, {
@@ -814,7 +828,6 @@ const AdminCourses = () => {
         <div className="space-y-6">
           {(courses || []).map(course => (
               <div key={course.id} className="border rounded-lg p-6">
-                {console.log("course :",course)}
                 <div className="flex justify-between items-start mb-4">
                   <div>
                     <h2 className="text-xl font-bold">{course.title}</h2>

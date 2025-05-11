@@ -4,20 +4,42 @@ const UserProgress = require('../models/UserProgress');
 // Create lesson
 exports.createLesson = async (req, res) => {
   try {
-    const lesson = await Lesson.create(req.body);
+    const { title, type, duration, courseId, moduleId, description } = req.body;
+    
+    let lessonData = {
+      title,
+      type,
+      duration,
+      courseId,
+      description
+    };
+
+    if (moduleId) {
+      lessonData.moduleId = moduleId;
+    }
+
+    // Handle different lesson types
+    if (type === 'video') {
+      lessonData.videoUrl = req.body.videoUrl;
+    } else if (type === 'reading') {
+      lessonData.readingContent = req.body.readingContent;
+    }
+
+    // Handle PDF upload
+    if (req.file) {
+      lessonData.pdfUrl = `/uploads/${req.file.filename}`;
+    }
+
+    const lesson = await Lesson.create(lessonData);
 
     res.status(201).json({
       success: true,
-      lesson,
-      errorCode: "",
-      errorMessage: "",
-      errors: {}
+      lesson
     });
   } catch (err) {
     res.status(500).json({
       success: false,
-      errorMessage: 'Server error',
-      errors: err.message
+      errorMessage: err.message
     });
   }
 };
