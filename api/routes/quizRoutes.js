@@ -2,18 +2,19 @@ const express = require('express');
 const router = express.Router();
 const {
   getQuizForCourse,
+  getQuizDetails,
   createQuiz,
   updateQuiz,
   deleteQuiz
 } = require('../controllers/quizController');
-const { protect, adminProtect } = require('../middlewares/auth');
 
-// Public route
+// Public routes
 router.get('/courses/:courseId/quiz', getQuizForCourse);
+router.get('/:quizId/details', getQuizDetails);
 
 // Admin protected routes
-router.post('/quizzes', createQuiz);
-router.put('/quizzes/:id',  updateQuiz);
-router.delete('/quizzes/:id',deleteQuiz);
+router.post('/',  createQuiz);
+router.put('/:id', updateQuiz);
+router.delete('/:id', deleteQuiz);
 
 module.exports = router;

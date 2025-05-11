@@ -29,6 +29,7 @@ const CourseDetails = () => {
   const [error, setError] = useState(null);
   const [userProgress, setUserProgress] = useState([]);
 
+
   // Fetch both course data and user progress
   useEffect(() => {
     const fetchData = async () => {

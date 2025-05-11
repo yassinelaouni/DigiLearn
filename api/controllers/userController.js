@@ -3,45 +3,67 @@ const Certificate = require('../models/Certificate');
 const UserProgress = require('../models/UserProgress');
 const Course = require('../models/Course');
 const Lesson = require('../models/Lesson');
+const bcrypt = require('bcryptjs');
+const path = require('path');
+const fs = require('fs');
+const { promisify } = require('util');
+const unlinkAsync = promisify(fs.unlink);
 
-// Update user avatar
+// Helper function to process uploaded file
+const processUploadedFile = async (file) => {
+  if (!file) {
+    throw new Error('No file uploaded');
+  }
+  
+  // Just return the relative path where multer saved it
+  return `/uploads/avatars/${file.filename}`;
+};
+
+// Update avatar controller
 exports.updateAvatar = async (req, res) => {
   try {
-    const user = await User.findById(req.user.id);
+    const { userId } = req.params;
+    const user = await User.findById(userId);
 
     if (!user) {
       return res.status(404).json({
         success: false,
-        updated: {},
         errorCode: "UserNotFound",
-        errorMessage: `User not found`,
-        errors: {}
+        errorMessage: "User not found"
       });
     }
 
-    user.avatar = req.body.avatar;
+    // Process the uploaded file
+    const avatarUrl = `http://localhost:5000/uploads/avatars/${req.file.filename}`;
+
+    // Update user with new avatar
+    user.avatar = avatarUrl;
     await user.save();
 
+    
     res.json({
       success: true,
-      updated: { avatar: user.avatar, userId: user._id },
-      errorCode: "",
-      errorMessage: "Avatar updated successfully",
-      errors: {}
+      updated: { 
+        avatar: avatarUrl,
+        userId: user._id
+      }
     });
+
   } catch (err) {
+    console.error('Avatar update error:', err);
     res.status(500).json({
       success: false,
-      errorMessage: 'Server error',
-      errors: err.message
+      errorCode: "ServerError",
+      errorMessage: err.message || 'Failed to update avatar'
     });
   }
 };
 
-// Update user firstName
+// Update user firstName by ID
 exports.updateFirstName = async (req, res) => {
   try {
-    const user = await User.findById(req.user.id);
+    const { userId } = req.params;
+    const user = await User.findById(userId);
 
     if (!user) {
       return res.status(404).json({
@@ -72,10 +94,11 @@ exports.updateFirstName = async (req, res) => {
   }
 };
 
-// Update user lastName
+// Update user lastName by ID
 exports.updateLastName = async (req, res) => {
   try {
-    const user = await User.findById(req.user.id);
+    const { userId } = req.params;
+    const user = await User.findById(userId);
 
     if (!user) {
       return res.status(404).json({
@@ -106,10 +129,11 @@ exports.updateLastName = async (req, res) => {
   }
 };
 
-// Update user password
+// Update user password by ID (with current password verification)
 exports.updatePassword = async (req, res) => {
   try {
-    const user = await User.findById(req.user.id);
+    const { userId } = req.params;
+    const user = await User.findById(userId);
 
     if (!user) {
       return res.status(404).json({
@@ -147,10 +171,11 @@ exports.updatePassword = async (req, res) => {
   }
 };
 
-// Get user profile
+// Get user profile by ID (public access)
 exports.getProfile = async (req, res) => {
   try {
-    const user = await User.findById(req.user.id);
+    const { userId } = req.params;
+    const user = await User.findById(userId);
 
     if (!user) {
       return res.status(404).json({
@@ -279,7 +304,7 @@ exports.getUserProgress = async (req, res) => {
       errorMessage: "Server error"
     });
   }
-}; 
+};
 
 // Mark lesson complete
 exports.markLessonComplete = async (req, res) => {
@@ -332,7 +357,6 @@ exports.getUserDashboard = async (req, res) => {
       })
     ]);
 
-    // Process all courses with progress data
     const processedCourses = allCourses
       .map(course => {
         const courseLessons = course.modules.flatMap(module => module.lessons);
@@ -341,7 +365,6 @@ exports.getUserDashboard = async (req, res) => {
           userProgress.some(p => p.lessonId.equals(lesson._id) && p.completed)
         ).length;
         
-        // Get latest interaction date for sorting
         const latestProgress = userProgress
           .filter(p => courseLessons.some(l => l._id.equals(p.lessonId)))
           .sort((a, b) => b.updatedAt - a.updatedAt)[0];
@@ -353,28 +376,23 @@ exports.getUserDashboard = async (req, res) => {
           thumbnail: course.thumbnail,
           progress: completedLessons,
           total: totalLessons,
-          hasLessons: totalLessons > 0, // Flag for courses with lessons
+          hasLessons: totalLessons > 0,
           isCompleted: totalLessons > 0 && completedLessons === totalLessons,
           lastAccessed: latestProgress?.updatedAt || null
         };
       })
-      // Filter out courses with no lessons or progress < 1
       .filter(course => course.hasLessons && (course.progress >= 1 || course.isCompleted));
 
-    // Sort courses: completed first, then by last accessed, then others
     const sortedCourses = processedCourses.sort((a, b) => {
-      // Completed courses first
       if (a.isCompleted && !b.isCompleted) return -1;
       if (!a.isCompleted && b.isCompleted) return 1;
       
-      // Then by last accessed date (most recent first)
       if (a.lastAccessed && b.lastAccessed) {
         return b.lastAccessed - a.lastAccessed;
       }
       if (a.lastAccessed) return -1;
       if (b.lastAccessed) return 1;
       
-      // Finally by course title
       return a.title.localeCompare(b.title);
     });
 
@@ -386,7 +404,7 @@ exports.getUserDashboard = async (req, res) => {
           certificates: certificates.length,
           lessonsCompleted: userProgress.filter(p => p.completed).length,
           completedCourses: processedCourses.filter(c => c.isCompleted).length,
-          totalCourses: sortedCourses.length // Count of filtered courses
+          totalCourses: sortedCourses.length
         },
         allCourses: sortedCourses
       }

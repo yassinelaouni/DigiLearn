@@ -8,20 +8,20 @@ const {
   updateCourse,
   deleteCourse,
   getCourseLessons,
-  getSuggestedCourses
+  getSuggestedCourses 
 } = require('../controllers/courseController');
 const { protect, adminProtect } = require('../middlewares/auth');
 
-// Public routes
-router.get('/courses/:courseId/lessons', getCourseLessons);
-router.get('/courses/suggested', getSuggestedCourses); // <-- Now this will match first
-router.get('/courses/featured', getFeaturedCourses);
-router.get('/courses/:slug', getCourseBySlug); // Generic slug route last
-router.get('/courses', getAllCourses);
-
+// courseRoutes.js
+router.get('/:courseId/lessons', getCourseLessons);
+router.get('/suggested', getSuggestedCourses);
+router.get('/featured', getFeaturedCourses);
+router.get('/:slug', getCourseBySlug);
+router.get('/', getAllCourses);
+ 
 // Admin protected routes
-router.post('/courses', createCourse);
-router.put('/courses/:id', updateCourse);
-router.delete('/courses/:id',deleteCourse);
+router.post('/', createCourse);
+router.put('/:id', updateCourse);
+router.delete('/:id', deleteCourse);
 
 module.exports = router;

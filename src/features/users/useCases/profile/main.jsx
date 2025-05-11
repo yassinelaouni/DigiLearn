@@ -63,7 +63,7 @@ export default function ProfilePage() {
                             {/* Avatar Section */}
                             <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', mb: 4 }}>
                                 <Avatar
-                                    src={profile.avatar}
+                                    src={profile.avatar ? `${profile.avatar}?t=${profile._version || Date.now()}` : null}
                                     sx={{
                                         width: 80,
                                         height: 80,
@@ -136,7 +136,7 @@ export default function ProfilePage() {
                                     </Box>
                                 )}
                             </Box>
- 
+
                             {/* Last Name Field */}
                             <Box sx={{ mb: 3 }}>
                                 <Typography variant="subtitle2" sx={{ mb: 1, color: 'text.secondary' }}>

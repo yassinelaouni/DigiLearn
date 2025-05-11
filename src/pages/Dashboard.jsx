@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button";
 import { useToast } from '@/hooks/use-toast';
 
 const UserDashboard = () => {
-    const userId = "68152e9b92f42938445d56cc";
+    const userId = "68152e9b92f42938445d56d0";
     const [userData, setUserData] = useState({
         name: "",
         stats: {
