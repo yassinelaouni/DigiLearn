@@ -29,7 +29,7 @@ const questionSchema = new mongoose.Schema({
   feedback: {
     type: String,
     default: ''
-  }
+  } 
 });
 
 module.exports = mongoose.model('Question', questionSchema);

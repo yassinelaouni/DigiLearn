@@ -433,61 +433,73 @@ const AdminCourses = () => {
 
   const handleSubmitLesson = async (e) => {
     e.preventDefault();
-
-    // Add validation
-    if (!currentLesson.title || !currentLesson.duration ||
-      (currentLesson.type === 'video' && !currentLesson.videoUrl) ||
-      (currentLesson.type === 'reading' && !currentLesson.readingContent)) {
-      toast({
-        title: 'Error',
-        description: 'Please fill all required fields',
-        variant: 'destructive'
-      });
-      return;
-    }
-
     setLoading(true);
 
     try {
-      const method = currentLesson.id ? 'PUT' : 'POST';
+      // Validate required fields based on lesson type
+      const requiredFields = {
+        video: ['title', 'duration', 'videoUrl'],
+        reading: ['title', 'duration', 'readingContent']
+      };
+
+      const missingFields = requiredFields[currentLesson.type].filter(
+        field => !currentLesson[field]
+      );
+
+      if (missingFields.length > 0) {
+        throw new Error(`Missing required fields: ${missingFields.join(', ')}`);
+      }
+
       const url = currentLesson.id
-        ? `http://localhost:5000/api/lessons/${currentLesson.id}`
-        : 'http://localhost:5000/api/lessons';
+        ? `http://localhost:5000/api/courses/${currentLesson.courseId}/lessons/${currentLesson.id}`
+        : `http://localhost:5000/api/courses/${currentLesson.courseId}/lessons`;
+
+      const method = currentLesson.id ? 'PUT' : 'POST';
 
       const response = await fetch(url, {
         method,
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify(currentLesson)
+        body: JSON.stringify({
+          title: currentLesson.title,
+          description: currentLesson.description,
+          type: currentLesson.type,
+          duration: currentLesson.duration,
+          videoUrl: currentLesson.videoUrl,
+          readingContent: currentLesson.readingContent,
+          pdfUrl: currentLesson.pdfUrl,
+          order: currentLesson.order || 0,
+          moduleId: currentLesson.moduleId || null
+        })
       });
 
       const data = await response.json();
 
-      if (!data.success) {
-        throw new Error(data.errorMessage || 'Operation failed');
+      if (!response.ok) {
+        throw new Error(data.message || 'Failed to save lesson');
       }
 
-      // Update the course with the new/updated lesson
-      const updatedCourses = courses.map(course => {
-        if (course.id === currentLesson.courseId) {
-          if (currentLesson.id) {
-            // Update existing lesson
-            const updatedLessons = course.lessons.map(l =>
-              l.id === currentLesson.id ? data.lesson : l
-            );
-            return { ...course, lessons: updatedLessons };
-          } else {
-            // Add new lesson
-            return { ...course, lessons: [...course.lessons, data.lesson] };
+      // Update local state
+      setCourses(prevCourses =>
+        prevCourses.map(course => {
+          if (course.id === currentLesson.courseId) {
+            if (currentLesson.id) {
+              // Update existing lesson
+              const updatedLessons = course.lessons.map(lesson =>
+                lesson.id === currentLesson.id ? data.lesson : lesson
+              );
+              return { ...course, lessons: updatedLessons };
+            } else {
+              // Add new lesson
+              return { ...course, lessons: [...course.lessons, data.lesson] };
+            }
           }
-        }
-        return course;
-      });
+          return course;
+        })
+      );
 
-      setCourses(updatedCourses);
       setOpenLessonDialog(false);
-      resetLessonForm();
       toast({
         title: 'Success',
         description: `Lesson ${currentLesson.id ? 'updated' : 'created'} successfully`,
@@ -502,7 +514,6 @@ const AdminCourses = () => {
       setLoading(false);
     }
   };
-
 
 
   const handleEditCourse = (course) => {
@@ -678,107 +689,15 @@ const AdminCourses = () => {
     <div className="container py-8">
       <div className="flex justify-between items-center mb-6">
         <h1 className="text-2xl font-bold">Course Management</h1>
-        <Dialog open={openQuizDialog} onOpenChange={setOpenQuizDialog}>
-          <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
-            <DialogHeader>
-              <DialogTitle>
-                {currentQuiz.id ? 'Edit Quiz' : 'Create Quiz'}
-              </DialogTitle>
-            </DialogHeader>
-            <form onSubmit={handleSubmitQuiz} className="space-y-4">
-              <div className="space-y-2">
-                <Label>Title</Label>
-                <Input
-                  value={currentQuiz.title}
-                  onChange={(e) => setCurrentQuiz({ ...currentQuiz, title: e.target.value })}
-                  required
-                />
-              </div>
-
-              <div className="space-y-2">
-                <Label>Description</Label>
-                <Textarea
-                  value={currentQuiz.description}
-                  onChange={(e) => setCurrentQuiz({ ...currentQuiz, description: e.target.value })}
-                />
-              </div>
-
-              <div className="space-y-4">
-                <h4 className="font-medium">Questions</h4>
-                {currentQuiz.questions.map((question, qIndex) => (
-                  <div key={question.id} className="border rounded-lg p-4 space-y-3">
-                    <div className="space-y-2">
-                      <Label>Question {qIndex + 1}</Label>
-                      <Input
-                        value={question.question}
-                        onChange={(e) => updateQuestion(question.id, 'question', e.target.value)}
-                        required
-                      />
-                    </div>
-
-                    <div className="space-y-2">
-                      <Label>Options</Label>
-                      {question.options.map((option, oIndex) => (
-                        <div key={oIndex} className="flex items-center gap-2">
-                          <input
-                            type="radio"
-                            name={`correct-${question.id}`}
-                            checked={question.correctAnswer === oIndex}
-                            onChange={() => updateQuestion(question.id, 'correctAnswer', oIndex)}
-                          />
-                          <Input
-                            value={option}
-                            onChange={(e) => updateOption(question.id, oIndex, e.target.value)}
-                            required
-                          />
-                        </div>
-                      ))}
-                    </div>
-
-                    <div className="space-y-2">
-                      <Label>Feedback</Label>
-                      <Input
-                        value={question.feedback}
-                        onChange={(e) => updateQuestion(question.id, 'feedback', e.target.value)}
-                      />
-                    </div>
-
-                    <Button
-                      type="button"
-                      variant="destructive"
-                      size="sm"
-                      onClick={() => removeQuestion(question.id)}
-                      disabled={currentQuiz.questions.length <= 1}
-                    >
-                      Remove Question
-                    </Button>
-                  </div>
-                ))}
-
-                <Button
-                  type="button"
-                  variant="outline"
-                  onClick={addQuestion}
-                >
-                  Add Question
-                </Button>
-              </div>
-
-              <DialogFooter>
-                <Button type="submit" disabled={loading}>
-                  {loading ? (
-                    <span className="flex items-center">
-                      <span className="animate-spin mr-2">↻</span>
-                      {currentQuiz.id ? 'Updating...' : 'Creating...'}
-                    </span>
-                  ) : (
-                    currentQuiz.id ? 'Update Quiz' : 'Create Quiz'
-                  )}
-                </Button>
-              </DialogFooter>
-            </form>
-          </DialogContent>
-        </Dialog>
+        <Button
+          onClick={() => {
+            setOpenCourseDialog(true);
+            setCurrentCourse(initCourse());
+          }}
+        >
+          <Plus className="h-4 w-4 mr-2" />
+          Add Course
+        </Button>
       </div>
 
       <div className="mb-6">
@@ -935,43 +854,146 @@ const AdminCourses = () => {
               <div className="flex justify-between items-center mb-4">
                 <h3 className="font-semibold">Lessons</h3>
                 <Dialog open={openLessonDialog} onOpenChange={setOpenLessonDialog}>
-                  <DialogTrigger asChild>
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={() => {
-                        resetLessonForm();
-                        setCurrentLesson({ ...initLesson(), courseId: course.id });
-                      }}
-                    >
-                      <Plus className="h-4 w-4 mr-2" />
-                      Add Lesson
-                    </Button>
-                  </DialogTrigger>
-                  <DialogContent
-                    onInteractOutside={(e) => e.preventDefault()}
-                    onEscapeKeyDown={(e) => {
-                      if (!loading) {
-                        setOpenLessonDialog(false);
-                      } else {
-                        e.preventDefault();
-                      }
-                    }}
-                  >
-                    <DialogHeader>
-                      <DialogTitle id="lesson-dialog-title">
-                        {currentLesson.id ? 'Edit Lesson' : 'Add Lesson'}
-                      </DialogTitle>
-                    </DialogHeader>
-                    <form
-                      onSubmit={handleSubmitLesson}
-                      className="space-y-4"
-                      aria-labelledby="lesson-dialog-title"
-                    >
-                      {/* ... rest of your lesson form ... */}
+                  <DialogContent className="bg-white max-w-2xl max-h-[90vh] overflow-y-auto">                    <DialogHeader>
+                    <DialogTitle>
+                      {currentLesson.id ? 'Edit Lesson' : 'Add Lesson'}
+                    </DialogTitle>
+                  </DialogHeader>
+                    <form onSubmit={handleSubmitLesson} className="space-y-4">
+                      <div className="space-y-2">
+                        <Label>Title*</Label>
+                        <Input
+                          value={currentLesson.title}
+                          onChange={(e) => setCurrentLesson({ ...currentLesson, title: e.target.value })}
+                          required
+                        />
+                      </div>
+
+                      <div className="space-y-2">
+                        <Label>Description</Label>
+                        <Textarea
+                          value={currentLesson.description}
+                          onChange={(e) => setCurrentLesson({ ...currentLesson, description: e.target.value })}
+                        />
+                      </div>
+
+                      <div className="grid grid-cols-2 gap-4">
+                        <div className="space-y-2">
+                          <Label>Type*</Label>
+                          <Select
+                            value={currentLesson.type}
+                            onValueChange={(value) => setCurrentLesson({ ...currentLesson, type: value })}
+                          >
+                            <SelectTrigger>
+                              <SelectValue placeholder="Select type" />
+                            </SelectTrigger>
+                            <SelectContent>
+                              {lessonTypes.map(type => (
+                                <SelectItem key={type} value={type}>
+                                  {type.charAt(0).toUpperCase() + type.slice(1)}
+                                </SelectItem>
+                              ))}
+                            </SelectContent>
+                          </Select>
+                        </div>
+
+                        <div className="space-y-2">
+                          <Label>Duration*</Label>
+                          <Input
+                            value={currentLesson.duration}
+                            onChange={(e) => setCurrentLesson({ ...currentLesson, duration: e.target.value })}
+                            placeholder="e.g. 10 min"
+                            required
+                          />
+                        </div>
+                      </div>
+
+                      {currentLesson.type === 'video' && (
+                        <div className="space-y-2">
+                          <Label>Video URL*</Label>
+                          <Input
+                            value={currentLesson.videoUrl}
+                            onChange={(e) => setCurrentLesson({ ...currentLesson, videoUrl: e.target.value })}
+                            placeholder="https://www.youtube.com/embed/..."
+                            required={currentLesson.type === 'video'}
+                          />
+                        </div>
+                      )}
+
+                      {currentLesson.type === 'reading' && (
+                        <>
+                          <div className="space-y-2">
+                            <Label>Reading Content*</Label>
+                            <Textarea
+                              value={currentLesson.readingContent}
+                              onChange={(e) => setCurrentLesson({ ...currentLesson, readingContent: e.target.value })}
+                              rows={6}
+                              required={currentLesson.type === 'reading'}
+                            />
+                          </div>
+
+                          <div className="space-y-2">
+                            <Label>PDF File</Label>
+                            <div className="flex items-center gap-2">
+                              <Input
+                                type="file"
+                                ref={fileInputRef}
+                                onChange={handleFileUpload}
+                                accept=".pdf"
+                                className="hidden"
+                              />
+                              <Button
+                                type="button"
+                                variant="outline"
+                                onClick={() => fileInputRef.current.click()}
+                                disabled={uploading}
+                              >
+                                <Upload className="h-4 w-4 mr-2" />
+                                {uploading ? `Uploading... ${uploadProgress}%` : 'Upload PDF'}
+                              </Button>
+                              {currentLesson.pdfUrl && (
+                                <span className="text-sm text-green-600 flex items-center">
+                                  <CheckCircle className="h-4 w-4 mr-1" />
+                                  PDF uploaded
+                                </span>
+                              )}
+                            </div>
+                          </div>
+                        </>
+                      )}
+
+                      <DialogFooter>
+                        <Button type="submit" disabled={loading}>
+                          {loading ? (
+                            <span className="flex items-center">
+                              <span className="animate-spin mr-2">↻</span>
+                              {currentLesson.id ? 'Updating...' : 'Creating...'}
+                            </span>
+                          ) : (
+                            currentLesson.id ? 'Update Lesson' : 'Create Lesson'
+                          )}
+                        </Button>
+                      </DialogFooter>
                     </form>
                   </DialogContent>
                 </Dialog>
+              </div>
+
+              {/* Lessons Section */}
+              <div className="flex justify-between items-center mb-4">
+                <h3 className="font-semibold">Lessons</h3>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => {
+                    resetLessonForm();
+                    setCurrentLesson({ ...initLesson(), courseId: course.id });
+                    setOpenLessonDialog(true);
+                  }}
+                >
+                  <Plus className="h-4 w-4 mr-2" />
+                  Add Lesson
+                </Button>
               </div>
 
               <Table>

@@ -102,7 +102,7 @@ app.use('/api/admin', adminRoutes);
 app.use('/api/courses', courseRoutes);
 app.use('/api/lessons', lessonRoutes);
 app.use('/api/quizzes', quizRoutes);
-app.use('/api/certificates', certificateRoutes);
+app.use('/api/certificates', certificateRoutes); 
 
 // Health check endpoint
 app.get('/api/health', (req, res) => {

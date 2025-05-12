@@ -1,21 +1,20 @@
 const { Course, Module, Lesson, Quiz, Question, Certificate } = require('../models');
-const slugify = require('slugify'); // Install with: npm install slugify
-
+const slugify = require('slugify');
 
 // Get all courses
 exports.getAllCourses = async (req, res) => {
   try {
     const courses = await Course.find()
-    .populate({
-      path: 'quiz',
-      model: 'Quiz',
-      select: 'title description questions',
-      populate: {
-        path: 'questions',
-        model: 'Question',
-        select: 'question options correctAnswer feedback'
-      }
-    })
+      .populate({
+        path: 'quiz',
+        model: 'Quiz',
+        select: 'title description questions',
+        populate: {
+          path: 'questions',
+          model: 'Question',
+          select: 'question options correctAnswer feedback'
+        }
+      })
       .populate({
         path: 'modules',
         model: 'Module',
@@ -27,7 +26,7 @@ exports.getAllCourses = async (req, res) => {
         }
       })
       .sort({ createdAt: -1 })
-      .lean(); // Use lean() for better performance
+      .lean();
 
     if (!courses.length) {
       return res.status(200).json({
@@ -37,7 +36,6 @@ exports.getAllCourses = async (req, res) => {
       });
     }
 
-    // Process the data
     const processedCourses = courses.map(course => ({
       ...course,
       id: course._id,
@@ -89,7 +87,28 @@ exports.getAllCourses = async (req, res) => {
 // Get course by slug
 exports.getCourseBySlug = async (req, res) => {
   try {
-    const course = await Course.findOne({ slug: req.params.slug });
+    const course = await Course.findOne({ slug: req.params.slug })
+      .populate({
+        path: 'quiz',
+        model: 'Quiz',
+        select: 'title description questions',
+        populate: {
+          path: 'questions',
+          model: 'Question',
+          select: 'question options correctAnswer feedback'
+        }
+      })
+      .populate({
+        path: 'modules',
+        model: 'Module',
+        select: 'title order lessons',
+        populate: {
+          path: 'lessons',
+          model: 'Lesson',
+          select: 'title videoUrl duration order type readingContent pdfUrl'
+        }
+      })
+      .lean();
 
     if (!course) {
       return res.status(404).json({
@@ -101,60 +120,52 @@ exports.getCourseBySlug = async (req, res) => {
       });
     }
 
-    const modules = await Module.find({ courseId: course._id })
-      .sort('order')
-      .populate('lessons');
-
-    const courseWithModules = {
-      ...course._doc,
-      modules: modules.map(module => {
-        const lessons = module.lessons.map(lesson => {
-          // Base lesson object with all common fields
-          const baseLesson = {
-            ...lesson._doc,
-            moduleId: module._id,
-            courseId: course._id
-          };
-
-          // Handle reading lessons
-          if (lesson.type === 'reading') {
-            return {
-              ...baseLesson,
-              readingContent: lesson.readingContent || 'Default reading content...',
-              pdfUrl: lesson.pdfUrl || "https://www.cs.cmu.edu/afs/cs.cmu.edu/user/gchen/www/download/java/LearnJava.pdf"
-            };
-          }
-
-          // Handle video lessons
-          if (lesson.type === 'video') {
-            return {
-              ...baseLesson,
-              videoUrl: lesson.videoUrl || 'https://www.youtube.com/embed/dQw4w9WgXcQ'
-            };
-          }
-
-          return baseLesson;
-        });
-
-        return {
-          ...module._doc,
-          lessons
-        };
-      })
+    const processedCourse = {
+      ...course,
+      id: course._id,
+      quiz: course.quiz ? {
+        ...course.quiz,
+        id: course.quiz._id,
+        questions: course.quiz.questions?.map(q => ({
+          ...q,
+          id: q._id
+        })) || []
+      } : null,
+      modules: course.modules?.map(module => ({
+        ...module,
+        id: module._id,
+        lessons: module.lessons?.map(lesson => ({
+          ...lesson,
+          id: lesson._id,
+          videoUrl: lesson.type === 'video' ? (lesson.videoUrl || 'https://www.youtube.com/embed/dQw4w9WgXcQ') : undefined,
+          readingContent: lesson.type === 'reading' ? (lesson.readingContent || 'Default reading content...') : undefined,
+          pdfUrl: lesson.type === 'reading' ? (lesson.pdfUrl || "https://www.cs.cmu.edu/afs/cs.cmu.edu/user/gchen/www/download/java/LearnJava.pdf") : undefined
+        })) || []
+      })) || []
     };
 
-    res.json({
+    res.status(200).json({
       success: true,
-      course: courseWithModules,
+      course: processedCourse,
       errorCode: "",
       errorMessage: "",
       errors: {}
     });
   } catch (err) {
-    res.status(500).json({
+    console.error('Error fetching course by slug:', err);
+    
+    let statusCode = 500;
+    let errorMessage = 'Failed to load course data';
+    
+    if (err.name === 'CastError') {
+      statusCode = 400;
+      errorMessage = 'Invalid course slug format';
+    }
+    
+    res.status(statusCode).json({
       success: false,
-      errorMessage: 'Server error',
-      errors: err.message
+      errorMessage,
+      error: process.env.NODE_ENV === 'development' ? err.message : undefined
     });
   }
 };
@@ -162,30 +173,29 @@ exports.getCourseBySlug = async (req, res) => {
 // Get all featured courses
 exports.getFeaturedCourses = async (req, res) => {
   try {
-    const featuredCourses = await Course.find({ featured: true });
+    const featuredCourses = await Course.find({ featured: true })
+      .select('title slug category thumbnail rating duration level featured')
+      .lean();
 
-    res.json({
+    const processedCourses = featuredCourses.map(course => ({
+      ...course,
+      id: course._id
+    }));
+
+    res.status(200).json({
       success: true,
-      courses: featuredCourses.map(course => ({
-        id: course._id,
-        title: course.title,
-        slug: course.slug,
-        category: course.category,
-        thumbnail: course.thumbnail,
-        rating: course.rating,
-        duration: course.duration,
-        level: course.level,
-        featured: course.featured
-      })),
+      count: processedCourses.length,
+      courses: processedCourses,
       errorCode: "",
       errorMessage: "",
       errors: {}
     });
   } catch (err) {
+    console.error('Error fetching featured courses:', err);
     res.status(500).json({
       success: false,
-      errorMessage: 'Server error',
-      errors: err.message
+      errorMessage: 'Server error while fetching featured courses',
+      error: process.env.NODE_ENV === 'development' ? err.message : undefined
     });
   }
 };
@@ -193,27 +203,87 @@ exports.getFeaturedCourses = async (req, res) => {
 // Update course
 exports.updateCourse = async (req, res) => {
   try {
-    const course = await Course.findByIdAndUpdate(
-      req.params.id,
-      req.body,
-      { new: true }
-    )
-      .populate('modules')
-      .populate('lessons')
-      .populate('quiz');
+    const { id } = req.params;
+    const updateData = req.body;
 
-    res.json({
+    if (updateData.title) {
+      updateData.slug = slugify(updateData.title, { lower: true, strict: true });
+    }
+
+    const updatedCourse = await Course.findByIdAndUpdate(
+      id,
+      updateData,
+      { new: true, runValidators: true }
+    )
+      .populate({
+        path: 'quiz',
+        model: 'Quiz',
+        populate: {
+          path: 'questions',
+          model: 'Question'
+        }
+      })
+      .populate({
+        path: 'modules',
+        model: 'Module',
+        populate: {
+          path: 'lessons',
+          model: 'Lesson'
+        }
+      })
+      .lean();
+
+    if (!updatedCourse) {
+      return res.status(404).json({
+        success: false,
+        errorMessage: 'Course not found'
+      });
+    }
+
+    const processedCourse = {
+      ...updatedCourse,
+      id: updatedCourse._id,
+      quiz: updatedCourse.quiz ? {
+        ...updatedCourse.quiz,
+        id: updatedCourse.quiz._id,
+        questions: updatedCourse.quiz.questions?.map(q => ({
+          ...q,
+          id: q._id
+        })) || []
+      } : null,
+      modules: updatedCourse.modules?.map(module => ({
+        ...module,
+        id: module._id,
+        lessons: module.lessons?.map(lesson => ({
+          ...lesson,
+          id: lesson._id
+        })) || []
+      })) || []
+    };
+
+    res.status(200).json({
       success: true,
-      course,
-      errorCode: "",
-      errorMessage: "",
-      errors: {}
+      course: processedCourse,
+      message: 'Course updated successfully'
     });
   } catch (err) {
-    res.status(500).json({
+    console.error('Error updating course:', err);
+    
+    let statusCode = 500;
+    let errorMessage = 'Failed to update course';
+    
+    if (err.name === 'ValidationError') {
+      statusCode = 400;
+      errorMessage = 'Validation error: ' + err.message;
+    } else if (err.name === 'CastError') {
+      statusCode = 400;
+      errorMessage = 'Invalid course ID format';
+    }
+    
+    res.status(statusCode).json({
       success: false,
-      errorMessage: 'Server error',
-      errors: err.message
+      errorMessage,
+      error: process.env.NODE_ENV === 'development' ? err.message : undefined
     });
   }
 };
@@ -221,22 +291,50 @@ exports.updateCourse = async (req, res) => {
 // Delete course
 exports.deleteCourse = async (req, res) => {
   try {
-    // Delete related lessons, modules, quizzes, certificates, etc.
-    // (Implementation depends on your cascade delete requirements)
-    
-    await Course.findByIdAndDelete(req.params.id);
-    
-    res.json({
+    const { id } = req.params;
+
+    // First find the course to get related data
+    const course = await Course.findById(id)
+      .select('modules quiz')
+      .lean();
+
+    if (!course) {
+      return res.status(404).json({
+        success: false,
+        errorMessage: 'Course not found'
+      });
+    }
+
+    // Delete all related data (cascade delete)
+    await Promise.all([
+      Module.deleteMany({ _id: { $in: course.modules || [] } }),
+      Lesson.deleteMany({ courseId: id }),
+      Quiz.deleteMany({ _id: course.quiz || null }),
+      Certificate.deleteMany({ courseId: id })
+    ]);
+
+    // Finally delete the course
+    await Course.findByIdAndDelete(id);
+
+    res.status(200).json({
       success: true,
-      errorCode: "",
-      errorMessage: "",
-      errors: {}
+      message: 'Course and all related data deleted successfully'
     });
   } catch (err) {
-    res.status(500).json({
+    console.error('Error deleting course:', err);
+    
+    let statusCode = 500;
+    let errorMessage = 'Failed to delete course';
+    
+    if (err.name === 'CastError') {
+      statusCode = 400;
+      errorMessage = 'Invalid course ID format';
+    }
+    
+    res.status(statusCode).json({
       success: false,
-      errorMessage: 'Server error',
-      errors: err.message
+      errorMessage,
+      error: process.env.NODE_ENV === 'development' ? err.message : undefined
     });
   }
 };
@@ -244,20 +342,40 @@ exports.deleteCourse = async (req, res) => {
 // Get course lessons
 exports.getCourseLessons = async (req, res) => {
   try {
-    const lessons = await Lesson.find({ courseId: req.params.courseId });
+    const { courseId } = req.params;
 
-    res.json({
+    const lessons = await Lesson.find({ courseId })
+      .sort('order')
+      .lean();
+
+    const processedLessons = lessons.map(lesson => ({
+      ...lesson,
+      id: lesson._id,
+      videoUrl: lesson.type === 'video' ? (lesson.videoUrl || 'https://www.youtube.com/embed/dQw4w9WgXcQ') : undefined,
+      readingContent: lesson.type === 'reading' ? (lesson.readingContent || 'Default reading content...') : undefined,
+      pdfUrl: lesson.type === 'reading' ? (lesson.pdfUrl || "https://www.cs.cmu.edu/afs/cs.cmu.edu/user/gchen/www/download/java/LearnJava.pdf") : undefined
+    }));
+
+    res.status(200).json({
       success: true,
-      lessons,
-      errorCode: "",
-      errorMessage: "",
-      errors: {}
+      count: processedLessons.length,
+      lessons: processedLessons
     });
   } catch (err) {
-    res.status(500).json({
+    console.error('Error fetching course lessons:', err);
+    
+    let statusCode = 500;
+    let errorMessage = 'Failed to load lessons';
+    
+    if (err.name === 'CastError') {
+      statusCode = 400;
+      errorMessage = 'Invalid course ID format';
+    }
+    
+    res.status(statusCode).json({
       success: false,
-      errorMessage: 'Server error',
-      errors: err.message
+      errorMessage,
+      error: process.env.NODE_ENV === 'development' ? err.message : undefined
     });
   }
 };
@@ -276,20 +394,26 @@ exports.getSuggestedCourses = async (req, res) => {
     const suggestedCourses = await Course.find({
       _id: { $nin: completedCourseIds }
     })
-    .select('title slug thumbnail category level duration')
+    .select('title slug thumbnail category level duration rating')
     .limit(3)
     .lean();
 
-    return res.json({
-      success: true,
-      courses: suggestedCourses
-    });
+    const processedCourses = suggestedCourses.map(course => ({
+      ...course,
+      id: course._id
+    }));
 
+    res.status(200).json({
+      success: true,
+      count: processedCourses.length,
+      courses: processedCourses
+    });
   } catch (err) {
     console.error('Error in getSuggestedCourses:', err);
-    return res.status(500).json({
+    res.status(500).json({
       success: false,
-      error: "Failed to fetch suggested courses"
+      errorMessage: 'Failed to fetch suggested courses',
+      error: process.env.NODE_ENV === 'development' ? err.message : undefined
     });
   }
 };
@@ -300,15 +424,13 @@ exports.createCourse = async (req, res) => {
     const { title, description, category, duration, level } = req.body;
     let learningOutcomes = [];
     
-    // Handle learning outcomes if they exist
+    // Handle learning outcomes
     if (req.body.learningOutcomes) {
-      if (Array.isArray(req.body.learningOutcomes)) {
-        learningOutcomes = req.body.learningOutcomes;
-      } else {
-        learningOutcomes = Object.values(req.body)
-          .filter(val => typeof val === 'string' && val.startsWith('learningOutcomes['))
-          .map(val => val.split(']=')[1]);
-      }
+      learningOutcomes = Array.isArray(req.body.learningOutcomes) 
+        ? req.body.learningOutcomes
+        : Object.values(req.body)
+            .filter(val => typeof val === 'string' && val.startsWith('learningOutcomes['))
+            .map(val => val.split(']=')[1]);
     }
 
     // Handle file upload
@@ -330,14 +452,36 @@ exports.createCourse = async (req, res) => {
       learningOutcomes
     });
 
+    const processedCourse = {
+      ...course.toObject(),
+      id: course._id,
+      modules: [],
+      quiz: null
+    };
+
     res.status(201).json({
       success: true,
-      course
+      course: processedCourse,
+      message: 'Course created successfully'
     });
   } catch (err) {
-    res.status(500).json({
+    console.error('Error creating course:', err);
+    
+    let statusCode = 500;
+    let errorMessage = 'Failed to create course';
+    
+    if (err.name === 'ValidationError') {
+      statusCode = 400;
+      errorMessage = 'Validation error: ' + err.message;
+    } else if (err.code === 11000) {
+      statusCode = 400;
+      errorMessage = 'Course with this title already exists';
+    }
+    
+    res.status(statusCode).json({
       success: false,
-      errorMessage: err.message
+      errorMessage,
+      error: process.env.NODE_ENV === 'development' ? err.message : undefined
     });
   }
 };
