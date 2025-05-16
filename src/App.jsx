@@ -23,7 +23,7 @@ const queryClient = new QueryClient();
 
 const AppRoutes = () => {
   const location = useLocation();
-  
+
   // List of paths where ChatbotButton should be hidden
   const hiddenPaths = [
     '/adminDashboard',

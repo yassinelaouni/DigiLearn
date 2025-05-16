@@ -90,13 +90,34 @@ const getQuizDetails = async (req, res) => {
 const createQuiz = async (req, res) => {
   try {
     const { courseId, title, description, questions } = req.body;
+    console.log('Creating quiz with data:', req.body);
+
+    // Validate input
+    if (!title || !courseId || !questions || !Array.isArray(questions)) {
+      return res.status(400).json({ error: 'Missing required fields' });
+    }
+
+    // Validate each question
+    const isValidQuestion = q =>
+      q.question &&
+      q.options &&
+      Array.isArray(q.options) &&
+      q.options.length === 4 &&
+      q.options.every(opt => opt.trim() !== '') &&
+      Number.isInteger(q.correctAnswer) &&
+      q.correctAnswer >= 0 &&
+      q.correctAnswer <= 3;
+
+    if (!questions.every(isValidQuestion)) {
+      return res.status(400).json({ error: 'Invalid question format' });
+    }
 
     // 1. Validate course exists
     const course = await Course.findById(courseId);
     if (!course) {
-      return res.status(404).json({ 
+      return res.status(404).json({
         success: false,
-        error: 'Course not found' 
+        error: 'Course not found'
       });
     }
 
@@ -138,15 +159,15 @@ const createQuiz = async (req, res) => {
     const populatedQuiz = await Quiz.findById(quiz._id)
       .populate('questions');
 
-    res.status(201).json({ 
-      success: true, 
-      quiz: populatedQuiz 
+    res.status(201).json({
+      success: true,
+      quiz: populatedQuiz
     });
 
   } catch (err) {
     console.error('Quiz creation error:', err);
-    res.status(500).json({ 
-      success: false, 
+    res.status(500).json({
+      success: false,
       error: err.message,
       stack: process.env.NODE_ENV === 'development' ? err.stack : undefined
     });
@@ -156,60 +177,70 @@ const createQuiz = async (req, res) => {
 // Update quiz with transaction support
 const updateQuiz = async (req, res) => {
   try {
-    const result = await withTransaction(async (session) => {
-      const { title, description, questions } = req.body;
-      
-      // 1. Update or create questions
-      const questionUpdates = await Promise.all(
-        questions.map(q => 
-          q.id 
-            ? Question.findByIdAndUpdate(
-                q.id, 
-                { $set: q },
-                { new: true, session }
-              )
-            : Question.create(
-                [{ ...q, quizId: req.params.id }],
-                { session }
-              ).then(docs => docs[0])
-        )
-      );
+    const { id } = req.params;
+    const { title, description, questions, courseId } = req.body;
 
-      // 2. Get current quiz questions
-      const quiz = await Quiz.findById(req.params.id).session(session);
-      const existingQuestionIds = quiz.questions.map(id => id.toString());
+    // Basic validation
+    if (!title || !questions || !Array.isArray(questions)) {
+      return res.status(400).json({
+        success: false,
+        errorMessage: 'Title and questions array are required',
+        errors: {}
+      });
+    }
 
-      // 3. Identify questions to remove
-      const newQuestionIds = questionUpdates.map(q => q._id.toString());
-      const questionsToRemove = existingQuestionIds.filter(
-        id => !newQuestionIds.includes(id)
-      );
+    // Verify quiz exists
+    const quiz = await Quiz.findById(id);
+    if (!quiz) {
+      return res.status(404).json({
+        success: false,
+        errorMessage: 'Quiz not found',
+        errors: {}
+      });
+    }
 
-      // 4. Delete removed questions
-      if (questionsToRemove.length) {
-        await Question.deleteMany(
-          { _id: { $in: questionsToRemove } },
-          { session }
-        );
-      }
+    // Process questions
+    const questionUpdates = await Promise.all(
+      // In your updateQuiz controller
+      questions.map(async (q) => {
+        // New question (no ID provided)
+        if (!q.id) {
+          const newQuestion = await Question.create({
+            question: q.question,
+            options: q.options,
+            correctAnswer: q.correctAnswer,
+            feedback: q.feedback || '',
+            quizId: id
+          });
+          return newQuestion._id;
+        }
 
-      // 5. Update quiz document
-      const updatedQuiz = await Quiz.findByIdAndUpdate(
-        req.params.id,
-        { 
-          title,
-          description,
-          questions: questionUpdates.map(q => q._id)
-        },
-        { new: true, session }
-      ).populate('questions');
+        // Existing question (has ID)
+        await Question.findByIdAndUpdate(q.id, {
+          question: q.question,
+          options: q.options,
+          correctAnswer: q.correctAnswer,
+          feedback: q.feedback || ''
+        });
+        return q.id;
+      })
+    );
 
-      return updatedQuiz;
-    });
+    // Update quiz document
+    const updatedQuiz = await Quiz.findByIdAndUpdate(
+      id,
+      {
+        title,
+        description,
+        courseId,
+        questions: questionUpdates
+      },
+      { new: true }
+    ).populate('questions');
 
     res.json({
       success: true,
-      quiz: result,
+      quiz: updatedQuiz,
       errorCode: "",
       errorMessage: "",
       errors: {}
@@ -219,40 +250,41 @@ const updateQuiz = async (req, res) => {
     console.error('Quiz update error:', err);
     res.status(500).json({
       success: false,
-      errorMessage: 'Server error',
-      errors: err.message
+      errorMessage: err.message || 'Server error',
+      errors: {}
     });
   }
 };
 
 // Delete quiz with transaction support
+// Delete quiz without transaction support
 const deleteQuiz = async (req, res) => {
   try {
-    await withTransaction(async (session) => {
-      // 1. Find quiz and associated course
-      const quiz = await Quiz.findById(req.params.id).session(session);
-      if (!quiz) {
-        throw new Error('Quiz not found');
-      }
+    // 1. Find quiz
+    const quiz = await Quiz.findById(req.params.id);
+    if (!quiz) {
+      return res.status(404).json({
+        success: false,
+        errorMessage: 'Quiz not found',
+        errors: {}
+      });
+    }
 
-      // 2. Remove quiz reference from course
-      await Course.updateMany(
-        { quiz: quiz._id },
-        { $unset: { quiz: "" } },
-        { session }
-      );
+    // 2. Remove quiz reference from course
+    await Course.updateMany(
+      { quiz: quiz._id },
+      { $unset: { quiz: "" } }
+    );
 
-      // 3. Delete all questions
-      await Question.deleteMany(
-        { _id: { $in: quiz.questions } },
-        { session }
-      );
+    // 3. Delete all questions
+    await Question.deleteMany(
+      { _id: { $in: quiz.questions } }
+    );
 
-      // 4. Delete the quiz
-      await Quiz.findByIdAndDelete(req.params.id, { session });
-    });
+    // 4. Delete the quiz
+    await Quiz.findByIdAndDelete(req.params.id);
 
-    res.json({ 
+    res.json({
       success: true,
       errorCode: "",
       errorMessage: "",
@@ -267,7 +299,7 @@ const deleteQuiz = async (req, res) => {
       errors: err.message
     });
   }
-};
+};;
 
 module.exports = {
   getQuizForCourse,

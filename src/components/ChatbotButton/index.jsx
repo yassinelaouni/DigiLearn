@@ -1,95 +1,94 @@
-import { useEffect, useRef, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
+import axios from 'axios';
 
 export const ChatbotButton = () => {
-  const [isOpen, setIsOpen] = useState(false);
+  const [inputMessage, setInputMessage] = useState('');
   const [messages, setMessages] = useState([
     {
       id: 1,
       text: 'Welcome to DigiLearn Support! How can we help you today?',
       sender: 'bot',
+      timestamp: new Date(),
     },
   ]);
-  const [input, setInput] = useState('');
-  const socketRef = useRef(null);
-  const userId = useRef(`user_${Date.now()}`);
+  const [isOpen, setIsOpen] = useState(false);
+  const [isTyping, setIsTyping] = useState(false);
+  const [connectionError, setConnectionError] = useState(false);
   const messagesEndRef = useRef(null);
+  const inputRef = useRef(null);
+  const sessionId = useRef(`user_${Date.now()}`);
 
-  // Scroll to bottom of messages
-  const scrollToBottom = () => {
-    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
-  };
-
+  // Auto-scroll to bottom when messages change
   useEffect(() => {
-    scrollToBottom();
+    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [messages]);
 
+  // Focus input when chat opens
   useEffect(() => {
-    // Initialize WebSocket connection to Rasa
-    const socketUrl = 'ws://localhost:5005';
-    socketRef.current = new WebSocket(socketUrl);
-
-    socketRef.current.onopen = () => {
-      console.log('Connected to Rasa server via WebSocket');
-      // Send initial greeting
-      const initMessage = {
-        sender: userId.current,
-        message: '/greet'
-      };
-      socketRef.current.send(JSON.stringify(initMessage));
-    };
-
-    socketRef.current.onmessage = (event) => {
-      try {
-        const data = JSON.parse(event.data);
-        console.log('Bot response:', data);
-        
-        if (data.text) {
-          setMessages(prev => [
-            ...prev,
-            {
-              id: Date.now(),
-              text: data.text,
-              sender: 'bot',
-            },
-          ]);
-        }
-      } catch (error) {
-        console.error('Error parsing message:', error);
-      }
-    };
-
-    socketRef.current.onclose = () => {
-      console.log('Disconnected from Rasa');
-    };
-
-    socketRef.current.onerror = (error) => {
-      console.error('WebSocket error:', error);
-    };
-
-    return () => {
-      if (socketRef.current && socketRef.current.readyState === WebSocket.OPEN) {
-        socketRef.current.close();
-      }
-    };
-  }, []);
-
-  const handleSend = () => {
-    if (input.trim() && socketRef.current?.readyState === WebSocket.OPEN) {
-      const message = {
-        id: Date.now(),
-        text: input,
-        sender: 'user',
-      };
-      setMessages(prev => [...prev, message]);
-
-      // Send message to Rasa
-      socketRef.current.send(JSON.stringify({
-        sender: userId.current,
-        message: input
-      }));
-
-      setInput('');
+    if (isOpen && inputRef.current) {
+      inputRef.current.focus();
     }
+  }, [isOpen]);
+
+  const sendMessage = async () => {
+    const message = inputMessage.trim();
+    if (message === '') return;
+
+    // Add user message to chat
+    const newMessage = {
+      id: Date.now(),
+      text: message,
+      sender: 'user',
+      timestamp: new Date(),
+    };
+    setMessages((prev) => [...prev, newMessage]);
+    setInputMessage('');
+    setIsTyping(true);
+    setConnectionError(false);
+
+    try {
+      // Send message to Rasa server
+      const response = await axios.post('http://localhost:5005/webhooks/rest/webhook', {
+        sender: sessionId.current,
+        message: message,
+      });
+
+      // Add bot responses to chat
+      if (response.data && response.data.length > 0) {
+        const botMessages = response.data.map((msg, index) => ({
+          id: Date.now() + index,
+          text: msg.text,
+          sender: 'bot',
+          timestamp: new Date(),
+        }));
+        setMessages((prev) => [...prev, ...botMessages]);
+      }
+    } catch (error) {
+      console.error('Error communicating with chatbot:', error);
+      setConnectionError(true);
+      // Add error message to chat
+      setMessages((prev) => [
+        ...prev,
+        {
+          id: Date.now(),
+          text: "Désolé, je n'ai pas pu me connecter au serveur. Veuillez réessayer.",
+          sender: 'bot',
+          timestamp: new Date(),
+        },
+      ]);
+    } finally {
+      setIsTyping(false);
+    }
+  };
+
+  const handleKeyDown = (e) => {
+    if (e.key === 'Enter') {
+      sendMessage();
+    }
+  };
+
+  const formatTime = (date) => {
+    return date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
   };
 
   return (
@@ -127,7 +126,7 @@ export const ChatbotButton = () => {
           border: '1px solid #e5e7eb'
         }}>
           {/* Header */}
-          <div 
+          <div
             className="text-white p-4"
             style={{
               background: 'linear-gradient(to right, #7C66DC, #4E97F3)',
@@ -154,79 +153,67 @@ export const ChatbotButton = () => {
                 </svg>
                 <h3 className="font-bold">DigiLearn AI</h3>
               </div>
-              <button 
+              <button
                 onClick={() => setIsOpen(false)}
                 className="text-white hover:text-gray-200"
+                aria-label="Fermer le chatbot"
               >
                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor">
-                  <path d="M18 6L6 18M6 6l12 12" strokeWidth="2"/>
+                  <path d="M18 6L6 18M6 6l12 12" strokeWidth="2" />
                 </svg>
               </button>
             </div>
             <p className="text-xs mt-1 opacity-90">How can I help you today?</p>
           </div>
-          
+
           {/* Messages */}
           <div className="flex-1 p-4 overflow-y-auto space-y-2 bg-white">
             {messages.map((message) => (
-              <div 
+              <div
                 key={message.id}
-                className={`p-3 text-sm max-w-[80%] ${
-                  message.sender === 'bot' 
-                    ? 'bg-gray-100 text-gray-800 mr-auto rounded-r-lg rounded-bl-lg' 
-                    : 'text-white ml-auto rounded-l-lg rounded-br-lg'
-                }`}
-                style={{
-                  background: message.sender === 'user' 
-                    ? 'linear-gradient(to right, #7C66DC, #4E97F3)'
-                    : '',
-                  borderRadius: message.sender === 'bot' 
-                    ? '0 12px 12px 12px' 
-                    : '12px 0 12px 12px'
-                }}
+                className={`p-3 max-w-[80%] rounded-lg ${message.sender === 'bot'
+                  ? 'bg-gray-100 text-gray-800 mr-auto rounded-bl-none'
+                  : 'bg-blue-500 text-white ml-auto rounded-br-none'
+                  }`}
               >
-                {message.text}
+                <p>{message.text}</p>
+                <p className="text-xs opacity-70 mt-1 text-right">
+                  {formatTime(message.timestamp)}
+                </p>
               </div>
             ))}
+            {isTyping && (
+              <div className="p-3 max-w-[80%] bg-gray-100 rounded-lg rounded-bl-none mr-auto">
+                <div className="flex space-x-1">
+                  <div className="w-2 h-2 rounded-full bg-gray-400 animate-bounce"></div>
+                  <div className="w-2 h-2 rounded-full bg-gray-400 animate-bounce" style={{ animationDelay: '0.2s' }}></div>
+                  <div className="w-2 h-2 rounded-full bg-gray-400 animate-bounce" style={{ animationDelay: '0.4s' }}></div>
+                </div>
+              </div>
+            )}
             <div ref={messagesEndRef} />
           </div>
-          
-          {/* Input area */}
-          <div className="p-3 bg-white" style={{
-            borderBottomLeftRadius: '12px',
-            borderBottomRightRadius: '12px',
-            borderTop: '1px solid #e5e7eb'
-          }}>
+
+          {/* Input */}
+          <div className="p-3 border-t border-gray-200">
             <div className="flex gap-2">
               <input
                 type="text"
-                value={input}
-                onChange={(e) => setInput(e.target.value)}
-                placeholder="Type your message..."
-                className="flex-1 border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-purple-500"
-                style={{
-                  borderRadius: '20px',
-                }}
-                onKeyDown={(e) => e.key === 'Enter' && handleSend()}
+                ref={inputRef}
+                value={inputMessage}
+                onChange={(e) => setInputMessage(e.target.value)}
+                onKeyDown={handleKeyDown}
+                placeholder="Tapez votre message..."
+                className="flex-1 border border-gray-300 rounded-full px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                disabled={isTyping}
               />
               <button
-                onClick={handleSend}
-                className="flex items-center justify-center text-white"
-                style={{
-                  background: 'linear-gradient(to right, #7C66DC, #4E97F3)',
-                  borderRadius: '50%',
-                  width: '36px',
-                  height: '36px'
-                }}
-                aria-label="Send message"
+                onClick={sendMessage}
+                disabled={inputMessage.trim() === '' || isTyping}
+                className="w-10 h-10 bg-blue-600 text-white rounded-full flex items-center justify-center disabled:opacity-50"
+                aria-label="Envoyer le message"
               >
-                <svg 
-                  xmlns="http://www.w3.org/2000/svg" 
-                  width="16" 
-                  height="16" 
-                  viewBox="0 0 24 24" 
-                  fill="currentColor"
-                >
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
                   <path d="M3.478 2.404a.75.75 0 0 0-.926.941l2.432 7.905H13.5a.75.75 0 0 1 0 1.5H4.984l-2.432 7.905a.75.75 0 0 0 .926.94 60.519 60.519 0 0 0 18.445-8.986.75.75 0 0 0 0-1.218A60.517 60.517 0 0 0 3.478 2.404Z" />
                 </svg>
               </button>

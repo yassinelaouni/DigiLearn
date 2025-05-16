@@ -5,7 +5,7 @@ const {
   getQuizDetails,
   createQuiz,
   updateQuiz,
-  deleteQuiz
+  deleteQuiz 
 } = require('../controllers/quizController');
 
 // Public routes

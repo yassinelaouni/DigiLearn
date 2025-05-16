@@ -56,6 +56,7 @@ const AdminCourses = () => {
   const [currentQuiz, setCurrentQuiz] = useState(initQuiz());
   const [quizzes, setQuizzes] = useState({});
 
+
   useEffect(() => {
     const fetchCourses = async () => {
       setLoading(true);
@@ -146,7 +147,7 @@ const AdminCourses = () => {
       description: 'Test your knowledge',
       questions: [
         {
-          id: Date.now().toString(),
+          id: `temp-${Math.random().toString(36).substr(2, 9)}`, // Generate a temporary ID
           question: '',
           options: ['', '', '', ''],
           correctAnswer: 0,
@@ -245,7 +246,7 @@ const AdminCourses = () => {
     setLoading(true);
 
     try {
-      // Validate at least one question with all fields filled
+      // Validate questions
       const validQuestions = currentQuiz.questions.filter(q =>
         q.question.trim() !== '' &&
         q.options.every(opt => opt.trim() !== '') &&
@@ -253,20 +254,22 @@ const AdminCourses = () => {
       );
 
       if (validQuestions.length === 0) {
-        throw new Error('Please add at least one valid question with all options filled');
+        throw new Error('Please add at least one valid question');
       }
 
-      const url = currentQuiz.id
-        ? `http://localhost:5000/api/quizzes/${currentQuiz.id}`
+      const method = currentQuiz._id ? 'PUT' : 'POST';
+      const url = currentQuiz._id
+        ? `http://localhost:5000/api/quizzes/${currentQuiz._id}`
         : 'http://localhost:5000/api/quizzes';
 
-      const method = currentQuiz.id ? 'PUT' : 'POST';
-
+      // Filter out temporary IDs (start with 'temp-')
       const payload = {
-        courseId: currentQuiz.courseId,
         title: currentQuiz.title,
         description: currentQuiz.description,
+        courseId: currentQuiz.courseId,
         questions: validQuestions.map(q => ({
+          // Only send ID if it's a real MongoDB ID (24 chars hex)
+          id: q.id.startsWith('temp-') ? undefined : q.id,
           question: q.question,
           options: q.options,
           correctAnswer: q.correctAnswer,
@@ -276,9 +279,7 @@ const AdminCourses = () => {
 
       const response = await fetch(url, {
         method,
-        headers: {
-          'Content-Type': 'application/json',
-        },
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(payload)
       });
 
@@ -289,19 +290,16 @@ const AdminCourses = () => {
       }
 
       // Update local state
-      setCourses(courses.map(c =>
-        c.id === currentQuiz.courseId ? { ...c, quiz: data.quiz } : c
-      ));
-
-      // Refresh quiz details
-      if (data.quiz._id) {
-        await fetchQuizDetails(currentQuiz.courseId, data.quiz._id);
-      }
+      setCourses(prevCourses =>
+        prevCourses.map(c =>
+          c._id === currentQuiz.courseId ? { ...c, quiz: data.quiz } : c
+        )
+      );
 
       setOpenQuizDialog(false);
       toast({
         title: 'Success',
-        description: `Quiz ${currentQuiz.id ? 'updated' : 'created'} successfully`,
+        description: `Quiz ${currentQuiz._id ? 'updated' : 'created'} successfully`,
       });
     } catch (error) {
       toast({
@@ -379,6 +377,14 @@ const AdminCourses = () => {
         ? `http://localhost:5000/api/courses/${currentCourse.id}`
         : 'http://localhost:5000/api/courses';
 
+      // Process learning outcomes - ensure it's an array and filter empty lines
+      const learningOutcomes = Array.isArray(currentCourse.learningOutcomes)
+        ? currentCourse.learningOutcomes
+          .map(item => item.trim())
+          .filter(item => item !== '')
+        : [];
+
+
       // Create a clean payload without undefined values
       const payload = {
         title: currentCourse.title,
@@ -388,7 +394,7 @@ const AdminCourses = () => {
         thumbnail: currentCourse.thumbnail,
         duration: currentCourse.duration,
         level: currentCourse.level,
-        learningOutcomes: currentCourse.learningOutcomes,
+        learningOutcomes,
         lessons: currentCourse.lessons,
         quiz: currentCourse.quiz
       };
@@ -433,78 +439,95 @@ const AdminCourses = () => {
 
   const handleSubmitLesson = async (e) => {
     e.preventDefault();
+
+    // Add this validation
+    if (!currentCourse.id) {
+      toast({
+        title: 'Error',
+        description: 'No course selected',
+        variant: 'destructive'
+      });
+      return;
+    }
+
     setLoading(true);
 
     try {
-      // Validate required fields based on lesson type
-      const requiredFields = {
-        video: ['title', 'duration', 'videoUrl'],
-        reading: ['title', 'duration', 'readingContent']
+      // Always use course ID in the endpoint for both create and update
+      const endpoint = currentLesson._id
+        ? `http://localhost:5000/api/lessons/${currentCourse.id}/lessons/${currentLesson._id}`
+        : `http://localhost:5000/api/lessons/${currentCourse.id}/lessons`;
+
+      // Add debug logging
+      console.log('Current Course ID:', currentCourse.id);
+      console.log('Endpoint:', endpoint);
+
+      const method = currentLesson._id ? 'PUT' : 'POST';
+
+      const requestBody = {
+        title: currentLesson.title,
+        type: currentLesson.type,
+        duration: currentLesson.duration,
+        description: currentLesson.description,
+        videolr1: currentLesson.videoUrl, // Matching Postman
+        moduleId: currentLesson.moduleId || null
       };
 
-      const missingFields = requiredFields[currentLesson.type].filter(
-        field => !currentLesson[field]
-      );
+      console.log('Making request to:', endpoint, 'with:', requestBody);
 
-      if (missingFields.length > 0) {
-        throw new Error(`Missing required fields: ${missingFields.join(', ')}`);
-      }
-
-      const url = currentLesson.id
-        ? `http://localhost:5000/api/courses/${currentLesson.courseId}/lessons/${currentLesson.id}`
-        : `http://localhost:5000/api/courses/${currentLesson.courseId}/lessons`;
-
-      const method = currentLesson.id ? 'PUT' : 'POST';
-
-      const response = await fetch(url, {
+      const response = await fetch(endpoint, {
         method,
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({
-          title: currentLesson.title,
-          description: currentLesson.description,
-          type: currentLesson.type,
-          duration: currentLesson.duration,
-          videoUrl: currentLesson.videoUrl,
-          readingContent: currentLesson.readingContent,
-          pdfUrl: currentLesson.pdfUrl,
-          order: currentLesson.order || 0,
-          moduleId: currentLesson.moduleId || null
-        })
+        body: JSON.stringify(requestBody)
       });
+
+      if (!response.ok) {
+        const errorText = await response.text();
+        throw new Error(errorText || 'Request failed');
+      }
 
       const data = await response.json();
 
-      if (!response.ok) {
-        throw new Error(data.message || 'Failed to save lesson');
-      }
+      // Update state...
+      setCourses(prevCourses => prevCourses.map(course => {
+        if (course._id !== currentCourse.id) return course;
 
-      // Update local state
-      setCourses(prevCourses =>
-        prevCourses.map(course => {
-          if (course.id === currentLesson.courseId) {
-            if (currentLesson.id) {
-              // Update existing lesson
-              const updatedLessons = course.lessons.map(lesson =>
-                lesson.id === currentLesson.id ? data.lesson : lesson
-              );
-              return { ...course, lessons: updatedLessons };
-            } else {
-              // Add new lesson
-              return { ...course, lessons: [...course.lessons, data.lesson] };
-            }
+        if (currentLesson._id) {
+          // Update existing lesson
+          return {
+            ...course,
+            lessons: course.lessons.map(lesson =>
+              lesson._id === currentLesson._id ? data.lesson : lesson
+            )
+          };
+        } else {
+          // Add new lesson
+          const updatedCourse = {
+            ...course,
+            lessons: [...course.lessons, data.lesson]
+          };
+
+          if (currentLesson.moduleId) {
+            updatedCourse.modules = course.modules.map(module =>
+              module._id === currentLesson.moduleId
+                ? { ...module, lessons: [...module.lessons, data.lesson._id] }
+                : module
+            );
           }
-          return course;
-        })
-      );
+
+          return updatedCourse;
+        }
+      }));
 
       setOpenLessonDialog(false);
       toast({
         title: 'Success',
-        description: `Lesson ${currentLesson.id ? 'updated' : 'created'} successfully`,
+        description: `Lesson ${currentLesson._id ? 'updated' : 'created'} successfully`,
       });
     } catch (error) {
+      console.error('API Error:', error);
       toast({
         title: 'Error',
         description: error.message,
@@ -525,8 +548,6 @@ const AdminCourses = () => {
     setCurrentLesson({ ...lesson, courseId });
     setOpenLessonDialog(true);
   };
-
-
 
   const handleDeleteCourse = async (courseId) => {
     try {
@@ -596,7 +617,15 @@ const AdminCourses = () => {
   const handleEditQuiz = (courseId, quiz) => {
     setCurrentQuiz({
       ...quiz,
-      courseId
+      id: quiz._id, // Make sure to set the id field
+      courseId,
+      questions: quiz.questions.map(q => ({
+        id: q._id, // Make sure each question has its id
+        question: q.question,
+        options: q.options,
+        correctAnswer: q.correctAnswer,
+        feedback: q.feedback || ''
+      }))
     });
     setOpenQuizDialog(true);
   };
@@ -636,7 +665,7 @@ const AdminCourses = () => {
       questions: [
         ...currentQuiz.questions,
         {
-          id: Date.now().toString(),
+          id: `temp-${Math.random().toString(36).substr(2, 9)}`, // Temporary ID
           question: '',
           options: ['', '', '', ''],
           correctAnswer: 0,
@@ -687,6 +716,249 @@ const AdminCourses = () => {
 
   return (
     <div className="container py-8">
+      {/* Course Dialog - Moved to top level */}
+      <Dialog open={openCourseDialog} onOpenChange={setOpenCourseDialog}>
+        <DialogContent className="bg-white max-w-2xl max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle>
+              {currentCourse.id ? 'Edit Course' : 'Add Course'}
+            </DialogTitle>
+          </DialogHeader>
+          <form onSubmit={handleSubmitCourse} className="space-y-4">
+            <div className="space-y-2">
+              <Label>Title*</Label>
+              <Input
+                value={currentCourse.title}
+                onChange={(e) => setCurrentCourse({ ...currentCourse, title: e.target.value })}
+                required
+              />
+            </div>
+
+            <div className="space-y-2">
+              <Label>Description*</Label>
+              <Textarea
+                value={currentCourse.description}
+                onChange={(e) => setCurrentCourse({ ...currentCourse, description: e.target.value })}
+                required
+              />
+            </div>
+
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label>Category*</Label>
+                <Select
+                  value={currentCourse.category}
+                  onValueChange={(value) => setCurrentCourse({ ...currentCourse, category: value })}
+                  required
+                >
+                  <SelectTrigger>
+                    <SelectValue placeholder="Select category" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {categories.map(category => (
+                      <SelectItem key={category} value={category}>
+                        {category}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+
+              <div className="space-y-2">
+                <Label>Level*</Label>
+                <Select
+                  value={currentCourse.level}
+                  onValueChange={(value) => setCurrentCourse({ ...currentCourse, level: value })}
+                  required
+                >
+                  <SelectTrigger>
+                    <SelectValue placeholder="Select level" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="Beginner">Beginner</SelectItem>
+                    <SelectItem value="Intermediate">Intermediate</SelectItem>
+                    <SelectItem value="Advanced">Advanced</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+            </div>
+
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label>Duration*</Label>
+                <Input
+                  value={currentCourse.duration}
+                  onChange={(e) => setCurrentCourse({ ...currentCourse, duration: e.target.value })}
+                  placeholder="e.g. 10 hours"
+                  required
+                />
+              </div>
+
+              <div className="space-y-2">
+                <Label>Thumbnail URL*</Label>
+                <Input
+                  value={currentCourse.thumbnail}
+                  onChange={(e) => setCurrentCourse({ ...currentCourse, thumbnail: e.target.value })}
+                  placeholder="https://example.com/image.jpg"
+                  required
+                />
+              </div>
+            </div>
+
+            <div className="space-y-2">
+              <Label>Learning Outcomes (one per line)</Label>
+              <Textarea
+                value={Array.isArray(currentCourse.learningOutcomes)
+                  ? currentCourse.learningOutcomes.join('\n')
+                  : ''}
+                onChange={(e) => {
+                  const value = e.target.value;
+                  setCurrentCourse({
+                    ...currentCourse,
+                    learningOutcomes: value.split('\n')
+                  });
+                }}
+                rows={4}
+              />
+            </div>
+
+            <DialogFooter>
+              <Button type="submit" disabled={loading}>
+                {loading ? (
+                  <span className="flex items-center">
+                    <span className="animate-spin mr-2">↻</span>
+                    {currentCourse.id ? 'Updating...' : 'Creating...'}
+                  </span>
+                ) : (
+                  currentCourse.id ? 'Update Course' : 'Create Course'
+                )}
+              </Button>
+            </DialogFooter>
+          </form>
+        </DialogContent>
+      </Dialog>
+
+      {/* Quiz Dialog - Moved to top level */}
+      <Dialog open={openQuizDialog} onOpenChange={(open) => {
+        setOpenQuizDialog(open);
+        if (!open) {
+          // Reset when dialog closes
+          setCurrentQuiz(initQuiz());
+        }
+      }}>
+        <DialogContent className="bg-white max-w-2xl max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle>
+              {currentQuiz.id ? 'Edit Quiz' : 'Create Quiz'}
+            </DialogTitle>
+          </DialogHeader>
+          <form onSubmit={handleSubmitQuiz} className="space-y-6">
+            <div className="space-y-2">
+              <Label>Title*</Label>
+              <Input
+                value={currentQuiz.title}
+                onChange={(e) => setCurrentQuiz({ ...currentQuiz, title: e.target.value })}
+                required
+              />
+            </div>
+
+            <div className="space-y-2">
+              <Label>Description</Label>
+              <Textarea
+                value={currentQuiz.description}
+                onChange={(e) => setCurrentQuiz({ ...currentQuiz, description: e.target.value })}
+              />
+            </div>
+
+            <div className="space-y-4">
+              <div className="flex justify-between items-center">
+                <h4 className="font-medium">Questions</h4>
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  onClick={addQuestion}
+                >
+                  <Plus className="h-4 w-4 mr-2" />
+                  Add Question
+                </Button>
+              </div>
+
+              <div className="space-y-6">
+                {currentQuiz.questions.map((question, qIndex) => (
+                  <div key={question.id} className="border rounded-lg p-4">
+                    <div className="flex justify-between items-start mb-2">
+                      <div className="space-y-2 w-full">
+                        <Label>Question {qIndex + 1}*</Label>
+                        <Input
+                          value={question.question}
+                          onChange={(e) => updateQuestion(question.id, 'question', e.target.value)}
+                          placeholder="Enter the question"
+                          required
+                        />
+                      </div>
+                      <Button
+                        type="button"
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => removeQuestion(question.id)}
+                        disabled={currentQuiz.questions.length <= 1}
+                      >
+                        <Trash2 className="h-4 w-4 text-red-500" />
+                      </Button>
+                    </div>
+
+                    <div className="space-y-2 mt-4">
+                      <Label>Options*</Label>
+                      {question.options.map((option, oIndex) => (
+                        <div key={oIndex} className="flex items-center gap-2">
+                          <input
+                            type="radio"
+                            name={`correct-answer-${question.id}`}
+                            checked={question.correctAnswer === oIndex}
+                            onChange={() => updateQuestion(question.id, 'correctAnswer', oIndex)}
+                            className="h-4 w-4"
+                          />
+                          <Input
+                            value={option}
+                            onChange={(e) => updateOption(question.id, oIndex, e.target.value)}
+                            placeholder={`Option ${oIndex + 1}`}
+                            required
+                          />
+                        </div>
+                      ))}
+                    </div>
+
+                    <div className="space-y-2 mt-4">
+                      <Label>Feedback</Label>
+                      <Input
+                        value={question.feedback}
+                        onChange={(e) => updateQuestion(question.id, 'feedback', e.target.value)}
+                        placeholder="Explanation for the correct answer"
+                      />
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            <DialogFooter>
+              <Button type="submit" disabled={loading}>
+                {loading ? (
+                  <span className="flex items-center">
+                    <span className="animate-spin mr-2">↻</span>
+                    {currentQuiz.id ? 'Updating...' : 'Creating...'}
+                  </span>
+                ) : (
+                  currentQuiz.id ? 'Update Quiz' : 'Create Quiz'
+                )}
+              </Button>
+            </DialogFooter>
+          </form>
+        </DialogContent>
+      </Dialog>
+
+      {/* Rest of your component remains the same */}
       <div className="flex justify-between items-center mb-6">
         <h1 className="text-2xl font-bold">Course Management</h1>
         <Button
@@ -825,14 +1097,6 @@ const AdminCourses = () => {
                                   </p>
                                 )}
                               </div>
-                              <Button
-                                variant="ghost"
-                                size="sm"
-                                onClick={() => handleDeleteQuestion(question.id)}
-                                className="ml-4 flex-shrink-0"
-                              >
-                                <Trash2 className="h-4 w-4 text-red-500" />
-                              </Button>
                             </div>
                           </div>
                         ))
@@ -853,7 +1117,17 @@ const AdminCourses = () => {
               {/* Lessons Section (unchanged from your original) */}
               <div className="flex justify-between items-center mb-4">
                 <h3 className="font-semibold">Lessons</h3>
-                <Dialog open={openLessonDialog} onOpenChange={setOpenLessonDialog}>
+                <Dialog open={openLessonDialog} onOpenChange={(open) => {
+                  if (open && !currentCourse.id) {
+                    toast({
+                      title: 'Error',
+                      description: 'Please select a course first',
+                      variant: 'destructive'
+                    });
+                    return;
+                  }
+                  setOpenLessonDialog(open);
+                }}>
                   <DialogContent className="bg-white max-w-2xl max-h-[90vh] overflow-y-auto">                    <DialogHeader>
                     <DialogTitle>
                       {currentLesson.id ? 'Edit Lesson' : 'Add Lesson'}
@@ -989,6 +1263,7 @@ const AdminCourses = () => {
                     resetLessonForm();
                     setCurrentLesson({ ...initLesson(), courseId: course.id });
                     setOpenLessonDialog(true);
+                    setCurrentCourse(course)
                   }}
                 >
                   <Plus className="h-4 w-4 mr-2" />

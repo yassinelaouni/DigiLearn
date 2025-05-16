@@ -8,8 +8,8 @@ const {
 const { protect, adminProtect } = require('../middlewares/auth');
 
 // Admin protected routes
-router.post('/lessons',  createLesson);
-router.put('/lessons/:id',  updateLesson);
-router.delete('/lessons/:id', deleteLesson);
+router.post('/:courseId/lessons', createLesson);
+router.put('/:courseId/lessons/:lessonId', updateLesson); 
+router.delete('/:courseId/lessons/:lessonId', deleteLesson);
 
 module.exports = router;
