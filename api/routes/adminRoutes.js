@@ -7,8 +7,8 @@ const {
   updateAdminProfile
 } = require('../controllers/adminController');
 
-router.get('/admin/dashboard/stats', getAdminDashboardStats);
-router.get('/admin/profile', getAdminProfile);
-router.patch('/admin/profile', updateAdminProfile);
+router.get('/dashboard/stats', getAdminDashboardStats);
+router.get('/profile', getAdminProfile);
+router.patch('/profile', updateAdminProfile);
 
 module.exports = router;

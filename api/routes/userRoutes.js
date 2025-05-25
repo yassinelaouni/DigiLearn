@@ -50,8 +50,8 @@ router.get('/user/progress', getUserProgress);
 router.post('/user/progress', markLessonComplete);
 
 // Admin protected routes
-router.get('/users/get/all', getAllUsers);
-router.delete('/users/delete/:id', deleteUser);
-router.patch('/users/update/:id', updateUser);
+router.get('/get/all', getAllUsers);
+router.delete('/delete/:id', deleteUser);
+router.patch('/update/:id', updateUser);
 
 module.exports = router;

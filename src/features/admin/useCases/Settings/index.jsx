@@ -25,7 +25,7 @@ const SettingsPage = () => {
       try {
         const response = await fetch('http://localhost:5000/api/admin');
         const data = await response.json();
-        
+
         if (!response.ok) {
           throw new Error(data.message || 'Failed to fetch admin data');
         }
@@ -35,7 +35,7 @@ const SettingsPage = () => {
         }
 
         console.log('Received admin data:', data.admin);
-        
+
         setFormData(prev => ({
           ...prev,
           firstName: data.admin.firstName || '',
@@ -127,7 +127,7 @@ const SettingsPage = () => {
   return (
     <div className="container py-8">
       <h1 className="text-2xl font-bold mb-8">Settings</h1>
-      
+
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
         {/* Account Settings */}
         <div className="border rounded-lg">
@@ -148,7 +148,7 @@ const SettingsPage = () => {
                 disabled={loading.submitting}
               />
             </div>
-            
+
             <div className="space-y-2">
               <Label htmlFor="lastName">Last Name</Label>
               <Input
@@ -159,7 +159,7 @@ const SettingsPage = () => {
                 disabled={loading.submitting}
               />
             </div>
-            
+
             <div className="space-y-2">
               <Label htmlFor="email">Email</Label>
               <Input
@@ -195,7 +195,7 @@ const SettingsPage = () => {
                 placeholder="Required for password changes"
               />
             </div>
-            
+
             <div className="space-y-2">
               <Label htmlFor="newPassword">New Password</Label>
               <Input
@@ -208,7 +208,7 @@ const SettingsPage = () => {
                 placeholder="Leave blank to keep current"
               />
             </div>
-            
+
             <div className="space-y-2">
               <Label htmlFor="confirmPassword">Confirm Password</Label>
               <Input
@@ -226,8 +226,8 @@ const SettingsPage = () => {
       </div>
 
       <div className="flex justify-end mt-6">
-        <Button 
-          onClick={handleSubmit} 
+        <Button
+          onClick={handleSubmit}
           disabled={loading.submitting || loading.fetching}
         >
           {loading.submitting ? 'Saving...' : 'Save Settings'}

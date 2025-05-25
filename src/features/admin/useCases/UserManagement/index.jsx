@@ -34,7 +34,7 @@ const AdminUsers = () => {
         const response = await fetch(`${API_BASE}/users/get/all`);
         if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
         const data = await response.json();
-        
+
         if (data.success) {
           setUsers(data.users);
         } else {
@@ -62,9 +62,9 @@ const AdminUsers = () => {
       const response = await fetch(`${API_BASE}/users/delete/${userId}`, {
         method: 'DELETE'
       });
-      
+
       if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
-      
+
       const result = await response.json();
       if (result.success) {
         setUsers(users.filter(user => user.id !== userId));
@@ -84,6 +84,7 @@ const AdminUsers = () => {
   };
 
   const handleSaveEdit = async () => {
+    console.log("hhhhhh", currentUser.id)
     try {
       const response = await fetch(`${API_BASE}/users/update/${currentUser.id}`, {
         method: 'PATCH',
@@ -97,12 +98,12 @@ const AdminUsers = () => {
           role: currentUser.role
         })
       });
-      
+
       if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
-      
+
       const result = await response.json();
       if (result.success) {
-        setUsers(users.map(user => 
+        setUsers(users.map(user =>
           user.id === result.user.id ? result.user : user
         ));
         setIsEditModalOpen(false);
@@ -182,11 +183,10 @@ const AdminUsers = () => {
                 </TableCell>
                 <TableCell>{user.email}</TableCell>
                 <TableCell>
-                  <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
-                    user.role === 'admin' 
-                      ? 'bg-red-100 text-red-800' 
-                      : 'bg-blue-100 text-blue-800'
-                  }`}>
+                  <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${user.role === 'admin'
+                    ? 'bg-red-100 text-red-800'
+                    : 'bg-blue-100 text-blue-800'
+                    }`}>
                     {user.role || 'student'}
                   </span>
                 </TableCell>
@@ -194,16 +194,16 @@ const AdminUsers = () => {
                   {user.createdAt ? new Date(user.createdAt).toLocaleDateString() : 'N/A'}
                 </TableCell>
                 <TableCell className="text-right">
-                  <Button 
-                    variant="ghost" 
-                    size="sm" 
+                  <Button
+                    variant="ghost"
+                    size="sm"
                     className="mr-2"
                     onClick={() => handleEditClick(user)}
                   >
                     <Edit className="h-4 w-4" />
                   </Button>
-                  <Button 
-                    variant="ghost" 
+                  <Button
+                    variant="ghost"
                     size="sm"
                     onClick={() => handleDeleteUser(user.id)}
                   >
@@ -252,18 +252,6 @@ const AdminUsers = () => {
                   value={currentUser.email}
                   onChange={handleInputChange}
                 />
-              </div>
-              <div>
-                <label className="block text-sm font-medium mb-1">Role</label>
-                <select
-                  name="role"
-                  value={currentUser.role || 'student'}
-                  onChange={handleInputChange}
-                  className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
-                >
-                  <option value="student">Student</option>
-                  <option value="admin">Admin</option>
-                </select>
               </div>
               <div className="flex justify-end space-x-2 pt-4">
                 <Button variant="outline" onClick={() => setIsEditModalOpen(false)}>

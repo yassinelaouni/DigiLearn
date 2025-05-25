@@ -15,16 +15,26 @@ const AdminCertificates = () => {
   const [certificates, setCertificates] = useState([]);
   const [searchTerm, setSearchTerm] = useState('');
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
 
   useEffect(() => {
     const fetchCertificates = async () => {
       try {
-        const response = await fetch('http://localhost:5000/api/admin/certificates');
+        const response = await fetch('http://localhost:5000/api/certificates/admin/certificates');
         if (!response.ok) throw new Error('Failed to fetch certificates');
         const data = await response.json();
-        setCertificates(data);
+
+        // Transform the data to match expected structure
+        const transformedCertificates = data.certificates.map(cert => ({
+          ...cert,
+          userName: cert.user?.name || 'Unknown',
+          courseTitle: cert.course?.title || 'Unknown'
+        }));
+
+        setCertificates(transformedCertificates);
       } catch (error) {
         console.error('Error:', error);
+        setError(error.message);
       } finally {
         setLoading(false);
       }
@@ -47,6 +57,14 @@ const AdminCertificates = () => {
     return (
       <div className="container py-8 flex justify-center items-center h-64">
         <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-primary"></div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="container py-8">
+        <div className="text-red-500">Error: {error}</div>
       </div>
     );
   }
@@ -79,19 +97,27 @@ const AdminCertificates = () => {
             </TableRow>
           </TableHeader>
           <TableBody>
-            {filteredCerts.map((cert) => (
-              <TableRow key={cert.id}>
-                <TableCell className="font-medium">
-                  {cert.certificateId}
+            {filteredCerts.length > 0 ? (
+              filteredCerts.map((cert) => (
+                <TableRow key={cert.id}>
+                  <TableCell className="font-medium">
+                    {cert.certificateId}
+                  </TableCell>
+                  <TableCell>{cert.userName}</TableCell>
+                  <TableCell>{cert.courseTitle}</TableCell>
+                  <TableCell>
+                    {new Date(cert.issueDate).toLocaleDateString()}
+                  </TableCell>
+                  <TableCell>{cert.score}</TableCell>
+                </TableRow>
+              ))
+            ) : (
+              <TableRow>
+                <TableCell colSpan={6} className="text-center py-4">
+                  No certificates found
                 </TableCell>
-                <TableCell>{cert.userName}</TableCell>
-                <TableCell>{cert.courseTitle}</TableCell>
-                <TableCell>
-                  {new Date(cert.issueDate).toLocaleDateString()}
-                </TableCell>
-                <TableCell>{cert.score}</TableCell>
               </TableRow>
-            ))}
+            )}
           </TableBody>
         </Table>
       </div>

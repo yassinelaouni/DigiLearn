@@ -208,25 +208,49 @@ exports.verifyCertificate = async (req, res) => {
 // Get all certificates (admin only)
 exports.getAllCertificates = async (req, res) => {
   try {
+    // First verify the schema fields match what we're populating
     const certificates = await Certificate.find()
-      .populate('user', 'firstName lastName email')
-      .populate('course', 'title')
+      .populate({
+        path: 'userId',
+        select: 'firstName lastName email',
+        model: 'User'
+      })
+      .populate({
+        path: 'courseId', 
+        select: 'title',
+        model: 'Course'
+      })
       .sort({ issueDate: -1 });
 
-    return res.json({
-      success: true,
-      certificates: certificates.map(cert => ({
+    // Transform the data for response
+    const transformedCertificates = certificates.map(cert => {
+      // Handle cases where population might fail
+      const user = cert.userId || {};
+      const course = cert.courseId || {};
+
+      return {
         id: cert._id,
         certificateId: cert.certificateId,
-        userId: cert.user._id,
-        userEmail: cert.user.email,
-        userName: `${cert.user.firstName} ${cert.user.lastName}`,
-        courseId: cert.course._id,
-        courseTitle: cert.course.title,
+        user: {
+          id: user._id,
+          email: user.email,
+          name: user.firstName && user.lastName 
+            ? `${user.firstName} ${user.lastName}`
+            : 'Unknown User'
+        },
+        course: {
+          id: course._id,
+          title: course.title || 'Unknown Course'
+        },
         issueDate: cert.issueDate,
         isVerified: cert.isVerified,
         score: cert.score
-      })),
+      };
+    });
+
+    return res.json({
+      success: true,
+      certificates: transformedCertificates,
       errorCode: "",
       errorMessage: "",
       errors: {}
@@ -234,11 +258,18 @@ exports.getAllCertificates = async (req, res) => {
 
   } catch (err) {
     console.error('Error fetching all certificates:', err);
+    
+    // More specific error handling
+    let errorMessage = "Failed to fetch certificates";
+    if (err.message.includes('Cannot populate path')) {
+      errorMessage = "Database configuration error - check schema references";
+    }
+
     return res.status(500).json({
       success: false,
       errorCode: "ServerError",
-      errorMessage: "Failed to fetch certificates",
-      errors: err.message
+      errorMessage,
+      errors: process.env.NODE_ENV === 'development' ? err.message : undefined
     });
   }
 };
