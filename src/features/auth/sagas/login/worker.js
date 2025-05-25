@@ -8,7 +8,7 @@ import config from "../../../../config.json";
 export default function* loginWorker({ payload, meta = {} }) {
     let response = {};
     const { isAdmin } = meta
-    const url = isAdmin ? "http://localhost:5000/api/users/admin/login" : "http://localhost:5000/api/users/login"
+    const url = isAdmin ? "http://localhost:5000/api/auth/users/admin/login" : "http://localhost:5000/api/auth/users/login"
 
     const errorResponse = {
         isSuccess: false,

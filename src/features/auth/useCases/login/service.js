@@ -13,11 +13,11 @@ export default function useLogin() {
   const currentURL = window.location.href;
   let isAdmin
 
-  if (currentURL === 'http://localhost:8080/login') {
+  if (currentURL === 'http://localhost:8080/login' || currentURL === 'http://localhost:8081/login') {
     // URL is http://localhost:3000/
     isAdmin = false
 
-  } else if (currentURL === 'http://localhost:8080/admin') {
+  } else if (currentURL === 'http://localhost:8080/admin' || currentURL === 'http://localhost:8081/admin') {
     // URL is http://localhost:3000/admin
     isAdmin = true
   } else {

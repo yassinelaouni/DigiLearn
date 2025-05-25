@@ -2,6 +2,7 @@ import React, { useState, useRef, useEffect } from 'react';
 import { BookOpen, Search, Edit, Plus, Trash2, FileText, Upload, CheckCircle, XCircle, PlayCircle, Circle } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
+import axios from 'axios';
 import {
   Table,
   TableBody,
@@ -129,13 +130,14 @@ const AdminCourses = () => {
     return {
       id: '',
       title: '',
-      type: 'video',
+      type: 'video', // Default to video
       duration: '',
-      videoUrl: '',
-      readingContent: '',
+      videoUrl: '', // Initialize video URL
+      readingContent: '', // Initialize reading content
       pdfUrl: '',
       description: '',
-      courseId: ''
+      courseId: '',
+      moduleId: ''
     };
   }
 
@@ -319,34 +321,39 @@ const AdminCourses = () => {
     setUploading(true);
     setUploadProgress(0);
 
-    try {
-      const formData = new FormData();
-      formData.append('file', file);
+    const formData = new FormData();
+    formData.append('file', file);
 
-      const response = await fetch('http://localhost:5000/api/upload', {
-        method: 'POST',
-        body: formData
+    try {
+      const response = await axios.post('http://localhost:5000/api/upload-pdf', formData, {
+        headers: {
+          'Content-Type': 'multipart/form-data'
+        },
+        onUploadProgress: (progressEvent) => {
+          const percentCompleted = Math.round(
+            (progressEvent.loaded * 100) / progressEvent.total
+          );
+          setUploadProgress(percentCompleted);
+        },
       });
 
-      const data = await response.json();
-      if (data.success) {
-        setCurrentLesson(prev => ({ ...prev, pdfUrl: data.url }));
-        toast({
-          title: 'Success',
-          description: 'File uploaded successfully'
-        });
-      } else {
-        throw new Error(data.errorMessage || 'Upload failed');
-      }
+      setCurrentLesson(prev => ({
+        ...prev,
+        pdfUrl: response.data.url
+      }));
+
+      toast({
+        title: 'Success',
+        description: 'PDF uploaded successfully'
+      });
     } catch (error) {
       toast({
-        title: 'Upload failed',
-        description: error.message,
+        title: 'Error',
+        description: error.response?.data?.errorMessage || 'Failed to upload PDF',
         variant: 'destructive'
       });
     } finally {
       setUploading(false);
-      setUploadProgress(0);
     }
   };
 
@@ -439,28 +446,36 @@ const AdminCourses = () => {
 
   const handleSubmitLesson = async (e) => {
     e.preventDefault();
-
-    // Add this validation
-    if (!currentCourse.id) {
+    setLoading(true);
+    // Type-specific validation
+    if (currentLesson.type === 'video' && !currentLesson.videoUrl) {
       toast({
         title: 'Error',
-        description: 'No course selected',
+        description: 'Video URL is required for video lessons',
         variant: 'destructive'
       });
       return;
     }
 
-    setLoading(true);
+    if (currentLesson.type === 'reading' && !currentLesson.readingContent) {
+      toast({
+        title: 'Error',
+        description: 'Reading content is required for reading lessons',
+        variant: 'destructive'
+      });
+      return;
+    }
 
     try {
-      // Always use course ID in the endpoint for both create and update
-      const endpoint = currentLesson._id
-        ? `http://localhost:5000/api/lessons/${currentCourse.id}/lessons/${currentLesson._id}`
-        : `http://localhost:5000/api/lessons/${currentCourse.id}/lessons`;
+      const courseId = currentLesson.courseId || currentCourse.id;
+      if (!courseId) throw new Error('Course ID is required');
 
-      // Add debug logging
-      console.log('Current Course ID:', currentCourse.id);
-      console.log('Endpoint:', endpoint);
+      const moduleId = currentLesson.moduleId ||
+        (currentCourse.modules?.length ? currentCourse.modules[0]._id : null);
+
+      const endpoint = currentLesson._id
+        ? `http://localhost:5000/api/lessons/${courseId}/lessons/${currentLesson._id}`
+        : `http://localhost:5000/api/lessons/${courseId}/lessons`;
 
       const method = currentLesson._id ? 'PUT' : 'POST';
 
@@ -468,31 +483,27 @@ const AdminCourses = () => {
         title: currentLesson.title,
         type: currentLesson.type,
         duration: currentLesson.duration,
-        description: currentLesson.description,
-        videolr1: currentLesson.videoUrl, // Matching Postman
-        moduleId: currentLesson.moduleId || null
+        description: currentLesson.description || '',
+        videoUrl: currentLesson.videoUrl,
+        pdfUrl: currentLesson.pdfUrl || '', // Include PDF URL
+        moduleId: moduleId || null
       };
-
-      console.log('Making request to:', endpoint, 'with:', requestBody);
 
       const response = await fetch(endpoint, {
         method,
-        headers: {
-          'Content-Type': 'application/json',
-        },
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(requestBody)
       });
 
-      if (!response.ok) {
-        const errorText = await response.text();
-        throw new Error(errorText || 'Request failed');
-      }
-
       const data = await response.json();
 
-      // Update state...
+      if (!response.ok) {
+        throw new Error(data.errorMessage || 'Failed to save lesson');
+      }
+
+      // Update state
       setCourses(prevCourses => prevCourses.map(course => {
-        if (course._id !== currentCourse.id) return course;
+        if (course.id !== courseId) return course;
 
         if (currentLesson._id) {
           // Update existing lesson
@@ -509,9 +520,10 @@ const AdminCourses = () => {
             lessons: [...course.lessons, data.lesson]
           };
 
-          if (currentLesson.moduleId) {
+          // Update module if specified
+          if (moduleId) {
             updatedCourse.modules = course.modules.map(module =>
-              module._id === currentLesson.moduleId
+              module._id === moduleId
                 ? { ...module, lessons: [...module.lessons, data.lesson._id] }
                 : module
             );
@@ -526,8 +538,9 @@ const AdminCourses = () => {
         title: 'Success',
         description: `Lesson ${currentLesson._id ? 'updated' : 'created'} successfully`,
       });
+
     } catch (error) {
-      console.error('API Error:', error);
+      console.error('Error saving lesson:', error);
       toast({
         title: 'Error',
         description: error.message,
@@ -544,8 +557,11 @@ const AdminCourses = () => {
     setOpenCourseDialog(true);
   };
 
-  const handleEditLesson = (courseId, lesson) => {
-    setCurrentLesson({ ...lesson, courseId });
+  const handleEditLesson = (lesson) => {
+    setCurrentLesson({
+      ...lesson,
+      courseId: lesson.courseId || currentCourse.id
+    });
     setOpenLessonDialog(true);
   };
 
@@ -573,25 +589,35 @@ const AdminCourses = () => {
     }
   };
 
-  const handleDeleteLesson = async (courseId, lessonId) => {
+  const handleDeleteLesson = async (lessonId) => {
     try {
-      const response = await fetch(`http://localhost:5000/api/lessons/${lessonId}`, {
-        method: 'DELETE'
-      });
+      const courseId = currentCourse.id ||
+        courses.find(c => c.lessons.some(l => l._id === lessonId))?.id;
 
-      if (!response.ok) {
-        throw new Error('Failed to delete lesson');
-      }
+      if (!courseId) throw new Error('Could not determine course for this lesson');
 
-      setCourses(courses.map(c =>
-        c.id === courseId
-          ? { ...c, lessons: c.lessons.filter(l => l.id !== lessonId) }
-          : c
-      ));
-      toast({
-        title: 'Success',
-        description: 'Lesson deleted successfully',
-      });
+      const response = await fetch(
+        `http://localhost:5000/api/lessons/${courseId}/lessons/${lessonId}`,
+        { method: 'DELETE' }
+      );
+
+      if (!response.ok) throw new Error('Failed to delete lesson');
+
+      // Update state
+      setCourses(courses.map(course => {
+        if (course.id !== courseId) return course;
+
+        return {
+          ...course,
+          lessons: course.lessons.filter(l => l._id !== lessonId),
+          modules: course.modules?.map(module => ({
+            ...module,
+            lessons: module.lessons?.filter(id => id !== lessonId) || []
+          })) || []
+        };
+      }));
+
+      toast({ title: 'Success', description: 'Lesson deleted successfully' });
     } catch (error) {
       toast({
         title: 'Error',
@@ -1118,22 +1144,19 @@ const AdminCourses = () => {
               <div className="flex justify-between items-center mb-4">
                 <h3 className="font-semibold">Lessons</h3>
                 <Dialog open={openLessonDialog} onOpenChange={(open) => {
-                  if (open && !currentCourse.id) {
-                    toast({
-                      title: 'Error',
-                      description: 'Please select a course first',
-                      variant: 'destructive'
-                    });
-                    return;
-                  }
                   setOpenLessonDialog(open);
+                  if (!open) {
+                    setCurrentLesson(initLesson());
+                  }
                 }}>
-                  <DialogContent className="bg-white max-w-2xl max-h-[90vh] overflow-y-auto">                    <DialogHeader>
-                    <DialogTitle>
-                      {currentLesson.id ? 'Edit Lesson' : 'Add Lesson'}
-                    </DialogTitle>
-                  </DialogHeader>
+                  <DialogContent className="bg-white max-w-2xl max-h-[90vh] overflow-y-auto">
+                    <DialogHeader>
+                      <DialogTitle>
+                        {currentLesson._id ? 'Edit Lesson' : 'Add Lesson'}
+                      </DialogTitle>
+                    </DialogHeader>
                     <form onSubmit={handleSubmitLesson} className="space-y-4">
+                      {/* Form fields should use currentLesson */}
                       <div className="space-y-2">
                         <Label>Title*</Label>
                         <Input
@@ -1183,31 +1206,19 @@ const AdminCourses = () => {
                       </div>
 
                       {currentLesson.type === 'video' && (
-                        <div className="space-y-2">
-                          <Label>Video URL*</Label>
-                          <Input
-                            value={currentLesson.videoUrl}
-                            onChange={(e) => setCurrentLesson({ ...currentLesson, videoUrl: e.target.value })}
-                            placeholder="https://www.youtube.com/embed/..."
-                            required={currentLesson.type === 'video'}
-                          />
-                        </div>
-                      )}
-
-                      {currentLesson.type === 'reading' && (
                         <>
                           <div className="space-y-2">
-                            <Label>Reading Content*</Label>
-                            <Textarea
-                              value={currentLesson.readingContent}
-                              onChange={(e) => setCurrentLesson({ ...currentLesson, readingContent: e.target.value })}
-                              rows={6}
-                              required={currentLesson.type === 'reading'}
+                            <Label>Video URL*</Label>
+                            <Input
+                              value={currentLesson.videoUrl}
+                              onChange={(e) => setCurrentLesson({ ...currentLesson, videoUrl: e.target.value })}
+                              placeholder="https://www.youtube.com/embed/..."
+                              required
                             />
                           </div>
 
                           <div className="space-y-2">
-                            <Label>PDF File</Label>
+                            <Label>Supporting PDF (Optional)</Label>
                             <div className="flex items-center gap-2">
                               <Input
                                 type="file"
@@ -1233,6 +1244,98 @@ const AdminCourses = () => {
                               )}
                             </div>
                           </div>
+
+                          {currentLesson.pdfUrl && (
+                            <div className="mt-4">
+                              <Label>PDF Preview</Label>
+                              <div className="mt-2 border rounded-lg p-4">
+                                <iframe
+                                  src={`http://localhost:5000${currentLesson.pdfUrl}`}
+                                  className="w-full h-64"
+                                  title="PDF Preview"
+                                />
+                                <a
+                                  href={`http://localhost:5000${currentLesson.pdfUrl}`}
+                                  target="_blank"
+                                  rel="noopener noreferrer"
+                                  className="text-sm text-blue-600 hover:underline mt-2 inline-block"
+                                >
+                                  Open PDF in new tab
+                                </a>
+                              </div>
+                            </div>
+                          )}
+                        </>
+                      )}
+
+                      {currentLesson.type === 'reading' && (
+                        <>
+                          <div className="space-y-2">
+                            <Label>Reading Content*</Label>
+                            <Textarea
+                              value={currentLesson.readingContent}
+                              onChange={(e) => setCurrentLesson({ ...currentLesson, readingContent: e.target.value })}
+                              rows={6}
+                              required
+                            />
+                          </div>
+
+                          <div className="space-y-2">
+                            <Label>PDF Material*</Label>
+                            <div className="flex items-center gap-2">
+                              <input
+                                type="file"
+                                ref={fileInputRef}
+                                onChange={handleFileUpload}
+                                accept=".pdf"
+                                style={{ display: 'none' }}
+                              />
+                              <Button
+                                type="button"
+                                variant="outline"
+                                onClick={() => fileInputRef.current.click()}
+                                disabled={uploading}
+                              >
+                                <Upload className="h-4 w-4 mr-2" />
+                                {uploading ? `Uploading... ${uploadProgress}%` : 'Upload PDF'}
+                              </Button>
+                              {currentLesson.pdfUrl && (
+                                <span className="text-sm text-green-600 flex items-center">
+                                  <CheckCircle className="h-4 w-4 mr-1" />
+                                  PDF uploaded
+                                </span>
+                              )}
+                            </div>
+                            {uploading && (
+                              <div className="w-full bg-gray-200 rounded-full h-2.5">
+                                <div
+                                  className="bg-blue-600 h-2.5 rounded-full"
+                                  style={{ width: `${uploadProgress}%` }}
+                                ></div>
+                              </div>
+                            )}
+                          </div>
+
+                          {currentLesson.pdfUrl && (
+                            <div className="mt-4">
+                              <Label>PDF Preview</Label>
+                              <div className="mt-2 border rounded-lg p-4">
+                                <iframe
+                                  src={`http://localhost:5000${currentLesson.pdfUrl}`}
+                                  className="w-full h-64"
+                                  title="PDF Preview"
+                                />
+                                <a
+                                  href={`http://localhost:5000${currentLesson.pdfUrl}`}
+                                  target="_blank"
+                                  rel="noopener noreferrer"
+                                  className="text-sm text-blue-600 hover:underline mt-2 inline-block"
+                                >
+                                  Open PDF in new tab
+                                </a>
+                              </div>
+                            </div>
+                          )}
                         </>
                       )}
 
@@ -1241,10 +1344,10 @@ const AdminCourses = () => {
                           {loading ? (
                             <span className="flex items-center">
                               <span className="animate-spin mr-2">↻</span>
-                              {currentLesson.id ? 'Updating...' : 'Creating...'}
+                              {currentLesson._id ? 'Updating...' : 'Creating...'}
                             </span>
                           ) : (
-                            currentLesson.id ? 'Update Lesson' : 'Create Lesson'
+                            currentLesson._id ? 'Update Lesson' : 'Create Lesson'
                           )}
                         </Button>
                       </DialogFooter>
@@ -1313,7 +1416,10 @@ const AdminCourses = () => {
                             variant="ghost"
                             size="sm"
                             className="h-8 w-8 p-0"
-                            onClick={() => handleEditLesson(lesson)}
+                            onClick={() => {
+                              handleEditLesson(lesson);
+                              setCurrentCourse(course);
+                            }}
                           >
                             <Edit className="h-4 w-4" />
                           </Button>
@@ -1321,7 +1427,10 @@ const AdminCourses = () => {
                             variant="ghost"
                             size="sm"
                             className="h-8 w-8 p-0"
-                            onClick={() => handleDeleteLesson(lesson._id)}
+                            onClick={() => {
+                              handleDeleteLesson(lesson._id);
+                              setCurrentCourse(course);
+                            }}
                           >
                             <Trash2 className="h-4 w-4 text-red-500" />
                           </Button>
