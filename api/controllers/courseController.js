@@ -172,6 +172,7 @@ exports.getCourseBySlug = async (req, res) => {
 
 // Get all featured courses
 exports.getFeaturedCourses = async (req, res) => {
+  console.log('Fetching featured courses...');
   try {
     const featuredCourses = await Course.find({ featured: true })
       .select('title slug category thumbnail rating duration level featured')

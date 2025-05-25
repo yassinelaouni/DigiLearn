@@ -10,13 +10,13 @@ const Certificates = () => {
     const [suggestedCourses, setSuggestedCourses] = useState([]);
     const [loading, setLoading] = useState(true);
     const { toast } = useToast();
-    const userId = "68152e9b92f42938445d56ce";
+    const userId = "68152e9b92f42938445d56d0";
 
     useEffect(() => {
         const fetchCertificates = async () => {
             try {
                 // Correct way to include the userId in the endpoint
-                const response = await fetch(`http://localhost:5000/api/users/${userId}/certificates`);
+                const response = await fetch(`http://localhost:5000/api/certificates/users/${userId}/certificates`);
                 const data = await response.json();
 
                 if (data.success) {

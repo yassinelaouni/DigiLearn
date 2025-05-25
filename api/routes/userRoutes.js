@@ -40,12 +40,12 @@ const upload = multer({
 });
 
 // User protected routes
-router.patch('/users/:userId/update/avatar', upload.single('avatar'), updateAvatar);
-router.patch('/users/:userId/update/firstName', updateFirstName);
-router.patch('/users/:userId/update/lastName', updateLastName);
-router.patch('/users/:userId/update/password', updatePassword);
-router.get('/users/:userId/profile', getProfile);
-router.get('/user/dashboard/:userId', getUserDashboard);
+router.patch('/:userId/update/avatar', upload.single('avatar'), updateAvatar);
+router.patch('/:userId/update/firstName', updateFirstName);
+router.patch('/:userId/update/lastName', updateLastName);
+router.patch('/:userId/update/password', updatePassword);
+router.get('/:userId/profile', getProfile);
+router.get('/dashboard/:userId', getUserDashboard);
 router.get('/user/progress', getUserProgress);
 router.post('/user/progress', markLessonComplete);
 

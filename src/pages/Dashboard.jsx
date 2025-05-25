@@ -14,7 +14,7 @@ const UserDashboard = () => {
             lessonsCompleted: 0,
             completedCourses: 0,
             totalCourses: 0
-        }, 
+        },
         allCourses: []
     });
     const [loading, setLoading] = useState(true);
@@ -23,9 +23,9 @@ const UserDashboard = () => {
     useEffect(() => {
         const fetchDashboardData = async () => {
             try {
-                const response = await fetch(`http://localhost:5000/api/user/dashboard/${userId}`);
+                const response = await fetch(`http://localhost:5000/api/users/dashboard/${userId}`);
                 const data = await response.json();
-                
+
                 if (data.success) {
                     setUserData(data.data);
                 } else {
@@ -114,7 +114,7 @@ const UserDashboard = () => {
                 {/* Courses Section */}
                 <div className="mb-8">
                     <h2 className="text-xl font-bold mb-4">Your Courses</h2>
-                    
+
                     {userData.allCourses.length === 0 ? (
                         <div className="bg-white rounded-lg border p-8 text-center">
                             <BookOpen className="h-12 w-12 mx-auto text-gray-400 mb-4" />
@@ -130,7 +130,7 @@ const UserDashboard = () => {
                         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                             {userData.allCourses.map((course) => {
                                 // Calculate progress percentage safely
-                                const progressPercent = course.total > 0 
+                                const progressPercent = course.total > 0
                                     ? Math.round((course.progress / course.total) * 100)
                                     : 0;
 

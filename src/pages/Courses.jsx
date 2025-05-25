@@ -1,10 +1,10 @@
 import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import Layout from "@/components/layout/Layout";
-import { 
-  Search,  
-  SlidersHorizontal, 
-  ChevronDown, 
+import {
+  Search,
+  SlidersHorizontal,
+  ChevronDown,
   ChevronRight,
   ChevronLeft,
   Monitor,
@@ -45,16 +45,21 @@ const Courses = () => {
     const fetchCourses = async () => {
       try {
         const response = await fetch('http://localhost:5000/api/courses/featured');
+
+        if (!response.ok) {
+          throw new Error(`HTTP error! status: ${response.status}`);
+        }
+
         const data = await response.json();
-        
+
         if (data.success) {
           setCourses(data.courses || []);
         } else {
           setError(data.errorMessage || 'Failed to fetch courses');
         }
       } catch (err) {
-        setError('Failed to connect to the server');
-        console.error('Error fetching courses:', err);
+        setError(`Failed to connect: ${err.message}`);
+        console.error('Error details:', err);
       } finally {
         setLoading(false);
       }
@@ -67,19 +72,19 @@ const Courses = () => {
   const filteredCourses = courses
     .filter(course => {
       if (!course) return false;
-      
-      const searchMatch = 
-        (course.title?.toLowerCase()?.includes(searchQuery.toLowerCase()) || 
-         course.description?.toLowerCase()?.includes(searchQuery.toLowerCase())) ?? false;
-      
-      const categoryMatch = selectedCategories.length === 0 || 
+
+      const searchMatch =
+        (course.title?.toLowerCase()?.includes(searchQuery.toLowerCase()) ||
+          course.description?.toLowerCase()?.includes(searchQuery.toLowerCase())) ?? false;
+
+      const categoryMatch = selectedCategories.length === 0 ||
         (course.category && selectedCategories.includes(course.category.toLowerCase().replace(/ /g, '-')));
-      
+
       return searchMatch && categoryMatch;
     })
     .sort((a, b) => {
       if (!a || !b) return 0;
-      
+
       switch (sortOption) {
         case "newest":
           return (new Date(b.createdAt || 0) - new Date(a.createdAt || 0));
@@ -109,9 +114,9 @@ const Courses = () => {
 
   // Toggle category selection
   const toggleCategory = (slug) => {
-    setSelectedCategories(prev => 
-      prev.includes(slug) 
-        ? prev.filter(item => item !== slug) 
+    setSelectedCategories(prev =>
+      prev.includes(slug)
+        ? prev.filter(item => item !== slug)
         : [...prev, slug]
     );
   };
@@ -167,7 +172,7 @@ const Courses = () => {
 
           <div className="flex flex-col md:flex-row gap-6 md:items-start">
             {/* Filters Sidebar */}
-            <motion.div 
+            <motion.div
               className="w-full md:w-64 lg:w-72 bg-white rounded-xl border border-gray-100 shadow-sm overflow-hidden"
               initial={{ opacity: 0, x: -20 }}
               animate={{ opacity: 1, x: 0 }}
@@ -175,7 +180,7 @@ const Courses = () => {
             >
               <div className="p-5">
                 <h2 className="font-bold text-lg mb-4">Filter Courses</h2>
-                
+
                 <div className="space-y-6">
                   {/* Search Filter */}
                   <div>
@@ -196,66 +201,66 @@ const Courses = () => {
                   </div>
 
                   <Separator />
-                  
+
                   {/* Category Filter */}
                   <div>
                     <h3 className="font-medium mb-3">Categories</h3>
                     <div className="space-y-2">
                       {[
-                       {
-                        name: "Digital Literacy",
-                        slug: "digital-literacy",
-                        icon: <Monitor className="h-5 w-5" />,
-                      },
-                      {
-                        name: "Online Safety",
-                        slug: "online-safety",
-                        icon: <Shield className="h-5 w-5" />,
-                      },
-                      {
-                        name: "Productivity Tools",
-                        slug: "productivity-tools",
-                        icon: <FileText className="h-5 w-5" />,
-                      },
-                      {
-                        name: "Web Essentials",
-                        slug: "web-essentials",
-                        icon: <Globe className="h-5 w-5" />,
-                      },
-                      {
-                        name: "Career Skills",
-                        slug: "career-skills",
-                        icon: <Briefcase className="h-5 w-5" />,
-                      },
-                      {
-                        name: "Web Development",
-                        slug: "web-development",
-                        icon: <Code className="h-5 w-5" />,
-                      },
-                      {
-                        name: "Digital Marketing",
-                        slug: "digital-marketing",
-                        icon: <Megaphone className="h-5 w-5" />,
-                      },
-                      {
-                        name: "Data Science",
-                        slug: "data-science",
-                        icon: <Database className="h-5 w-5" />,
-                      },
-                      {
-                        name: "UX/UI Design",
-                        slug: "ux-ui-design",
-                        icon: <Palette className="h-5 w-5" />,
-                      },
-                      {
-                        name: "Blockchain",
-                        slug: "blockchain",
-                        icon: <Bitcoin className="h-5 w-5" />,
-                      }
+                        {
+                          name: "Digital Literacy",
+                          slug: "digital-literacy",
+                          icon: <Monitor className="h-5 w-5" />,
+                        },
+                        {
+                          name: "Online Safety",
+                          slug: "online-safety",
+                          icon: <Shield className="h-5 w-5" />,
+                        },
+                        {
+                          name: "Productivity Tools",
+                          slug: "productivity-tools",
+                          icon: <FileText className="h-5 w-5" />,
+                        },
+                        {
+                          name: "Web Essentials",
+                          slug: "web-essentials",
+                          icon: <Globe className="h-5 w-5" />,
+                        },
+                        {
+                          name: "Career Skills",
+                          slug: "career-skills",
+                          icon: <Briefcase className="h-5 w-5" />,
+                        },
+                        {
+                          name: "Web Development",
+                          slug: "web-development",
+                          icon: <Code className="h-5 w-5" />,
+                        },
+                        {
+                          name: "Digital Marketing",
+                          slug: "digital-marketing",
+                          icon: <Megaphone className="h-5 w-5" />,
+                        },
+                        {
+                          name: "Data Science",
+                          slug: "data-science",
+                          icon: <Database className="h-5 w-5" />,
+                        },
+                        {
+                          name: "UX/UI Design",
+                          slug: "ux-ui-design",
+                          icon: <Palette className="h-5 w-5" />,
+                        },
+                        {
+                          name: "Blockchain",
+                          slug: "blockchain",
+                          icon: <Bitcoin className="h-5 w-5" />,
+                        }
                       ].map((category) => {
-                        const count = courses.filter(c => 
+                        const count = courses.filter(c =>
                           c?.category?.toLowerCase() === category.name.toLowerCase()).length;
-                        
+
                         return (
                           <div key={category.slug} className="flex items-center gap-2">
                             <Checkbox
@@ -263,7 +268,7 @@ const Courses = () => {
                               checked={selectedCategories.includes(category.slug)}
                               onCheckedChange={() => toggleCategory(category.slug)}
                             />
-                            <label 
+                            <label
                               htmlFor={`category-${category.slug}`}
                               className="flex items-center text-sm cursor-pointer flex-1"
                             >
@@ -280,10 +285,10 @@ const Courses = () => {
                   </div>
 
                   <Separator />
-                  
+
                   {/* Reset Filters */}
-                  <Button 
-                    variant="outline" 
+                  <Button
+                    variant="outline"
                     size="sm"
                     className="w-full"
                     onClick={resetFilters}
@@ -293,9 +298,9 @@ const Courses = () => {
                 </div>
               </div>
             </motion.div>
-            
+
             {/* Course Listing */}
-            <motion.div 
+            <motion.div
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.5 }}
@@ -314,12 +319,12 @@ const Courses = () => {
                     <option value="alphabetical">Alphabetical</option>
                   </select>
                 </div>
-                
+
                 {/* Course list */}
                 <div className="space-y-6">
                   {currentCourses.length > 0 ? (
                     currentCourses.map((course) => (
-                      <div 
+                      <div
                         key={course.id}
                         className="flex flex-col md:flex-row gap-6 p-4 border border-gray-100 rounded-lg hover:shadow-sm transition-shadow"
                       >
@@ -363,7 +368,7 @@ const Courses = () => {
                   ) : (
                     <div className="text-center py-8">
                       <p>No courses match your filters</p>
-                      <Button 
+                      <Button
                         variant="link"
                         onClick={resetFilters}
                       >
@@ -372,21 +377,21 @@ const Courses = () => {
                     </div>
                   )}
                 </div>
-                
+
                 {/* Pagination */}
                 {filteredCourses.length > coursesPerPage && (
                   <div className="mt-8 flex justify-center">
                     <div className="flex gap-2">
-                      <Button 
-                        variant="outline" 
-                        size="icon" 
+                      <Button
+                        variant="outline"
+                        size="icon"
                         className="rounded-lg"
                         onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
                         disabled={currentPage === 1}
                       >
                         <ChevronLeft className="h-4 w-4" />
                       </Button>
-                      
+
                       {Array.from({ length: totalPages }, (_, i) => i + 1).map(page => (
                         <Button
                           key={page}
@@ -398,10 +403,10 @@ const Courses = () => {
                           {page}
                         </Button>
                       ))}
-                      
-                      <Button 
-                        variant="outline" 
-                        size="icon" 
+
+                      <Button
+                        variant="outline"
+                        size="icon"
                         className="rounded-lg"
                         onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
                         disabled={currentPage === totalPages}
