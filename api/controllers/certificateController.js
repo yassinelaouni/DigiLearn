@@ -37,8 +37,8 @@ exports.issueCertificate = async (req, res) => {
     const certificateId = `CERT-${Math.random().toString(36).substr(2, 9).toUpperCase()}`;
 
     const certificate = await Certificate.create({
-      user: userId,
-      course: courseId,
+      userId: userId,     // Fixed to match schema
+      courseId: courseId, // Fixed to match schema
       issueDate: issueDate || new Date(),
       certificateId,
       isVerified: false,

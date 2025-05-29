@@ -14,7 +14,7 @@ import CertificationTest from "./pages/CertificationTest";
 import CertificationResults from "./pages/CertificationResults";
 import About from "./pages/About";
 import NotFound from "./pages/NotFound";
-import { ChatbotButton } from './components/ChatbotButton';
+import ChatbotButton from './components/ChatbotButton';
 import UserDashboard from "./pages/Dashboard";
 import CertificateDetail from "./pages/CertificateDetail";
 import Certificates from "./pages/Certificates";

@@ -15,15 +15,30 @@ const SettingsPage = () => {
     newPassword: '',
     confirmPassword: ''
   });
+  const [formErrors, setFormErrors] = useState({});
   const [loading, setLoading] = useState({
     fetching: true,
     submitting: false
   });
 
+  const validateForm = () => {
+    const errors = {};
+
+    if (formData.newPassword && !formData.currentPassword) {
+      errors.currentPassword = 'Current password is required to change password';
+    }
+
+    if (formData.newPassword !== formData.confirmPassword) {
+      errors.confirmPassword = 'Passwords do not match';
+    }
+
+    return errors;
+  };
+
   useEffect(() => {
     const fetchAdminData = async () => {
       try {
-        const response = await fetch('http://localhost:5000/api/admin');
+        const response = await fetch('http://localhost:5000/api/admin/profile');
         const data = await response.json();
 
         if (!response.ok) {
@@ -67,10 +82,15 @@ const SettingsPage = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    const errors = validateForm();
+    if (Object.keys(errors).length > 0) {
+      // Show errors to user
+      return;
+    }
     setLoading(prev => ({ ...prev, submitting: true }));
 
     try {
-      const response = await fetch('http://localhost:5000/api/admin', {
+      const response = await fetch('http://localhost:5000/api/admin/profile', {
         method: 'PATCH',
         headers: {
           'Content-Type': 'application/json',

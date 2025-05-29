@@ -1,16 +1,16 @@
 import { useState, useEffect } from 'react';
 import { useParams } from "react-router-dom";
 import Layout from "@/components/layout/Layout";
-import { 
-  ArrowLeft, 
-  Play, 
-  MessageSquareWarning, 
-  Clock, 
-  BarChart, 
-  Check, 
-  ChevronDown, 
-  ChevronUp, 
-  Award, 
+import {
+  ArrowLeft,
+  Play,
+  MessageSquareWarning,
+  Clock,
+  BarChart,
+  Check,
+  ChevronDown,
+  ChevronUp,
+  Award,
   FileText,
   Download as DownloadIcon
 } from "lucide-react";
@@ -36,6 +36,7 @@ const CourseDetails = () => {
       try {
         setLoading(true);
         // Fetch course data
+        console.log("slug : ", slug);
         const courseResponse = await fetch(`http://localhost:5000/api/courses/${slug}`);
         const courseData = await courseResponse.json();
 
@@ -44,8 +45,15 @@ const CourseDetails = () => {
         }
 
         // Fetch user progress
-        const userId = '68152e9b92f42938445d56cc';
-        const progressResponse = await fetch(`http://localhost:5000/api/user/progress?userId=${userId}`);
+        const userId = '68152e9b92f42938445d56d0';
+        const progressResponse = await fetch(`http://localhost:5000/api/users/user/progress?userId=${userId}`, {
+          headers: {
+            'Content-Type': 'application/json',
+            // Add authorization header if needed
+            // 'Authorization': `Bearer ${token}`
+          }
+        });
+
         const progressData = await progressResponse.json();
 
         setCourse(courseData.course);
@@ -62,43 +70,39 @@ const CourseDetails = () => {
   }, [slug]);
 
   const markLessonComplete = async (lessonId) => {
-
     try {
-      const userId = '68152e9b92f42938445d56cc';
-  
+      const userId = '68152e9b92f42938445d56d0'; // Make sure this matches the ID used elsewhere
+
       // Optimistic update
       setUserProgress(prev => {
         if (prev.some(p => p.lessonId === lessonId && p.completed)) {
           return prev;
         }
-  
-        return [...prev, {
-          lessonId,
-          completed: true,
-          _optimistic: true
-        }];
+        return [...prev, { lessonId, completed: true, _optimistic: true }];
       });
-  
-      const response = await fetch('http://localhost:5000/api/user/progress', {
+
+      const response = await fetch('http://localhost:5000/api/users/user/progress', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ userId, lessonId:lessonId }) // Use the actual lessonId parameter here
+        body: JSON.stringify({ userId, lessonId })
       });
-  
+
       const data = await response.json();
-  
-      if (data.success) {
-        setUserProgress(prev => [
-          ...prev.filter(p => !(p.lessonId === lessonId && p._optimistic)),
-          { lessonId, completed: true }
-        ]);
-      } else {
-        setUserProgress(prev => prev.filter(p => p.lessonId !== lessonId));
-        console.error('Failed to mark complete:', data.error);
+
+      if (!response.ok || !data.success) {
+        throw new Error(data.errorMessage || 'Failed to mark complete');
       }
+
+      // Update with server response
+      setUserProgress(prev => [
+        ...prev.filter(p => !(p.lessonId === lessonId && p._optimistic)),
+        { lessonId, completed: true }
+      ]);
     } catch (error) {
-      setUserProgress(prev => prev.filter(p => p.lessonId !== lessonId));
+      // Revert optimistic update on error
+      setUserProgress(prev => prev.filter(p => p.lessonId !== lessonId || !p._optimistic));
       console.error('Error marking lesson complete:', error);
+      // You might want to show an error message to the user
     }
   };
 
@@ -227,7 +231,7 @@ const CourseDetails = () => {
                   <div className="space-y-3">
                     {module.lessons?.map((lesson) => {
                       const completed = isLessonCompleted(lesson._id);
-
+                      console.log("pdf : ", lesson.pdfUrl)
                       return (
                         <div key={lesson._id} className="rounded-lg overflow-hidden border border-gray-200">
                           {/* Lesson Header */}
@@ -268,21 +272,21 @@ const CourseDetails = () => {
                                   {lesson.description}
                                 </p>
                               )}
-                              
+
                               {/* Reading content */}
                               {lesson.type === 'reading' && lesson.readingContent && (
                                 <div className="prose max-w-none mb-4 whitespace-pre-line">
                                   {lesson.readingContent}
                                 </div>
                               )}
-                              
+
                               {/* PDF download */}
                               {lesson.pdfUrl && (
                                 <div className="mb-4">
                                   <Button variant="outline" asChild>
-                                    <a 
-                                      href={lesson.pdfUrl} 
-                                      target="_blank" 
+                                    <a
+                                      href={"http://localhost:5000" + lesson.pdfUrl}
+                                      target="_blank"
                                       rel="noopener noreferrer"
                                       className="flex items-center gap-2"
                                     >
@@ -292,7 +296,7 @@ const CourseDetails = () => {
                                   </Button>
                                 </div>
                               )}
-                              
+
                               <div className="flex gap-2">
                                 {lesson.type === 'video' ? (
                                   <Button
@@ -303,7 +307,7 @@ const CourseDetails = () => {
                                     Watch Video
                                   </Button>
                                 ) : null}
-                                
+
                                 {!completed && (
                                   <Button
                                     variant="default"

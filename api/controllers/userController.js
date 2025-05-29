@@ -7,6 +7,7 @@ const bcrypt = require('bcryptjs');
 const path = require('path');
 const fs = require('fs');
 const { promisify } = require('util');
+const mongoose = require('mongoose');
 const unlinkAsync = promisify(fs.unlink);
 
 // Helper function to process uploaded file
@@ -17,6 +18,71 @@ const processUploadedFile = async (file) => {
   
   // Just return the relative path where multer saved it
   return `/uploads/avatars/${file.filename}`;
+};
+
+
+
+// Get user progress
+exports.markLessonComplete = async (req, res) => {
+  try {
+    const { userId, lessonId } = req.body;
+
+    // Validate input
+    if (!userId || !lessonId) {
+      return res.status(400).json({
+        success: false,
+        errorMessage: "Both userId and lessonId are required"
+      });
+    }
+
+    // Find or create progress record
+    let progress = await UserProgress.findOneAndUpdate(
+      { userId, lessonId },
+      { $set: { completed: true } },
+      { new: true, upsert: true }
+    );
+
+    res.json({
+      success: true,
+      progress: {
+        lessonId: progress.lessonId,
+        completed: progress.completed
+      }
+    });
+  } catch (err) {
+    console.error('Error marking lesson complete:', err);
+    res.status(500).json({
+      success: false,
+      errorMessage: "Server error"
+    });
+  }
+};
+
+// Add this to your userController.js (before the exports)
+exports.getUserProgress = async (req, res) => {
+  try {
+    const { userId } = req.query;
+    
+    if (!userId) {
+      return res.status(400).json({
+        success: false,
+        errorMessage: "User ID is required"
+      });
+    }
+
+    const progress = await UserProgress.find({ userId }).select('-__v -_id -userId');
+    
+    res.json({
+      success: true,
+      progress
+    });
+  } catch (err) {
+    console.error('Error fetching user progress:', err);
+    res.status(500).json({
+      success: false,
+      errorMessage: "Server error"
+    });
+  }
 };
 
 // Update avatar controller
@@ -286,54 +352,6 @@ exports.updateUser = async (req, res) => {
   }
 };
 
-// Get user progress
-exports.getUserProgress = async (req, res) => {
-  try {
-    const progress = await UserProgress.find({ userId: req.query.userId });
-
-    res.json({
-      success: true,
-      progress: progress.map(p => ({
-        lessonId: p.lessonId,
-        completed: p.completed
-      }))
-    });
-  } catch (err) {
-    res.status(500).json({
-      success: false,
-      errorMessage: "Server error"
-    });
-  }
-};
-
-// Mark lesson complete
-exports.markLessonComplete = async (req, res) => {
-  try {
-    const { userId, lessonId } = req.body;
-
-    let progress = await UserProgress.findOne({ userId, lessonId });
-
-    if (!progress) {
-      progress = await UserProgress.create({ userId, lessonId, completed: true });
-    } else {
-      progress.completed = true;
-      await progress.save();
-    }
-
-    res.json({
-      success: true,
-      progress: {
-        lessonId: progress.lessonId,
-        completed: progress.completed
-      }
-    });
-  } catch (err) {
-    res.status(500).json({
-      success: false,
-      errorMessage: "Server error"
-    });
-  }
-};
 
 // Get user dashboard
 exports.getUserDashboard = async (req, res) => {

@@ -40,6 +40,7 @@ const upload = multer({
 });
 
 // User protected routes
+router.post('/user/progress', markLessonComplete);
 router.patch('/:userId/update/avatar', upload.single('avatar'), updateAvatar);
 router.patch('/:userId/update/firstName', updateFirstName);
 router.patch('/:userId/update/lastName', updateLastName);
@@ -47,7 +48,6 @@ router.patch('/:userId/update/password', updatePassword);
 router.get('/:userId/profile', getProfile);
 router.get('/dashboard/:userId', getUserDashboard);
 router.get('/user/progress', getUserProgress);
-router.post('/user/progress', markLessonComplete);
 
 // Admin protected routes
 router.get('/get/all', getAllUsers);

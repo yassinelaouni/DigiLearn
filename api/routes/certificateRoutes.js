@@ -12,10 +12,10 @@ const { protect, adminProtect } = require('../middlewares/auth');
 
 // Public route
 router.get('/certificates/verify/:certificateId', verifyCertificate);
-router.get('/certificates/:id', getCertificateById);
+router.get('/:id', getCertificateById);
 
 // User protected routes
-router.post('/certificates/issue', issueCertificate);
+router.post('/issue', issueCertificate);
 router.get('/users/:userId/certificates',  getUserCertificates); 
 
 // Admin protected routes

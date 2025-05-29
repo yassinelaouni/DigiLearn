@@ -2,6 +2,8 @@ const Admin = require('../models/Admin');
 const User = require('../models/User');
 const Course = require('../models/Course');
 const Certificate = require('../models/Certificate');
+const bcrypt = require('bcrypt');
+
 
 // Get admin dashboard stats
 exports.getAdminDashboardStats = async (req, res) => {
@@ -51,10 +53,13 @@ exports.getAdminDashboardStats = async (req, res) => {
   }
 };
 
-// Get admin profile
+// TEMPORARY FIX - NOT FOR PRODUCTION
 exports.getAdminProfile = async (req, res) => {
   try {
-    const admin = await Admin.findById(req.user.id).select('-password');
+    // Temporary bypass for testing
+    const adminId = req.user?.id || '68152e9b92f42938445d56ca'; // Your hardcoded admin ID
+    
+    const admin = await Admin.findById(adminId).select('-password -__v');
 
     if (!admin) {
       return res.status(404).json({
@@ -72,10 +77,7 @@ exports.getAdminProfile = async (req, res) => {
         email: admin.email,
         avatar: admin.avatar,
         createdAt: admin.createdAt
-      },
-      errorCode: "",
-      errorMessage: "",
-      errors: {}
+      }
     });
   } catch (err) {
     res.status(500).json({
@@ -89,8 +91,11 @@ exports.getAdminProfile = async (req, res) => {
 // Update admin profile
 exports.updateAdminProfile = async (req, res) => {
   try {
-    const { firstName, lastName, email, currentPassword, newPassword } = req.body;
-    const admin = await Admin.findById(req.user.id);
+    // Temporary bypass for testing
+    const adminId = req.user?.id || '68152e9b92f42938445d56ca';
+    
+    const { firstName, lastName, email, currentPassword, newPassword, confirmPassword } = req.body;
+    const admin = await Admin.findById(adminId);
 
     if (!admin) {
       return res.status(404).json({
@@ -100,11 +105,35 @@ exports.updateAdminProfile = async (req, res) => {
     }
 
     // Verify current password if changing password
-    if (newPassword && !(await bcrypt.compare(currentPassword, admin.password))) {
-      return res.status(400).json({
-        success: false,
-        errorMessage: "Current password is incorrect"
-      });
+    if (newPassword) {
+      if (!currentPassword) {
+        return res.status(400).json({
+          success: false,
+          errorMessage: "Current password is required to set a new password"
+        });
+      }
+
+      if (!(await bcrypt.compare(currentPassword, admin.password))) {
+        return res.status(400).json({
+          success: false,
+          errorMessage: "Current password is incorrect"
+        });
+      }
+
+      if (newPassword !== confirmPassword) {
+        return res.status(400).json({
+          success: false,
+          errorMessage: "New password and confirmation password don't match"
+        });
+      }
+
+      // You might want to add password strength validation here
+      if (newPassword.length < 8) {
+        return res.status(400).json({
+          success: false,
+          errorMessage: "Password must be at least 8 characters long"
+        });
+      }
     }
 
     // Update admin fields
@@ -113,7 +142,8 @@ exports.updateAdminProfile = async (req, res) => {
     admin.email = email || admin.email;
     
     if (newPassword) {
-      admin.password = newPassword;
+      const salt = await bcrypt.genSalt(10);
+      admin.password = await bcrypt.hash(newPassword, salt);
     }
 
     await admin.save();
@@ -125,13 +155,13 @@ exports.updateAdminProfile = async (req, res) => {
         firstName: admin.firstName,
         lastName: admin.lastName,
         email: admin.email,
-        avatar: admin.avatar
+        avatar: admin.avatar,
+        createdAt: admin.createdAt
       },
-      errorCode: "",
-      errorMessage: "Profile updated successfully",
-      errors: {}
+      errorMessage: "Profile updated successfully"
     });
   } catch (err) {
+    console.error(err);
     res.status(500).json({
       success: false,
       errorMessage: 'Server error',

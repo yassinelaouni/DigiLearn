@@ -22,18 +22,42 @@ const withTransaction = async (fn) => {
 // Get quiz for course
 const getQuizForCourse = async (req, res) => {
   try {
-    const quiz = await Quiz.findOne({ courseId: req.params.courseId })
+    // First get the course to find the quiz ID
+    const course = await Course.findById(req.params.courseId);
+    if (!course || !course.quiz) {
+      return res.status(404).json({
+        success: false,
+        errorMessage: "Quiz not found for this course"
+      });
+    }
+
+    // Then get the quiz by its ID
+    const quiz = await Quiz.findById(course.quiz)
       .populate({
         path: 'questions',
         select: 'question options correctAnswer feedback'
       });
 
+    if (!quiz) {
+      return res.status(404).json({
+        success: false,
+        errorMessage: "Quiz not found"
+      });
+    }
+
     res.json({
       success: true,
-      quiz: quiz || null,
-      errorCode: "",
-      errorMessage: "",
-      errors: {}
+      quiz: {
+        id: quiz._id,
+        title: quiz.title,
+        questions: quiz.questions.map(q => ({
+          id: q._id,
+          question: q.question,
+          options: q.options,
+          correctAnswer: q.correctAnswer,
+          feedback: q.feedback
+        }))
+      }
     });
   } catch (err) {
     res.status(500).json({

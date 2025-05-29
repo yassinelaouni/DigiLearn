@@ -1,105 +1,122 @@
 import React, { useState, useEffect } from 'react';
-import { useParams, Link } from "react-router-dom";
+import { useParams, Link, useNavigate } from "react-router-dom";
 import { Award, ChevronLeft, Clock, CheckCircle2, XCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import Layout from "@/components/layout/Layout";
 import { motion } from "framer-motion";
-import { useNavigate } from 'react-router-dom';
 import { cn } from "@/lib/utils";
-import { useDispatch, useSelector } from "react-redux";
+import { useSelector } from "react-redux";
 import selectAuthUser from "@/features/auth/selectors/user";
 
-
-
-
-
-
-const CertificationTest = ({ courseTitle }) => {
+const CertificationTest = () => {
     const { slug } = useParams();
-    const [currentQuestion, setCurrentQuestion] = useState(0);
-    const [selectedOption, setSelectedOption] = useState(null);
-    const [isAnswered, setIsAnswered] = useState(false);
-    const [score, setScore] = useState(0);
-    const [quizCompleted, setQuizCompleted] = useState(false);
-    const [testStarted, setTestStarted] = useState(false);
-    const [quizQuestions, setQuizQuestions] = useState([]);
-    const [isLoading, setIsLoading] = useState(true);
     const navigate = useNavigate();
-    const [course, setCourse] = useState(null);
-    const dispatch = useDispatch();
-    const currentUser = useSelector(selectAuthUser);
-    const handleQuizCompletion = async () => { // Mark the function as async
-        const passed = score >= Math.floor(quizQuestions.length * 0.7);
+    // const currentUser = useSelector(selectAuthUser);
+    const currentUser = { id: "68152e9b92f42938445d56d0", firstName: "Yassine" };
 
-        // 🆕 Save certificate if passed
-        if (passed && currentUser && course) {
-            await fetch('/api/certificates', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    userId: currentUser.id,
-                    courseId: course.id,
-                    date: new Date().toISOString(),
-                    issuer: "DIGILEARN Academy"
-                })
-            });
-        }
-
-        // 🔁 Navigate to results
-        navigate(`/courses/${slug}/certification/results`, {
-            state: {
-                passed,
-                score,
-                totalQuestions: quizQuestions.length,
-                userData: {
-                    name: currentUser?.firstName || "Yassine EL AOUNI",
-                    skill: course?.title || "Marketing with Canva",
-                    date: new Date().toLocaleDateString(),
-                    issuer: "DIGILEARN Academy",
-                    title: "Course Instructor"
-                }
-            },
-            replace: true
-        });
-
-        return (
-            <Layout>
-                <div className="flex justify-center items-center h-64">
-                    <p>Generating your certificate...</p>
-                </div>
-            </Layout>
-        );
-};
+    const [quizState, setQuizState] = useState({
+        currentQuestion: 0,
+        selectedOption: null,
+        isAnswered: false,
+        score: 0,
+        quizCompleted: false,
+        testStarted: false
+    });
+    const [quizData, setQuizData] = useState({
+        questions: [],
+        course: null,
+        isLoading: true
+    });
 
     useEffect(() => {
         const fetchQuizData = async () => {
             try {
-                const response = await fetch(`/api/courses/${slug}`);
-                const courseData = await response.json();
+                // Fetch course data
+                const courseRes = await fetch(`http://localhost:5000/api/courses/${slug}`);
+                const courseData = await courseRes.json();
 
-                if (courseData.success) {
-                    setCourse(courseData.course);
+                if (!courseData.success) throw new Error("Course not found");
 
-                    const quizResponse = await fetch(`/api/quiz?courseId=${courseData.course.id}`);
-                    const quizData = await quizResponse.json();
+                // Fetch quiz questions
+                const quizRes = await fetch(`http://localhost:5000/api/quizzes/courses/${courseData.course._id}/quiz`);
+                const quizData = await quizRes.json();
 
-                    if (quizData.success && quizData.questions?.length > 0) {
-                        setQuizQuestions(quizData.questions); // ✅ correct
-                    }
-
-                }
+                setQuizData({
+                    questions: quizData.success ? quizData.quiz.questions : [],
+                    course: courseData.course,
+                    isLoading: false
+                });
             } catch (error) {
                 console.error("Failed to fetch data:", error);
-            } finally {
-                setIsLoading(false);
+                setQuizData(prev => ({ ...prev, isLoading: false }));
             }
         };
 
         fetchQuizData();
     }, [slug]);
 
+    const handleQuizCompletion = async () => {
+        const passed = quizState.score >= Math.floor(quizData.questions.length * 0.7);
 
-    if (isLoading) {
+        if (passed && currentUser && quizData.course) {
+            console.log("currentUser :", currentUser)
+            try {
+                await fetch('http://localhost:5000/api/certificates/issue', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        userId: currentUser.id,
+                        courseId: quizData.course._id,
+                        score: quizState.score
+                    })
+                });
+            } catch (error) {
+                console.error("Failed to issue certificate:", error);
+            }
+        }
+
+        navigate(`/courses/${slug}/certification/results`, {
+            state: {
+                passed,
+                score: quizState.score,
+                totalQuestions: quizData.questions.length,
+                courseTitle: quizData.course?.title || "Course",
+                userName: currentUser?.firstName || "User"
+            }
+        });
+    };
+
+    const handleOptionSelect = (optionIndex) => {
+        if (quizState.isAnswered) return;
+
+        const isCorrect = optionIndex === quizData.questions[quizState.currentQuestion].correctAnswer;
+
+        setQuizState(prev => ({
+            ...prev,
+            selectedOption: optionIndex,
+            isAnswered: true,
+            score: isCorrect ? prev.score + 1 : prev.score
+        }));
+    };
+
+    const handleNextQuestion = () => {
+        if (quizState.currentQuestion < quizData.questions.length - 1) {
+            setQuizState(prev => ({
+                ...prev,
+                currentQuestion: prev.currentQuestion + 1,
+                selectedOption: null,
+                isAnswered: false
+            }));
+        } else {
+            setQuizState(prev => ({ ...prev, quizCompleted: true }));
+        }
+    };
+
+    const startTest = () => {
+        setQuizState(prev => ({ ...prev, testStarted: true }));
+    };
+
+    if (quizData.isLoading) {
         return (
             <Layout>
                 <div className="container py-8 text-center">Loading quiz data...</div>
@@ -107,8 +124,7 @@ const CertificationTest = ({ courseTitle }) => {
         );
     }
 
-
-    if (!course) {
+    if (!quizData.course) {
         return (
             <Layout>
                 <div className="container py-8 text-center">Course not found</div>
@@ -116,7 +132,7 @@ const CertificationTest = ({ courseTitle }) => {
         );
     }
 
-    if (quizQuestions.length === 0) {
+    if (quizData.questions.length === 0) {
         return (
             <Layout>
                 <div className="container py-8 text-center">No quiz questions available</div>
@@ -124,83 +140,37 @@ const CertificationTest = ({ courseTitle }) => {
         );
     }
 
+    if (quizState.quizCompleted) {
+        handleQuizCompletion();
+        return (
+            <Layout>
+                <div className="flex justify-center items-center h-64">
+                    <p>Generating your certificate...</p>
+                </div>
+            </Layout>
+        );
+    }
 
-    const handleOptionSelect = (optionIndex) => {
-        if (isAnswered) return;
-        setSelectedOption(optionIndex);
-        setIsAnswered(true);
-
-        if (optionIndex === quizQuestions[currentQuestion].correctAnswer) {
-            setScore(prev => prev + 1);
-        }
-    };
-
-    const handleNextQuestion = () => {
-        if (currentQuestion < quizQuestions.length - 1) {
-            setCurrentQuestion(prev => prev + 1);
-            setSelectedOption(null);
-            setIsAnswered(false);
-        } else {
-            setQuizCompleted(true);
-        }
-    };
-
-    const resetQuiz = () => {
-        setCurrentQuestion(0);
-        setSelectedOption(null);
-        setIsAnswered(false);
-        setScore(0);
-        setQuizCompleted(false);
-        setTestStarted(false);
-    };
-
-    const startTest = () => {
-        setTestStarted(true);
-    };
-
-    if (!testStarted) {
+    if (!quizState.testStarted) {
         return (
             <Layout>
                 <div className="container py-8 md:py-12">
-                    <Link
-                        to={`/courses/${slug}`}
-                        className="inline-flex items-center text-sm text-muted-foreground hover:text-foreground mb-6"
-                    >
-                        <ChevronLeft className="h-4 w-4 mr-1" />
-                        Back to Course
+                    <Link to={`/courses/${slug}`} className="inline-flex items-center text-sm text-muted-foreground hover:text-foreground mb-6">
+                        <ChevronLeft className="h-4 w-4 mr-1" /> Back to Course
                     </Link>
 
                     <motion.div
                         initial={{ opacity: 0, y: 20 }}
                         animate={{ opacity: 1, y: 0 }}
-                        transition={{ duration: 0.5 }}
                         className="max-w-3xl mx-auto text-center bg-white rounded-xl border border-gray-100 shadow-sm p-8"
                     >
                         <Award className="h-12 w-12 mx-auto text-yellow-500 mb-4" />
                         <h1 className="text-3xl font-bold mb-4">Certification Test</h1>
-                        <h2 className="text-2xl text-muted-foreground mb-6">Marketing with Canva</h2>
-
-                        <p className="text-lg mb-8">
-                            Test your skills and earn a Canva certification in this {quizQuestions.length}-question test.
-                        </p>
-
-                        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
-                            <div className="bg-gray-50 p-4 rounded-lg">
-                                <div className="font-medium">{quizQuestions.length} questions</div>
-                            </div>
-                            <div className="bg-gray-50 p-4 rounded-lg">
-                                <div className="font-medium flex items-center justify-center gap-1">
-                                    <Clock className="h-4 w-4" /> 20 minutes
-                                </div>
-                            </div>
-                            <div className="bg-gray-50 p-4 rounded-lg">
-                                <div className="font-medium">Certificate of completion</div>
-                            </div>
-                        </div>
+                        <h2 className="text-2xl text-muted-foreground mb-6">{quizData.course.title}</h2>
 
                         <Button
                             size="lg"
-                            className="bg-gradient-to-r from-purple-600 to-blue-500 hover:opacity-90 px-8"
+                            className="bg-gradient-to-r from-purple-600 to-blue-500 px-8"
                             onClick={startTest}
                         >
                             Start Test
@@ -211,21 +181,13 @@ const CertificationTest = ({ courseTitle }) => {
         );
     }
 
-    if (quizCompleted) {
-       handleQuizCompletion(); // Call the function to handle quiz completion
-    }
-
-
+    const currentQ = quizData.questions[quizState.currentQuestion];
 
     return (
         <Layout>
             <div className="container py-8 md:py-12">
-                <Link
-                    to={`/courses/${slug}`}
-                    className="inline-flex items-center text-sm text-muted-foreground hover:text-foreground mb-6"
-                >
-                    <ChevronLeft className="h-4 w-4 mr-1" />
-                    Back to Course
+                <Link to={`/courses/${slug}`} className="inline-flex items-center text-sm text-muted-foreground hover:text-foreground mb-6">
+                    <ChevronLeft className="h-4 w-4 mr-1" /> Back to Course
                 </Link>
 
                 <motion.div
@@ -234,26 +196,24 @@ const CertificationTest = ({ courseTitle }) => {
                     className="max-w-3xl mx-auto bg-white rounded-xl border border-gray-100 shadow-sm p-6"
                 >
                     <div className="flex justify-between items-center mb-6">
-                        <h2 className="text-lg font-semibold">Marketing with Canva</h2>
+                        <h2 className="text-lg font-semibold">{quizData.course.title}</h2>
                         <span className="text-sm text-muted-foreground">
-                            {currentQuestion + 1} of {quizQuestions.length}
+                            {quizState.currentQuestion + 1} of {quizData.questions.length}
                         </span>
                     </div>
 
-                    <h2 className="text-xl font-bold mb-6">
-                        {quizQuestions[currentQuestion].question}
-                    </h2>
+                    <h2 className="text-xl font-bold mb-6">{currentQ.question}</h2>
 
                     <div className="space-y-3 mb-6">
-                        {quizQuestions[currentQuestion].options.map((option, index) => (
+                        {currentQ.options.map((option, index) => (
                             <motion.div
                                 key={index}
-                                whileHover={{ scale: selectedOption === null ? 1.02 : 1 }}
+                                whileHover={{ scale: !quizState.isAnswered ? 1.02 : 1 }}
                                 className={cn(
                                     "p-4 border rounded-lg cursor-pointer transition-colors",
-                                    isAnswered && index === quizQuestions[currentQuestion].correctAnswer
+                                    quizState.isAnswered && index === currentQ.correctAnswer
                                         ? 'border-green-500 bg-green-50'
-                                        : isAnswered && selectedOption === index
+                                        : quizState.isAnswered && quizState.selectedOption === index
                                             ? 'border-red-500 bg-red-50'
                                             : 'border-gray-200 hover:bg-gray-50'
                                 )}
@@ -264,24 +224,26 @@ const CertificationTest = ({ courseTitle }) => {
                         ))}
                     </div>
 
-                    {isAnswered && (
+                    {quizState.isAnswered && (
                         <div className={cn(
                             "p-4 rounded-lg mb-6",
-                            selectedOption === quizQuestions[currentQuestion].correctAnswer
+                            quizState.selectedOption === currentQ.correctAnswer
                                 ? 'bg-green-50 text-green-800'
                                 : 'bg-red-50 text-red-800'
                         )}>
-                            {quizQuestions[currentQuestion].feedback}
+                            {currentQ.feedback}
                         </div>
                     )}
 
                     <div className="flex justify-end">
                         <Button
                             onClick={handleNextQuestion}
-                            disabled={!isAnswered}
+                            disabled={!quizState.isAnswered}
                             className="bg-gradient-to-r from-purple-600 to-blue-500"
                         >
-                            {currentQuestion === quizQuestions.length - 1 ? 'Finish Test' : 'Next Question'}
+                            {quizState.currentQuestion === quizData.questions.length - 1
+                                ? 'Finish Test'
+                                : 'Next Question'}
                         </Button>
                     </div>
                 </motion.div>
