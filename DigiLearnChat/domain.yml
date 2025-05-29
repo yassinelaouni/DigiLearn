@@ -1,0 +1,41 @@
+version: "3.1"
+
+intents:
+  - greet
+  - goodbye
+  - affirm
+  - deny
+  - out_of_scope
+  - list_courses
+  - detail_cours
+  - quiz_cours
+
+entities:
+  - course_title
+
+slots:
+  course_title:
+    type: text
+    influence_conversation: true
+    mappings:
+    - type: from_entity
+      entity: course_title
+
+responses:
+  utter_greet:
+  - text: "Hello! I'm your DigiLearn assistant. How can I help you today?"
+  
+  utter_goodbye:
+  - text: "Goodbye! Have a great day!"
+  
+  utter_default:
+  - text: "I'm not sure I understand. Could you rephrase that?"
+
+actions:
+  - action_get_courses
+  - action_get_course_details
+  - action_get_course_quiz
+
+session_config:
+  session_expiration_time: 60  # minutes
+  carry_over_slots_to_new_session: true

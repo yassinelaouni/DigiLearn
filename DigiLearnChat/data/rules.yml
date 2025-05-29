@@ -1,0 +1,27 @@
+version: "3.1"
+
+rules:
+- rule: Greet user
+  steps:
+  - intent: greet
+  - action: utter_greet
+
+- rule: List all courses
+  steps:
+  - intent: list_courses
+  - action: action_get_courses
+
+- rule: Get course details
+  steps:
+  - intent: detail_cours
+  - action: action_get_course_details
+
+- rule: Get course quiz info
+  steps:
+  - intent: quiz_cours
+  - action: action_get_course_quiz
+
+- rule: Respond to out of scope
+  steps:
+  - intent: out_of_scope
+  - action: utter_default

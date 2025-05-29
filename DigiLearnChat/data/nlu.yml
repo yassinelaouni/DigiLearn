@@ -1,0 +1,80 @@
+version: "3.1"
+
+nlu:
+- intent: greet
+  examples: |
+    - hey
+    - hello
+    - hi
+    - hello there
+    - good morning
+    - good evening
+    - hey there
+    - let's go
+    - hey dude
+    - goodmorning
+    - goodevening
+    - good afternoon
+    - bonjour
+    - salut
+    - coucou
+
+- intent: goodbye
+  examples: |
+    - cu
+    - good by
+    - cee you later
+    - good night
+    - bye
+    - goodbye
+    - have a nice day
+    - see you around
+    - bye bye
+    - see you later
+
+- intent: list_courses
+  examples: |
+    - show me the courses
+    - what courses are available
+    - list all courses
+    - show courses
+    - what courses do you have
+    - list courses
+    - available courses
+    - what are the courses
+    - show available courses
+    - liste des cours
+    - quels cours sont disponibles
+
+- intent: detail_cours
+  examples: |
+    - tell me about [Web Development Fundamentals](course_title)
+    - what is [Web Development Fundamentals](course_title)
+    - details of [Web Development Fundamentals](course_title)
+    - information about [Web Development Fundamentals](course_title)
+    - course details for [Web Development Fundamentals](course_title)
+    - tell me more about [Web Development Fundamentals](course_title)
+    - what can I learn in [Web Development Fundamentals](course_title)
+    - describe [Web Development Fundamentals](course_title)
+
+- intent: quiz_cours
+  examples: |
+    - is there a quiz for [Web Development Fundamentals](course_title)
+    - quiz for [Web Development Fundamentals](course_title)
+    - test for [Web Development Fundamentals](course_title)
+    - assessment for [Web Development Fundamentals](course_title)
+    - does [Web Development Fundamentals](course_title) have a quiz
+    - can I take a quiz for [Web Development Fundamentals](course_title)
+    - are there any tests in [Web Development Fundamentals](course_title)
+    - how can I test my knowledge in [Web Development Fundamentals](course_title)
+
+- intent: out_of_scope
+  examples: |
+    - I want to order a pizza
+    - What's the weather like?
+    - Book a flight
+    - Play some music
+    - Tell me a joke
+    - What's your favorite color?
+    - How old are you?
+    - What's the time?

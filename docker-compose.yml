@@ -1,0 +1,40 @@
+version: '3.8'
+
+services:
+  rasa:
+    container_name: rasa_server
+    build: .
+    ports:
+      - "5005:5005"
+    volumes:
+      - .:/app
+    command: "rasa run -m /app/models --enable-api --cors \"*\" --debug"
+    depends_on:
+      - action_server
+
+  action_server:
+    container_name: action_server
+    build: ./actions
+    ports:
+      - "5055:5055"
+    volumes:
+      - ./actions:/app/actions
+    command: "python -m rasa_sdk --auto-reload"
+
+  api:
+    container_name: backend_api
+    build: ./api
+    ports:
+      - "3000:3000" # Assuming your backend runs on port 3000
+    volumes:
+      - ./api:/app
+    command: "node server.js" # Or your backend start command
+
+  frontend:
+    container_name: frontend
+    build: ./frontend # Replace with the path to your frontend directory
+    ports:
+      - "80:80" # Or the port your frontend server uses
+    volumes:
+      - ./frontend:/app # Adjust mount if needed
+    command: "# Command to serve your frontend (e.g., Nginx, serve -s build)" # Replace with your frontend start command 

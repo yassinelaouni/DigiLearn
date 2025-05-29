@@ -1,0 +1,36 @@
+version: "3.1"
+
+stories:
+  - story: greet path
+    steps:
+      - intent: greet
+      - action: utter_greet
+
+  - story: goodbye path
+    steps:
+      - intent: goodbye
+      - action: utter_goodbye
+
+  - story: list courses path
+    steps:
+      - intent: list_courses
+      - action: action_get_courses
+
+  - story: get course details path
+    steps:
+      - intent: detail_cours
+        entities:
+          - course_title: "Web Development Fundamentals"
+      - action: action_get_course_details
+
+  - story: get course quiz path
+    steps:
+      - intent: quiz_cours
+        entities:
+          - course_title: "Web Development Fundamentals"
+      - action: action_get_course_quiz
+
+  - story: out of scope path
+    steps:
+      - intent: out_of_scope
+      - action: utter_default
