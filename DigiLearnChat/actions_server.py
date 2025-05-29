@@ -1,4 +1,3 @@
-from typing import Any, Dict, List, Text, Optional
 from rasa_sdk import Action, Tracker
 from rasa_sdk.executor import CollectingDispatcher
 from rasa_sdk.events import SlotSet
@@ -6,59 +5,25 @@ import requests
 import os
 import logging
 
-# 🔧 Configuration
+# Configure logging
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
+
+# API Configuration
 API_BASE_URL = os.getenv("API_BASE_URL", "http://localhost:5000/api")
 COURSES_API = f"{API_BASE_URL}/courses"
 TIMEOUT = int(os.getenv("API_TIMEOUT", "10"))
 
-logger = logging.getLogger(__name__)
-
-
-# 🔹 Base class for API access
-class BaseAction(Action):
-    def name(self) -> Text:
-        return self.__class__.__name__
-
-    def fetch_data(
-        self, endpoint: str, params: Optional[Dict] = None
-    ) -> Optional[Dict]:
-        try:
-            response = requests.get(endpoint, params=params, timeout=TIMEOUT)
-            response.raise_for_status()
-            return response.json()
-        except requests.exceptions.RequestException as e:
-            logger.error(f"Error accessing {endpoint}: {e}")
-            return None
-
-
-# 🔹 Greeting
-class ActionGreet(Action):
-    def name(self) -> Text:
-        return "action_greet"
-
-    def run(
-        self,
-        dispatcher: CollectingDispatcher,
-        tracker: Tracker,
-        domain: Dict[Text, Any],
-    ) -> List[Dict[Text, Any]]:
-        dispatcher.utter_message(
-            text="👋 Hello! Welcome to the Learning Management System. How can I help you today?"
-        )
-        return []
-
-
-# 🔹 List all courses
 class ActionGetCourses(Action):
-    def name(self) -> Text:
+    def name(self) -> str:
         return "action_get_courses"
 
     def run(
         self,
         dispatcher: CollectingDispatcher,
         tracker: Tracker,
-        domain: Dict[Text, Any],
-    ) -> List[Dict[Text, Any]]:
+        domain: dict,
+    ) -> list:
         try:
             logger.info(f"Fetching courses from {COURSES_API}")
             response = requests.get(COURSES_API, timeout=TIMEOUT)
@@ -94,18 +59,16 @@ class ActionGetCourses(Action):
             )
             return []
 
-
-# 🔹 Get course details
 class ActionGetCourseDetails(Action):
-    def name(self) -> Text:
+    def name(self) -> str:
         return "action_get_course_details"
 
     def run(
         self,
         dispatcher: CollectingDispatcher,
         tracker: Tracker,
-        domain: Dict[Text, Any],
-    ) -> List[Dict[Text, Any]]:
+        domain: dict,
+    ) -> list:
         course_title = tracker.get_slot("course_title")
 
         if not course_title:
@@ -163,18 +126,16 @@ class ActionGetCourseDetails(Action):
             )
             return []
 
-
-# 🔹 Get quiz information
 class ActionGetCourseQuiz(Action):
-    def name(self) -> Text:
+    def name(self) -> str:
         return "action_get_course_quiz"
 
     def run(
         self,
         dispatcher: CollectingDispatcher,
         tracker: Tracker,
-        domain: Dict[Text, Any],
-    ) -> List[Dict[Text, Any]]:
+        domain: dict,
+    ) -> list:
         course_title = tracker.get_slot("course_title")
 
         if not course_title:
@@ -236,4 +197,4 @@ class ActionGetCourseQuiz(Action):
             dispatcher.utter_message(
                 text="⚠️ Sorry, I'm having trouble accessing the quiz information right now."
             )
-            return []
+            return [] 
