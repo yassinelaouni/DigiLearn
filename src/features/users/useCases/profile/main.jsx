@@ -57,7 +57,7 @@ export default function ProfilePage() {
                     <Card sx={{ width: '100%', borderRadius: 2, boxShadow: 3 }}>
                         <CardContent sx={{ p: 4 }}>
                             <Typography variant="h5" sx={{ fontWeight: 600, mb: 3 }}>
-                                Your Profile
+                                Votre Profil
                             </Typography>
 
                             {/* Avatar Section */}

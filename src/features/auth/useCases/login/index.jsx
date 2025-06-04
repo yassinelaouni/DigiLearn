@@ -118,7 +118,7 @@ export default function Login() {
                   fontSize: '1.5rem'
                 }}
               >
-                Master Digital Culture for the Modern University
+                Maîtrisez la Culture Numérique pour l'Université Moderne
               </Typography>
             </Box>
           )}
@@ -156,7 +156,7 @@ export default function Login() {
                 fontSize: isMobile ? '1.75rem' : '2rem'
               }}
             >
-              Welcome Back
+              Bon Retour
             </Typography>
 
             {/* Email Input */}
@@ -190,7 +190,7 @@ export default function Login() {
             {/* Password Input */}
             <TextField
               fullWidth
-              label="Password"
+              label="Mot de passe"
               name="password"
               type={showPassword ? "text" : "password"}
               value={data.password}
@@ -260,7 +260,7 @@ export default function Login() {
                   }
                 }}
               >
-                Login
+                Connexion
               </Button>
             </motion.div>
 
@@ -273,7 +273,7 @@ export default function Login() {
                 fontSize: '0.875rem'
               }}
             >
-              Don't have an account?{' '}
+              Vous n'avez pas de compte ?{' '}
               <Button
                 onClick={gotoRegisterPage}
                 sx={{
@@ -287,7 +287,7 @@ export default function Login() {
                   }
                 }}
               >
-                Register
+                S'inscrire
               </Button>
             </Typography>
           </Box>

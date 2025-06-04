@@ -19,7 +19,6 @@ const Index = () => {
       <FeaturedCourses />
       <Benefits />
       <HowItWorks />
-      <TestimonialsQuiz />
     </Layout>
   );
 };

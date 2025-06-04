@@ -1,27 +1,27 @@
 version: "3.1"
 
 rules:
-- rule: Greet user
-  steps:
-  - intent: greet
-  - action: utter_greet
-
-- rule: List all courses
-  steps:
-  - intent: list_courses
-  - action: action_get_courses
-
-- rule: Get course details
+- rule: Course Details
   steps:
   - intent: detail_cours
-  - action: action_get_course_details
+  - action: action_get_details
 
-- rule: Get course quiz info
+- rule: Greeting
+  steps:
+  - intent: greet  # Or use 'saluer' if you prefer French
+  - action: action_greet
+
+- rule: List Courses
+  steps:
+  - intent: list_courses  # Or use 'lister_cours' if you prefer French
+  - action: action_get_courses
+
+- rule: Quiz Information
   steps:
   - intent: quiz_cours
-  - action: action_get_course_quiz
+  - action: action_get_quiz_info
 
-- rule: Respond to out of scope
+- rule: Fallback
   steps:
   - intent: out_of_scope
   - action: utter_default

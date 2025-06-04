@@ -43,7 +43,7 @@ const CourseCard = ({ course }) => {
         {course.featured && (
           <div className="absolute top-4 right-4">
             <div className="bg-yellow-100 text-yellow-800 text-xs font-medium px-3 py-1 rounded-full">
-              Featured
+              En vedette
             </div>
           </div>
         )}
@@ -70,7 +70,7 @@ const CourseCard = ({ course }) => {
         <div className="border-t pt-4">
           <Button asChild variant="outline" size="sm" className="rounded-full w-full">
             <Link to={`/courses/${course.slug}`}>
-              View Course
+              Voir le cours
               <ArrowRight className="ml-1 h-3.5 w-3.5" />
             </Link>
           </Button>
@@ -106,70 +106,70 @@ const FeaturedCourses = () => {
   // Generate categories based on fetched courses
   const categories = [
     {
-      name: "All Categories",
+      name: "Toutes les catégories",
       slug: "all",
       icon: null,
       count: courses.length,
       color: "bg-gray-100 text-gray-800",
     },
     {
-      name: "Digital Literacy",
+      name: "Littératie numérique",
       slug: "digital-literacy",
       icon: <Monitor className="h-5 w-5" />,
       count: courses.filter(c => c.category === "Digital Literacy").length,
       color: "bg-blue-50 text-blue-600",
     },
     {
-      name: "Online Safety",
+      name: "Sécurité en ligne",
       slug: "online-safety",
       icon: <Shield className="h-5 w-5" />,
       count: courses.filter(c => c.category === "Online Safety").length,
       color: "bg-purple-50 text-purple-600",
     },
     {
-      name: "Productivity Tools",
+      name: "Outils de productivité",
       slug: "productivity-tools",
       icon: <FileText className="h-5 w-5" />,
       count: courses.filter(c => c.category === "Productivity Tools").length,
       color: "bg-green-50 text-green-600",
     },
     {
-      name: "Web Essentials",
+      name: "Essentiels du Web",
       slug: "web-essentials",
       icon: <Globe className="h-5 w-5" />,
       count: courses.filter(c => c.category === "Web Essentials").length,
       color: "bg-orange-50 text-orange-600",
     },
     {
-      name: "Career Skills",
+      name: "Compétences professionnelles",
       slug: "career-skills",
       icon: <Briefcase className="h-5 w-5" />,
       count: courses.filter(c => c.category === "Career Skills").length,
       color: "bg-yellow-50 text-yellow-600",
     },
     {
-      name: "Web Development",
+      name: "Développement Web",
       slug: "web-development",
       icon: <Code className="h-5 w-5" />,
       count: courses.filter(c => c.category === "Web Development").length,
       color: "bg-indigo-50 text-indigo-600",
     },
     {
-      name: "Digital Marketing",
+      name: "Marketing numérique",
       slug: "digital-marketing",
       icon: <Megaphone className="h-5 w-5" />,
       count: courses.filter(c => c.category === "Digital Marketing").length,
       color: "bg-pink-50 text-pink-600",
     },
     {
-      name: "Data Science",
+      name: "Science des données",
       slug: "data-science",
       icon: <Database className="h-5 w-5" />,
       count: courses.filter(c => c.category === "Data Science").length,
       color: "bg-teal-50 text-teal-600",
     },
     {
-      name: "UX/UI Design",
+      name: "Conception UX/UI",
       slug: "ux-ui-design",
       icon: <Palette className="h-5 w-5" />,
       count: courses.filter(c => c.category === "UX/UI Design").length,
@@ -195,7 +195,7 @@ const FeaturedCourses = () => {
       <section className="py-16 md:py-24 bg-gray-50">
         <div className="container">
           <div className="text-center">
-            <p>Loading courses...</p>
+            <p>Chargement des cours...</p>
           </div>
         </div>
       </section>
@@ -207,10 +207,10 @@ const FeaturedCourses = () => {
       <div className="container">
         <div className="text-center max-w-3xl mx-auto mb-12">
           <h2 className="text-3xl md:text-4xl font-bold font-display mb-4">
-            Digital Literacy Learning Paths
+            Parcours d'apprentissage en littératie numérique
           </h2>
           <p className="text-gray-600 text-lg">
-            Essential digital skills courses for university students
+            Cours de compétences numériques essentielles pour les étudiants universitaires
           </p>
         </div>
 

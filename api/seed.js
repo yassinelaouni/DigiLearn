@@ -4,7 +4,7 @@ const bcrypt = require('bcryptjs');
 const { v4: uuidv4 } = require('uuid');
 const connectDB = require('./config/db');
 
-// Import models
+// Importer les modèles
 const User = require('./models/User');
 const Admin = require('./models/Admin');
 const Course = require('./models/Course');
@@ -15,12 +15,12 @@ const Quiz = require('./models/Quiz');
 const Question = require('./models/Question');
 const UserProgress = require('./models/UserProgress');
 
-// Connect to database
+// Se connecter à la base de données
 connectDB();
 
 const seedDB = async () => {
   try {
-    // Clear existing data
+    // Effacer les données existantes
     await User.deleteMany();
     await Admin.deleteMany();
     await Course.deleteMany();
@@ -31,43 +31,43 @@ const seedDB = async () => {
     await Question.deleteMany();
     await UserProgress.deleteMany();
 
-    console.log('Database cleared');
+    console.log('Base de données effacée');
 
-    // Create admin user
-    const adminPassword = await bcrypt.hash('Yss@@56hh', 10);
+    // Créer l'utilisateur admin
+    const adminPassword = "$2b$10$n1Afhe8rnkwLvS8YJuobbeBncdJRi5SC3F4yhmflJXYoWYIfVxGlW";
     const admin = await Admin.create({
       email: 'admin@example.com',
       password: adminPassword,
       firstName: 'Admin',
-      lastName: 'User',
+      lastName: 'Utilisateur',
       avatar: null,
       createdAt: new Date('2023-01-01')
     });
 
-    // Create regular users
-    const user1Password = await bcrypt.hash('password123', 10);
+    // Créer des utilisateurs réguliers
+    const user1Password = "$2b$10$n1Afhe8rnkwLvS8YJuobbeBncdJRi5SC3F4yhmflJXYoWYIfVxGlW";
     const user1 = await User.create({
       email: 'user1@example.com',
       password: user1Password,
-      firstName: 'John',
-      lastName: 'Doe',
+      firstName: 'Jean',
+      lastName: 'Dupont',
       balance: 100,
       avatar: null,
       createdAt: new Date('2023-01-15')
     });
 
-    const user2Password = await bcrypt.hash('Yss@@56hh', 10);
+    const user2Password = "$2b$10$n1Afhe8rnkwLvS8YJuobbeBncdJRi5SC3F4yhmflJXYoWYIfVxGlW";
     const user2 = await User.create({
       email: 'user2@example.com',
       password: user2Password,
-      firstName: 'Jane',
-      lastName: 'Smith',
+      firstName: 'Jeanne',
+      lastName: 'Petit',
       balance: 50,
       avatar: null,
       createdAt: new Date('2023-02-20')
     });
 
-    const user3Password = await bcrypt.hash('Yss@@56hh', 10);
+    const user3Password = "$2b$10$n1Afhe8rnkwLvS8YJuobbeBncdJRi5SC3F4yhmflJXYoWYIfVxGlW";
     const user3 = await User.create({
       email: 'yassineelaouni581@gmail.com',
       password: user3Password,
@@ -78,302 +78,443 @@ const seedDB = async () => {
       createdAt: new Date('2023-03-10')
     });
 
-    console.log('Users created');
+    console.log('Utilisateurs créés');
 
-    // Create courses with modules and lessons
+    // Créer des cours avec des modules et des leçons
     const courses = [
-      // Course 1
+      // Cours 1
       {
-        title: 'Essential Computer Skills for Beginners',
-        slug: 'essential-computer-skills',
-        category: 'Digital Literacy',
+        title: 'Compétences Informatiques Essentielles pour Débutants',
+        slug: 'competences-informatiques-essentielles',
+        category: 'Alphabétisation Numérique',
         thumbnail: 'https://images.unsplash.com/photo-1547658719-da2b51169166?auto=format&fit=crop&w=800&q=80',
         rating: 4.8,
-        duration: '45 mins',
-        level: 'Beginner',
+        duration: '45 minutes',
+        level: 'Débutant',
         featured: true,
+        description: "description du cours Compétences Informatiques Essentielles pour Débutants.",
         learningOutcomes: [
-          "Understand basic computer operations",
-          "Navigate operating systems",
-          "Use essential software applications",
-          "Manage files and folders",
-          "Basic troubleshooting techniques"
+          "Comprendre les opérations informatiques de base",
+          "Naviguer dans les systèmes d'exploitation",
+          "Utiliser les applications logicielles essentielles",
+          "Gérer les fichiers et les dossiers",
+          "Techniques de dépannage de base"
         ],
         modules: [
           {
-            title: 'Getting Started with Computers',
+            title: 'Premiers Pas avec les Ordinateurs',
             order: 1,
             lessons: [
               {
-                title: 'Introduction to Computers',
+                title: 'Introduction aux Ordinateurs',
                 duration: '15 min',
-                type: 'video',
+                type: 'vidéo',
                 videoUrl: 'https://www.youtube.com/embed/dQw4w9WgXcQ',
-                description: "Learn the basics of computer hardware and software",
+                description: "Apprenez les bases du matériel et des logiciels informatiques",
                 order: 1
               },
               {
-                title: 'Using the Mouse and Keyboard',
+                title: 'Utilisation de la Souris et du Clavier',
                 duration: '20 min',
-                type: 'video',
+                type: 'vidéo',
                 videoUrl: 'https://www.youtube.com/embed/dQw4w9WgXcQ',
                 order: 2
+              },
+              // Leçon supplémentaire
+              {
+                title: 'Leçon Supplémentaire 1',
+                duration: '10 min',
+                type: 'lecture',
+                readingContent: 'Contenu de la leçon supplémentaire 1...', // Contenu générique
+                order: 3
               }
             ]
           }
         ]
       },
-      // Course 2
+      // Cours 2
       {
-        title: 'Internet Safety & Privacy Fundamentals',
-        slug: 'internet-safety',
-        category: 'Online Safety',
+        title: "Principes Fondamentaux de la Sécurité et de la Confidentialité sur Internet",
+        slug: "securite-internet",
+        category: "Sécurité en Ligne",
         thumbnail: 'https://images.unsplash.com/photo-1563986768609-322da13575f3?auto=format&fit=crop&w=800&q=80',
         rating: 4.7,
-        duration: '60 mins',
-        level: 'Beginner',
+        duration: '60 minutes',
+        level: 'Débutant',
         featured: true,
+        description: "description du cours Principes Fondamentaux de la Sécurité et de la Confidentialité sur Internet.",
         learningOutcomes: [
-          "Identify online threats",
-          "Create strong passwords",
-          "Understand privacy settings",
-          "Recognize phishing attempts",
-          "Secure personal information"
+          "Identifier les menaces en ligne",
+          "Créer des mots de passe forts",
+          "Comprendre les paramètres de confidentialité",
+          "Reconnaître les tentatives de phishing",
+          "Sécuriser les informations personnelles"
         ],
         modules: [
           {
-            title: 'Internet Basics',
+            title: "Bases d'Internet",
             order: 1,
             lessons: [
               {
-                title: 'Understanding the Internet',
+                title: "Comprendre Internet",
                 duration: '15 min',
-                type: 'video',
+                type: 'vidéo',
                 videoUrl: 'https://www.youtube.com/embed/dQw4w9WgXcQ',
                 order: 1
               },
               {
-                title: 'Safe Browsing Practices',
+                title: "Pratiques de Navigation Sécurisée",
                 duration: '25 min',
-                type: 'video',
+                type: 'vidéo',
                 videoUrl: 'https://www.youtube.com/embed/dQw4w9WgXcQ',
-                description: "Learn how to browse the internet safely and securely",
+                description: "Apprenez à naviguer sur internet en toute sécurité",
+                order: 2
+              },
+               // Leçon supplémentaire
+              {
+                title: 'Leçon Supplémentaire 2',
+                duration: '10 min',
+                type: 'lecture',
+                readingContent: 'Contenu de la leçon supplémentaire 2...', // Contenu générique
+                order: 3
+              }
+            ]
+          }
+        ]
+      },
+      // Cours 3
+      {
+        title: 'Maîtriser les Essentiels de Microsoft Office',
+        slug: 'microsoft-office',
+        category: 'Outils de Productivité',
+        thumbnail: 'https://images.unsplash.com/photo-1588872657578-7efd1f1555ed?auto=format&fit=crop&w=800&q=80',
+        rating: 4.9,
+        duration: '90 minutes',
+        level: 'Débutant',
+        featured: true,
+        description: "description du cours Maîtriser les Essentiels de Microsoft Office.",
+        learningOutcomes: [
+          "Créer des documents professionnels dans Word",
+          "Construire des feuilles de calcul dans Excel",
+          "Concevoir des présentations dans PowerPoint",
+          "Organiser les e-mails dans Outlook",
+          "Collaborer avec Office 365"
+        ],
+        modules: [
+          {
+            title: 'Fondamentaux de Word',
+            order: 1,
+            lessons: [
+              {
+                title: 'Introduction à Word',
+                duration: '20 min',
+                type: 'vidéo',
+                videoUrl: 'https://www.youtube.com/embed/dQw4w9WgXcQ',
+                order: 1
+              },
+               // Leçon supplémentaire
+              {
+                title: 'Leçon Supplémentaire 3',
+                duration: '10 min',
+                type: 'lecture',
+                readingContent: 'Contenu de la leçon supplémentaire 3...', // Contenu générique
                 order: 2
               }
             ]
           }
         ]
       },
-      // Course 3
+      // Cours 4
       {
-        title: 'Mastering Microsoft Office Essentials',
-        slug: 'microsoft-office',
-        category: 'Productivity Tools',
-        thumbnail: 'https://images.unsplash.com/photo-1588872657578-7efd1f1555ed?auto=format&fit=crop&w=800&q=80',
-        rating: 4.9,
-        duration: '90 mins',
-        level: 'Beginner',
-        featured: true,
+        title: 'Communication Efficace en Ligne',
+        slug: 'communication-en-ligne',
+        category: 'Essentiels du Web',
+        thumbnail: 'https://images.unsplash.com/photo-1517245386807-bb43f82c33c4?auto=format&fit=crop&w=800&q=80',
+        rating: 4.6,
+        duration: '50 minutes',
+        level: 'Débutant',
+        featured: false,
+        description: "description du cours Communication Efficace en Ligne.",
         learningOutcomes: [
-          "Create professional documents in Word",
-          "Build spreadsheets in Excel",
-          "Design presentations in PowerPoint",
-          "Organize emails in Outlook",
-          "Collaborate with Office 365"
+          "Écrire des e-mails professionnels",
+          "Participer à des discussions en ligne",
+          "Utiliser des outils de visioconférence",
+          "Pratiquer la netiquette",
+          "Collaborer efficacement en ligne"
         ],
-        modules: [
-          {
-            title: 'Word Fundamentals',
+        modules: [ // Ajouter un module par défaut s'il n'existe pas
+           {
+            title: 'Module par Défaut 1',
             order: 1,
             lessons: [
+               // Leçon supplémentaire
               {
-                title: 'Introduction to Word',
-                duration: '20 min',
-                type: 'video',
-                videoUrl: 'https://www.youtube.com/embed/dQw4w9WgXcQ',
+                title: 'Leçon Supplémentaire 4',
+                duration: '10 min',
+                type: 'lecture',
+                readingContent: 'Contenu de la leçon supplémentaire 4...', // Contenu générique
                 order: 1
               }
             ]
           }
         ]
       },
-      // Course 4
+      // Cours 5
       {
-        title: 'Effective Online Communication',
-        slug: 'online-communication',
-        category: 'Web Essentials',
-        thumbnail: 'https://images.unsplash.com/photo-1517245386807-bb43f82c33c4?auto=format&fit=crop&w=800&q=80',
-        rating: 4.6,
-        duration: '50 mins',
-        level: 'Beginner',
-        featured: false,
-        learningOutcomes: [
-          "Write professional emails",
-          "Participate in online discussions",
-          "Use video conferencing tools",
-          "Practice netiquette",
-          "Collaborate online effectively"
-        ],
-        modules: []
-      },
-      // Course 5
-      {
-        title: 'Creating Professional Documents',
-        slug: 'professional-documents',
-        category: 'Productivity Tools',
+        title: 'Création de Documents Professionnels',
+        slug: 'documents-professionnels',
+        category: 'Outils de Productivité',
         thumbnail: 'https://images.unsplash.com/photo-1546410531-bb4caa6b424d?auto=format&fit=crop&w=800&q=80',
         rating: 4.7,
-        duration: '75 mins',
-        level: 'Beginner',
+        duration: '75 minutes',
+        level: 'Débutant',
         featured: false,
-        learningOutcomes: [
-          "Format business letters",
-          "Create reports",
-          "Design flyers",
-          "Use templates effectively",
-          "Apply professional styling"
-        ],
-        modules: []
+        description: "description du cours Création de Documents Professionnels.",
+         modules: [ // Ajouter un module par défaut s'il n'existe pas
+           {
+            title: 'Module par Défaut 2',
+            order: 1,
+            lessons: [
+               // Leçon supplémentaire
+              {
+                title: 'Leçon Supplémentaire 5',
+                duration: '10 min',
+                type: 'lecture',
+                readingContent: 'Contenu de la leçon supplémentaire 5...', // Contenu générique
+                order: 1
+              }
+            ]
+          }
+        ]
       },
-      // Course 6
+      // Cours 6
       {
-        title: 'Job Search Strategies for Digital Age',
-        slug: 'job-search-strategies',
-        category: 'Career Skills',
+        title: "Stratégies de Recherche d'Emploi à l'Ère Numérique",
+        slug: "strategies-recherche-emploi",
+        category: "Compétences Professionnelles",
         thumbnail: 'https://images.unsplash.com/photo-1521791136064-7986c2920216?auto=format&fit=crop&w=800&q=80',
         rating: 4.5,
-        duration: '65 mins',
-        level: 'All Levels',
+        duration: '65 minutes',
+        level: 'Tous Niveaux',
         featured: true,
+        description: "description du cours Stratégies de Recherche d'Emploi à l'Ère Numérique.",
         learningOutcomes: [
-          "Create effective resumes",
-          "Write compelling cover letters",
-          "Use LinkedIn professionally",
-          "Prepare for virtual interviews",
-          "Network online effectively"
+          "Créer des CV efficaces",
+          "Rédiger des lettres de motivation percutantes",
+          "Utiliser LinkedIn professionnellement",
+          "Préparer des entrevues virtuelles",
+          "Établir des liens professionnels en ligne"
         ],
-        modules: []
+         modules: [ // Ajouter un module par défaut s'il n'existe pas
+           {
+            title: 'Module par Défaut 3',
+            order: 1,
+            lessons: [
+               // Leçon supplémentaire
+              {
+                title: 'Leçon Supplémentaire 6',
+                duration: '10 min',
+                type: 'lecture',
+                readingContent: 'Contenu de la leçon supplémentaire 6...', // Contenu générique
+                order: 1
+              }
+            ]
+          }
+        ]
       },
-      // Course 7
+      // Cours 7
       {
-        title: 'Mobile Device Basics',
-        slug: 'mobile-device-basics',
-        category: 'Digital Literacy',
+        title: 'Principes de Base des Appareils Mobiles',
+        slug: 'principes-base-appareils-mobiles',
+        category: 'Alphabétisation Numérique',
         thumbnail: 'https://images.unsplash.com/photo-1512941937669-90a1b58e7e9c?auto=format&fit=crop&w=800&q=80',
         rating: 4.6,
-        duration: '40 mins',
-        level: 'Beginner',
+        duration: '40 minutes',
+        level: 'Débutant',
         featured: false,
+        description: "description du cours Principes de Base des Appareils Mobiles.",
         learningOutcomes: [
-          "Navigate smartphone interfaces",
-          "Install and manage apps",
-          "Configure device settings",
-          "Use mobile productivity tools",
-          "Troubleshoot common issues"
+          "Naviguer dans les interfaces d'appareils intelligents",
+          "Installer et gérer des applications",
+          "Configurer les paramètres de l'appareil",
+          "Utiliser des outils de productivité mobiles",
+          "Résoudre les problèmes courants"
         ],
-        modules: []
+        modules: [ // Ajouter un module par défaut s'il n'existe pas
+           {
+            title: 'Module par Défaut 4',
+            order: 1,
+            lessons: [
+               // Leçon supplémentaire
+              {
+                title: 'Leçon Supplémentaire 7',
+                duration: '10 min',
+                type: 'lecture',
+                readingContent: 'Contenu de la leçon supplémentaire 7...', // Contenu générique
+                order: 1
+              }
+            ]
+          }
+        ]
       },
-      // Course 8
+      // Cours 8
       {
-        title: 'Social Media for Professional Use',
-        slug: 'social-media-professional',
-        category: 'Career Skills',
+        title: "Réseaux Sociaux pour Utilisation Professionnelle",
+        slug: "reseaux-sociaux-utilisation-professionnelle",
+        category: "Compétences Professionnelles",
         thumbnail: 'https://images.unsplash.com/photo-1611162617213-7d7a39e9b1d7?auto=format&fit=crop&w=800&q=80',
         rating: 4.4,
-        duration: '55 mins',
-        level: 'Beginner',
+        duration: '55 minutes',
+        level: 'Débutant',
         featured: false,
+        description: "description du cours Réseaux Sociaux pour Utilisation Professionnelle.",
         learningOutcomes: [
-          "Build a professional online presence",
-          "Use LinkedIn effectively",
-          "Network on social media",
-          "Create professional content",
-          "Manage online reputation"
+          "Établir une présence professionnelle en ligne",
+          "Utiliser LinkedIn efficacement",
+          "Établir des liens sur les réseaux sociaux",
+          "Créer du contenu professionnel",
+          "Gérer une réputation en ligne"
         ],
-        modules: []
+        modules: [ // Ajouter un module par défaut s'il n'existe pas
+           {
+            title: 'Module par Défaut 5',
+            order: 1,
+            lessons: [
+               // Leçon supplémentaire
+              {
+                title: 'Leçon Supplémentaire 8',
+                duration: '10 min',
+                type: 'lecture',
+                readingContent: 'Contenu de la leçon supplémentaire 8...', // Contenu générique
+                order: 1
+              }
+            ]
+          }
+        ]
       },
-      // Course 9
+      // Cours 9
       {
-        title: 'Cloud Storage & File Management',
-        slug: 'cloud-storage',
-        category: 'Productivity Tools',
+        title: 'Stockage Cloud et Gestion des Fichiers',
+        slug: 'stockage-cloud',
+        category: 'Outils de Productivité',
         thumbnail: 'https://images.unsplash.com/photo-1551288049-bebda4e38f71?auto=format&fit=crop&w=800&q=80',
         rating: 4.7,
-        duration: '50 mins',
-        level: 'Beginner',
+        duration: '50 minutes',
+        level: 'Débutant',
         featured: false,
+        description: "description du cours Stockage Cloud et Gestion des Fichiers.",
         learningOutcomes: [
-          "Use Google Drive effectively",
-          "Organize files in the cloud",
-          "Share and collaborate on documents",
-          "Backup important files",
-          "Access files across devices"
+          "Utiliser Google Drive efficacement",
+          "Organiser les fichiers dans le cloud",
+          "Partager et collaborer sur des documents",
+          "Sauvegarder des fichiers importants",
+          "Accéder aux fichiers sur différents appareils"
         ],
-        modules: []
+        modules: [ // Ajouter un module par défaut s'il n'existe pas
+           {
+            title: 'Module par Défaut 6',
+            order: 1,
+            lessons: [
+               // Leçon supplémentaire
+              {
+                title: 'Leçon Supplémentaire 9',
+                duration: '10 min',
+                type: 'lecture',
+                readingContent: 'Contenu de la leçon supplémentaire 9...', // Contenu générique
+                order: 1
+              }
+            ]
+          }
+        ]
       },
-      // Course 10
+      // Cours 10
       {
-        title: 'Web Development Fundamentals',
-        slug: 'web-development-fundamentals',
-        category: 'Web Development',
+        title: 'Fondements du Développement Web',
+        slug: 'fondements-developpement-web',
+        category: 'Développement Web',
         thumbnail: 'https://images.unsplash.com/photo-1593720213428-28a5b9e94613?auto=format&fit=crop&w=800&q=80',
         rating: 4.7,
-        duration: '120 mins',
-        level: 'Beginner',
+        duration: '120 minutes',
+        level: 'Débutant',
         featured: true,
+        description: "description du cours Fondements du Développement Web.",
         learningOutcomes: [
-          "Understand HTML basics",
-          "Style pages with CSS",
-          "Add interactivity with JavaScript",
-          "Publish a simple website",
-          "Use developer tools"
+          "Comprendre les bases d'HTML",
+          "Styliser des pages avec CSS",
+          "Ajouter de l'interactivité avec JavaScript",
+          "Publier un simple site web",
+          "Utiliser des outils de développement"
         ],
-        modules: []
+        modules: [ // Ajouter un module par défaut s'il n'existe pas
+           {
+            title: 'Module par Défaut 7',
+            order: 1,
+            lessons: [
+               // Leçon supplémentaire
+              {
+                title: 'Leçon Supplémentaire 10',
+                duration: '10 min',
+                type: 'lecture',
+                readingContent: 'Contenu de la leçon supplémentaire 10...', // Contenu générique
+                order: 1
+              }
+            ]
+          }
+        ]
       },
-      // Course 12 (with reading lessons)
+      // Cours 12 (avec leçons de lecture)
       {
-        title: 'Effective Business Writing',
-        slug: 'business-writing',
-        category: 'Professional Skills',
+        title: 'Écriture Commerciale Efficace',
+        slug: 'ecriture-commerciale',
+        category: 'Compétences Professionnelles',
         thumbnail: 'https://images.unsplash.com/photo-1454165804606-c3d57bc86b40?auto=format&fit=crop&w=800&q=80',
         rating: 4.7,
-        duration: '75 mins',
-        level: 'Beginner',
+        duration: '75 minutes',
+        level: 'Débutant',
         featured: true,
+        description: "description du cours Écriture Commerciale Efficace.",
         learningOutcomes: [
-          "Write clear business emails",
-          "Structure professional reports",
-          "Create persuasive proposals",
-          "Edit for clarity and conciseness",
-          "Adapt tone for different audiences"
+          "Écrire des e-mails commerciaux clairs",
+          "Structurer des rapports professionnels",
+          "Créer des propositions persuasives",
+          "Éditer pour la clarté et la concision",
+          "Adapter le ton pour différentes audiences"
         ],
         modules: [
           {
-            title: 'Business Writing Fundamentals',
+            title: "Fondamentaux de l'Écriture Professionnelle",
             order: 1,
             lessons: [
               {
-                title: 'Principles of Effective Writing',
-                duration: '20 min',
-                type: 'video',
-                videoUrl: 'https://www.youtube.com/embed/dQw4w9WgXcQ',
-                description: "Learn the core principles that make business writing effective",
+                title: "Principes de l'Écriture Professionnelle",
+                duration: "20 minutes",
+                type: "video",
+                videoUrl: "https://www.youtube.com/embed/dQw4w9WgXcQ",
+                description: "Apprenez les principes fondamentaux qui rendent l'écriture professionnelle efficace",
                 order: 1
               },
               {
-                title: 'Email Etiquette Guide',
-                duration: '15 min',
-                type: 'reading',
-                readingContent: 'This comprehensive guide covers all aspects of professional email communication...',
+                title: "Guide d'Étiquette de Courrier",
+                duration: "15 minutes",
+                type: "lecture",
+                readingContent: "Ce guide complet couvre tous les aspects de la communication professionnelle par courrier électronique...",
                 pdfUrl: "https://www.cs.cmu.edu/afs/cs.cmu.edu/user/gchen/www/download/java/LearnJava.pdf",
                 order: 2
               },
               {
-                title: 'Report Writing Workshop',
-                duration: '25 min',
-                type: 'reading',
-                readingContent: 'Step-by-step instructions for creating professional business reports...',
+                title: "Atelier de Rédaction de Rapport",
+                duration: "25 minutes",
+                type: "lecture",
+                readingContent: "Instructions étape par étape pour créer des rapports professionnels...",
                 order: 3
+              },
+               // Leçon supplémentaire
+              {
+                title: 'Leçon Supplémentaire 11',
+                duration: '10 min',
+                type: 'lecture',
+                readingContent: 'Contenu de la leçon supplémentaire 11...', // Contenu générique
+                order: 4
               }
             ]
           }
@@ -381,7 +522,7 @@ const seedDB = async () => {
       }
     ];
 
-    // Create courses, modules, and lessons
+    // Créer des cours, modules et leçons
     const createdCourses = [];
     for (const courseData of courses) {
       const course = await Course.create({
@@ -398,7 +539,7 @@ const seedDB = async () => {
 
       createdCourses.push(course);
 
-      // Only process modules if they exist
+      // Créer des modules et des leçons pour le cours
       if (courseData.modules && courseData.modules.length > 0) {
         for (const moduleData of courseData.modules) {
           const module = await Module.create({
@@ -421,25 +562,72 @@ const seedDB = async () => {
               order: lessonData.order
             });
 
-            // Update module with lesson reference
+            // Mettre à jour le module avec la référence de leçon
             module.lessons.push(lesson._id);
             await module.save();
           }
 
-          // Update course with module reference
+          // Mettre à jour le cours avec la référence de module
           course.modules.push(module._id);
           await course.save();
         }
       }
+
+       // Créer un quiz pour ce cours
+    const quizTitle = `Quiz pour ${course.title}`;
+    const quiz = await Quiz.create({
+      courseId: course._id,
+      title: quizTitle,
+      description: 'Testez vos connaissances sur ce cours.' // description générique
+    });
+
+    // Créer 4 questions génériques pour le quiz
+    const genericQuestions = [
+      {
+        question: "Question générique 1 pour " + course.title + "?",
+        options: ["Option 1", "Option 2", "Option 3", "Option 4"],
+        correctAnswer: 0,
+        feedback: "Commentaire pour la question 1."
+      },
+      {
+        question: "Question générique 2 pour " + course.title + "?",
+        options: ["Option A", "Option B", "Option C", "Option D"],
+        correctAnswer: 1,
+        feedback: "Commentaire pour la question 2."
+      },
+      {
+        question: "Question générique 3 pour " + course.title + "?",
+        options: ["Choix Un", "Choix Deux", "Choix Trois", "Choix Quatre"],
+        correctAnswer: 2,
+        feedback: "Commentaire pour la question 3."
+      },
+      {
+        question: "Question générique 4 pour " + course.title + "?",
+        options: ["Réponse X", "Réponse Y", "Réponse Z", "Réponse W"],
+        correctAnswer: 3,
+        feedback: "Commentaire pour la question 4."
+      }
+    ];
+
+    const createdQuestions = await Question.insertMany(genericQuestions.map(q => ({ ...q, quizId: quiz._id })));
+
+    // Mettre à jour le quiz avec les références de question
+    quiz.questions = createdQuestions.map(q => q._id);
+    await quiz.save();
+
+    // Mettre à jour le cours avec la référence de quiz
+    course.quiz = quiz._id;
+    await course.save();
+
     }
 
-    console.log('Courses, modules, and lessons created');
+    console.log('Cours, modules et leçons créés');
 
-    // Create certificates
+    // Créer des certificats
     const cert1 = await Certificate.create({
       certificateId: 'CERT-ABC123',
       userId: user1._id,
-      courseId: createdCourses[0]._id, // Essential Computer Skills
+      courseId: createdCourses[0]._id, // Compétences Informatiques Essentielles
       issueDate: new Date('2024-01-15'),
       isVerified: true,
       score: '18/20 (90%)'
@@ -448,7 +636,7 @@ const seedDB = async () => {
     const cert2 = await Certificate.create({
       certificateId: 'CERT-DEF456',
       userId: user2._id,
-      courseId: createdCourses[2]._id, // Microsoft Office
+      courseId: createdCourses[2]._id, // Maîtriser les Essentiels de Microsoft Office
       issueDate: new Date('2024-02-20'),
       isVerified: true,
       score: '19/20 (95%)'
@@ -457,13 +645,13 @@ const seedDB = async () => {
     const cert3 = await Certificate.create({
       certificateId: 'CERT-GHI789',
       userId: user3._id,
-      courseId: createdCourses[9]._id, // Web Development
+      courseId: createdCourses[9]._id, // Fondements du Développement Web
       issueDate: new Date('2024-03-10'),
       isVerified: false,
       score: '17/20 (85%)'
     });
 
-    // Update users with certificate references
+    // Mettre à jour les utilisateurs avec les références de certificat
     user1.certificates.push(cert1._id);
     await user1.save();
 
@@ -473,7 +661,7 @@ const seedDB = async () => {
     user3.certificates.push(cert3._id);
     await user3.save();
 
-    // Update courses with certificate references
+    // Mettre à jour les cours avec les références de certificat
     createdCourses[0].certificates.push(cert1._id);
     await createdCourses[0].save();
 
@@ -483,59 +671,15 @@ const seedDB = async () => {
     createdCourses[9].certificates.push(cert3._id);
     await createdCourses[9].save();
 
-    console.log('Certificates created');
+    console.log('Certificats créés');
 
-    // Create quiz for first course
-    const quiz1 = await Quiz.create({
-      courseId: createdCourses[0]._id // Essential Computer Skills course
-    });
+    // Créer des enregistrements de progression de l'utilisateur
+    // Note: Mettre à jour les titres des leçons si nécessaire
+    const lesson1 = await Lesson.findOne({ title: 'Introduction aux Ordinateurs' });
+    const lesson2 = await Lesson.findOne({ title: 'Utilisation de la Souris et du Clavier' });
 
-    // Create questions for the quiz
-    const question1 = await Question.create({
-      quizId: quiz1._id,
-      question: "When you use a Canva template, what can you edit?",
-      options: [
-        "Everything for the first five minutes.",
-        "Everything.",
-        "It depends what subscription plan you are on.",
-        "Each template has its own specific rules for editing."
-      ],
-      correctAnswer: 1, // Index of correct option (0-based)
-      feedback: "That's right. Canva templates are just the beginning..."
-    });
-
-    const question2 = await Question.create({
-      quizId: quiz1._id,
-      question: "How can you transfer designs between devices in Canva?",
-      options: [
-        "Transfer your files manually using a USB connection.",
-        "Designs sync automatically across devices when logged in.",
-        "Email the designs to yourself.",
-        "Canva doesn't support cross-device work."
-      ],
-      correctAnswer: 1, // Index of correct option (0-based)
-      feedback: "Not quite. We want designing to feel seamless..."
-    });
-
-    // Update quiz with question references
-    quiz1.questions = [question1._id, question2._id];
-    await quiz1.save();
-
-    // Update course with quiz reference
-    createdCourses[0].quiz = quiz1._id;
-    await createdCourses[0].save();
-
-    console.log('Quiz and questions created successfully');
-
-    // Update course with quiz reference
-    createdCourses[0].quiz = quiz1._id;
-    await createdCourses[0].save();
-
-    console.log('Quiz and questions created');
-
-    // Create user progress records
-    const lesson1 = await Lesson.findOne({ title: 'Introduction to Computers' });
-    const lesson2 = await Lesson.findOne({ title: 'Using the Mouse and Keyboard' });
+    // Trouver la leçon supplémentaire pour le premier cours
+    const additionalLesson1 = await Lesson.findOne({ title: 'Leçon Supplémentaire 1' });
 
     await UserProgress.create([
       {
@@ -547,16 +691,21 @@ const seedDB = async () => {
         userId: user1._id,
         lessonId: lesson2._id,
         completed: false
+      },
+      {
+        userId: user1._id,
+        lessonId: additionalLesson1._id, // Ajouter la leçon supplémentaire à l'utilisateur
+        completed: true
       }
     ]);
 
-    console.log('User progress records created');
+    console.log("Enregistrements de progression de l'utilisateur créés");
 
-    console.log('Database seeded successfully!');
+    console.log("Base de données semée avec succès!");
     process.exit();
 
   } catch (err) {
-    console.error('Error seeding database:', err);
+    console.error('Erreur lors de la semence de la base de données:', err);
     process.exit(1);
   }
 };

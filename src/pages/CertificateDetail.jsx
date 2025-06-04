@@ -53,7 +53,7 @@ const CertificateDetail = () => {
             } catch (error) {
                 console.error('Fetch error:', error);
                 toast({
-                    title: "Error loading certificate",
+                    title: "Erreur lors du chargement du certificat",
                     description: error.message,
                     variant: "destructive",
                 });
@@ -114,15 +114,15 @@ const CertificateDetail = () => {
             pdf.save(`${certificate.name.replace(/\s+/g, '_')}_certificate.pdf`);
     
             toast({
-                title: "Certificate downloaded!",
-                description: "Your certificate has been saved",
+                title: "Certificat téléchargé !",
+                description: "Votre certificat a été enregistré",
                 variant: "default",
             });
         } catch (error) {
             console.error('Error generating PDF:', error);
             toast({
-                title: "Download failed",
-                description: error.message || "Could not generate certificate",
+                title: "Échec du téléchargement",
+                description: error.message || "Impossible de générer le certificat",
                 variant: "destructive",
             });
         } finally {
@@ -134,7 +134,7 @@ const CertificateDetail = () => {
         return (
             <Layout>
                 <div className="container py-20 text-center">
-                    <p>Loading certificate details...</p>
+                    <p>Chargement des détails du certificat...</p>
                 </div>
             </Layout>
         );
@@ -145,9 +145,9 @@ const CertificateDetail = () => {
             <Layout>
                 <div className="container py-20 text-center">
                     <div className="max-w-md mx-auto">
-                        <h1 className="text-2xl font-bold mb-2">Certificate not found</h1>
+                        <h1 className="text-2xl font-bold mb-2">Certificat non trouvé</h1>
                         <Button asChild>
-                            <Link to="/certificates">Back to Certificates</Link>
+                            <Link to="/certificates">Retour aux Certificats</Link>
                         </Button>
                     </div>
                 </div>
@@ -163,7 +163,7 @@ const CertificateDetail = () => {
                     className="inline-flex items-center text-sm text-muted-foreground hover:text-foreground mb-4"
                 >
                     <ChevronLeft className="h-4 w-4 mr-1" />
-                    Back to Certificates
+                    Retour aux Certificats
                 </Link>
 
                 <div className="max-w-5xl mx-auto">
@@ -172,13 +172,13 @@ const CertificateDetail = () => {
                         animate={{ opacity: 1, y: 0 }}
                         className="text-center mb-6"
                     >
-                        <h1 className="text-2xl md:text-3xl font-bold mb-2">Your Certificate</h1>
+                        <h1 className="text-2xl md:text-3xl font-bold mb-2">Votre Certificat</h1>
                         <p className="text-lg md:text-xl text-muted-foreground mb-4">
-                            Earned on {new Date(certificate.issueDate).toLocaleDateString('en-US', {
+                            Obtenu le {new Date(certificate.issueDate).toLocaleDateString('fr-FR', {
                                 year: 'numeric',
                                 month: 'long',
                                 day: 'numeric'
-                            })} with score {certificate.score}
+                            })} avec un score de {certificate.score}
                         </p>
                     </motion.div>
 
@@ -216,11 +216,11 @@ const CertificateDetail = () => {
                             {/* Main Content */}
                             <div className="relative z-10 h-full flex flex-col justify-center items-center p-8 text-center">
                                 <h2 className="text-4xl font-bold uppercase tracking-wider text-gray-800 mb-4">
-                                    CERTIFICATE OF ACHIEVEMENT
+                                    CERTIFICAT DE RÉUSSITE
                                 </h2>
 
                                 <p className="text-xl text-gray-500 italic">
-                                    This is to certify that
+                                    Ceci certifie que
                                 </p>
 
                                 {/* Name with decorative line */}
@@ -236,7 +236,7 @@ const CertificateDetail = () => {
                                 </div>
 
                                 <p className="text-xl text-gray-500 max-w-2xl mb-4">
-                                    has successfully completed the course assessment for
+                                    a réussi l'évaluation du cours
                                 </p>
 
                                 <h4 className="text-3xl font-bold uppercase text-gray-800 mb-6">
@@ -244,7 +244,7 @@ const CertificateDetail = () => {
                                 </h4>
 
                                 <p className="text-xl font-bold text-gray-800">
-                                    Awarded on {new Date(certificate.issueDate).toLocaleDateString('en-US', {
+                                    Décerné le {new Date(certificate.issueDate).toLocaleDateString('fr-FR', {
                                         year: 'numeric',
                                         month: 'long',
                                         day: 'numeric'
@@ -289,7 +289,7 @@ const CertificateDetail = () => {
                             disabled={isGenerating}
                         >
                             <Download className="h-5 w-5" />
-                            {isGenerating ? "Generating..." : "Download PDF"}
+                            {isGenerating ? "Génération..." : "Télécharger le PDF"}
                         </Button>
                     </motion.div>
                 </div>

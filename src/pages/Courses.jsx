@@ -163,10 +163,10 @@ const Courses = () => {
             className="text-center max-w-3xl mx-auto mb-10"
           >
             <h1 className="text-4xl md:text-5xl font-bold font-display mb-4">
-              University Digital Culture Courses
+              Cours de Culture Numérique Universitaire
             </h1>
             <p className="text-lg text-muted-foreground">
-              Explore our comprehensive selection of digital culture courses
+              Explorez notre sélection complète de cours de culture numérique
             </p>
           </motion.div>
 
@@ -179,20 +179,20 @@ const Courses = () => {
               transition={{ duration: 0.5 }}
             >
               <div className="p-5">
-                <h2 className="font-bold text-lg mb-4">Filter Courses</h2>
+                <h2 className="font-bold text-lg mb-4">Filtrer les Cours</h2>
 
                 <div className="space-y-6">
                   {/* Search Filter */}
                   <div>
                     <label htmlFor="search" className="font-medium mb-2 block">
-                      Search
+                      Rechercher
                     </label>
                     <div className="relative">
                       <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                       <Input
                         id="search"
                         type="search"
-                        placeholder="Course name or keyword..."
+                        placeholder="Nom du cours ou mot-clé..."
                         className="pl-9"
                         value={searchQuery}
                         onChange={(e) => setSearchQuery(e.target.value)}
@@ -204,51 +204,51 @@ const Courses = () => {
 
                   {/* Category Filter */}
                   <div>
-                    <h3 className="font-medium mb-3">Categories</h3>
+                    <h3 className="font-medium mb-3">Catégories</h3>
                     <div className="space-y-2">
                       {[
                         {
-                          name: "Digital Literacy",
+                          name: "Littératie Numérique",
                           slug: "digital-literacy",
                           icon: <Monitor className="h-5 w-5" />,
                         },
                         {
-                          name: "Online Safety",
+                          name: "Sécurité en Ligne",
                           slug: "online-safety",
                           icon: <Shield className="h-5 w-5" />,
                         },
                         {
-                          name: "Productivity Tools",
+                          name: "Outils de Productivité",
                           slug: "productivity-tools",
                           icon: <FileText className="h-5 w-5" />,
                         },
                         {
-                          name: "Web Essentials",
+                          name: "Essentiels du Web",
                           slug: "web-essentials",
                           icon: <Globe className="h-5 w-5" />,
                         },
                         {
-                          name: "Career Skills",
+                          name: "Compétences Professionnelles",
                           slug: "career-skills",
                           icon: <Briefcase className="h-5 w-5" />,
                         },
                         {
-                          name: "Web Development",
+                          name: "Développement Web",
                           slug: "web-development",
                           icon: <Code className="h-5 w-5" />,
                         },
                         {
-                          name: "Digital Marketing",
+                          name: "Marketing Digital",
                           slug: "digital-marketing",
                           icon: <Megaphone className="h-5 w-5" />,
                         },
                         {
-                          name: "Data Science",
+                          name: "Science des Données",
                           slug: "data-science",
                           icon: <Database className="h-5 w-5" />,
                         },
                         {
-                          name: "UX/UI Design",
+                          name: "Design UX/UI",
                           slug: "ux-ui-design",
                           icon: <Palette className="h-5 w-5" />,
                         },
@@ -293,7 +293,7 @@ const Courses = () => {
                     className="w-full"
                     onClick={resetFilters}
                   >
-                    Reset Filters
+                    Réinitialiser les Filtres
                   </Button>
                 </div>
               </div>
@@ -308,15 +308,15 @@ const Courses = () => {
             >
               <div className="bg-white rounded-xl border border-gray-100 shadow-sm p-6">
                 <div className="mb-6 flex justify-between items-center">
-                  <h2 className="font-bold">{filteredCourses.length} Courses</h2>
+                  <h2 className="font-bold">{filteredCourses.length} Cours</h2>
                   <select
                     className="bg-white border border-gray-200 rounded-lg text-sm px-4 py-2 focus:outline-none focus:ring-2 focus:ring-brand-purple focus:border-transparent"
                     value={sortOption}
                     onChange={(e) => setSortOption(e.target.value)}
                   >
-                    <option value="popular">Most Popular</option>
-                    <option value="newest">Newest</option>
-                    <option value="alphabetical">Alphabetical</option>
+                    <option value="popular">Les Plus Populaires</option>
+                    <option value="newest">Les Plus Récents</option>
+                    <option value="alphabetical">Alphabétique</option>
                   </select>
                 </div>
 
@@ -347,7 +347,7 @@ const Courses = () => {
                             <span>{course.level}</span>
                           </div>
                           <p className="text-muted-foreground mb-4">
-                            {course.description || 'No description available'}
+                            {course.description || 'Aucune description disponible'}
                           </p>
                           <div className="mt-auto flex justify-end">
                             <Button
@@ -357,7 +357,7 @@ const Courses = () => {
                               className="rounded-full"
                             >
                               <Link to={`/courses/${course.slug}`}>
-                                View Course
+                                Voir le Cours
                                 <ChevronRight className="ml-1 h-4 w-4" />
                               </Link>
                             </Button>
@@ -367,12 +367,12 @@ const Courses = () => {
                     ))
                   ) : (
                     <div className="text-center py-8">
-                      <p>No courses match your filters</p>
+                      <p>Aucun cours ne correspond à vos filtres</p>
                       <Button
                         variant="link"
                         onClick={resetFilters}
                       >
-                        Clear all filters
+                        Effacer tous les filtres
                       </Button>
                     </div>
                   )}

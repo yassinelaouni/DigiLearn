@@ -45,7 +45,7 @@ const CourseDetails = () => {
         }
 
         // Fetch user progress
-        const userId = '68152e9b92f42938445d56d0';
+        const userId = '6838d919cbd10b318d935b58';
         const progressResponse = await fetch(`http://localhost:5000/api/users/user/progress?userId=${userId}`, {
           headers: {
             'Content-Type': 'application/json',
@@ -71,7 +71,7 @@ const CourseDetails = () => {
 
   const markLessonComplete = async (lessonId) => {
     try {
-      const userId = '68152e9b92f42938445d56d0'; // Make sure this matches the ID used elsewhere
+      const userId = '6838d919cbd10b318d935b58'; // Make sure this matches the ID used elsewhere
 
       // Optimistic update
       setUserProgress(prev => {
@@ -159,7 +159,7 @@ const CourseDetails = () => {
         <div className="container py-8 md:py-12">
           <Link to="/courses" className="inline-flex items-center text-sm text-muted-foreground hover:text-foreground mb-4">
             <ArrowLeft className="h-4 w-4 mr-1" />
-            Back to Courses
+            Retour aux Cours
           </Link>
 
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
@@ -207,7 +207,7 @@ const CourseDetails = () => {
         <div className="container">
           {/* What You'll Learn Section */}
           <div className="bg-white rounded-xl border border-gray-100 shadow-sm p-6 mb-8">
-            <h2 className="text-xl font-bold mb-6">What You'll Learn</h2>
+            <h2 className="text-xl font-bold mb-6">Ce que vous allez apprendre</h2>
             <div className="space-y-3">
               {course.learningOutcomes?.map((outcome, index) => (
                 <div key={index} className="flex items-start gap-2">
@@ -221,7 +221,7 @@ const CourseDetails = () => {
           {/* Course Content Section */}
           <div className="bg-white rounded-xl border border-gray-100 shadow-sm overflow-hidden">
             <div className="p-6 border-b">
-              <h2 className="text-xl font-bold">Course Content</h2>
+              <h2 className="text-xl font-bold">Contenu du Cours</h2>
             </div>
 
             {course.modules?.map((module) => (
@@ -252,7 +252,7 @@ const CourseDetails = () => {
                                 <h4 className="font-medium">{lesson.title}</h4>
                                 {lesson.duration && (
                                   <span className="text-xs text-muted-foreground">
-                                    {lesson.duration} • {lesson.type === 'video' ? 'Video' : 'Reading'}
+                                    {lesson.duration} • {lesson.type === 'video' ? 'Vidéo' : 'Lecture'}
                                   </span>
                                 )}
                               </div>
@@ -291,7 +291,7 @@ const CourseDetails = () => {
                                       className="flex items-center gap-2"
                                     >
                                       <DownloadIcon className="h-4 w-4" />
-                                      Download PDF
+                                      Télécharger le PDF
                                     </a>
                                   </Button>
                                 </div>
@@ -304,7 +304,7 @@ const CourseDetails = () => {
                                     onClick={() => handleVideoOpen(lesson.videoUrl)}
                                   >
                                     <Play className="h-4 w-4 mr-2" />
-                                    Watch Video
+                                    Regarder la Vidéo
                                   </Button>
                                 ) : null}
 
@@ -313,7 +313,7 @@ const CourseDetails = () => {
                                     variant="default"
                                     onClick={() => markLessonComplete(lesson._id)}
                                   >
-                                    Mark as Complete
+                                    Marquer comme Terminé
                                   </Button>
                                 )}
                               </div>
@@ -336,13 +336,13 @@ const CourseDetails = () => {
             <div className="p-6 border-b">
               <h2 className="text-xl font-bold flex items-center gap-2">
                 <Award className="h-5 w-5 text-yellow-500" />
-                Certification Test
+                Test de Certification
               </h2>
             </div>
             <div className="p-6 text-center">
-              <h3 className="text-2xl font-bold mb-2">Make it official</h3>
+              <h3 className="text-2xl font-bold mb-2">Rendez-le officiel</h3>
               <p className="text-muted-foreground mb-6 max-w-2xl mx-auto">
-                Take this 20-question test and earn a certification - perfect for your CV and LinkedIn.
+                Passez ce test de 20 questions et obtenez une certification - parfait pour votre CV et LinkedIn.
               </p>
               <Button
                 asChild
@@ -350,7 +350,7 @@ const CourseDetails = () => {
                 className="bg-gradient-to-r from-purple-600 to-blue-500"
               >
                 <Link to={`/courses/${slug}/certification`}>
-                  Earn a certificate
+                  Obtenir un certificat
                 </Link>
               </Button>
             </div>

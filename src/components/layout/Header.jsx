@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import { Menu, X, LogIn, Search, ChevronDown, Book, Laptop, Video, LogOut, User, Settings,Award } from 'lucide-react';
+import { Menu, X, LogIn, Search, ChevronDown, Book, Laptop, Video, LogOut, User, Settings, Award } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 import { useNavigate } from 'react-router-dom';
@@ -15,25 +15,25 @@ const STORAGE_KEYS = {
 
 const navItems = [
   {
-    label: "Courses",
+    label: "Cours",
     href: "/courses",
     icon: Book,
   },
   {
-    label: "Certificates",
+    label: "Certificats",
     href: "/certificates",
-    icon: Award, // Changed from Laptop to Award for better semantics
+    icon: Award,
   },
   {
-    label: "Dashboard",
+    label: "Tableau de bord",
     href: "/dashboard",
-    icon: User, // Using User icon for dashboard
+    icon: User,
   },
   {
-    label: "About",
+    label: "À propos",
     href: "/about",
   },
-  
+
 ];
 
 const Header = () => {
@@ -104,7 +104,7 @@ const Header = () => {
         firstName: currentUser.firstName || prev.firstName,
         lastName: currentUser.lastName || prev.lastName,
         email: currentUser.email || prev.email || '',
-        avatar: currentUser.avatar || prev.avatar
+        avatar: "http://localhost:5000/uploads/avatars/avatar-1748561725844-615826196.png?t=1748561873106"
       }));
     }
   }, [currentUser]);
@@ -164,7 +164,7 @@ const Header = () => {
           {navItems.map((item) => (
             <div key={item.label} className="relative group">
               <button
-                onClick={() => item.children ? handleDropdownToggle(item.label):navigate(item.href)}
+                onClick={() => item.children ? handleDropdownToggle(item.label) : navigate(item.href)}
                 className={cn(
                   "px-4 py-2 rounded-full font-medium flex items-center gap-1 hover:bg-black/5 transition-colors",
                   openDropdown === item.label ? "text-brand-purple" : ""
@@ -215,9 +215,9 @@ const Header = () => {
                 onClick={() => handleDropdownToggle('profile')}
                 className="flex items-center gap-2 p-1 rounded-full hover:bg-black/5 transition-colors"
               >
-                {profile.avatar ? (
+                {true ? (
                   <img
-                    src={profile.avatar}
+                    src={"http://localhost:5000/uploads/avatars/avatar-1748561725844-615826196.png?t=1748561873106"}
                     alt="Profile"
                     className="h-8 w-8 rounded-full object-cover"
                   />
@@ -245,7 +245,7 @@ const Header = () => {
                       onClick={() => setOpenDropdown(null)}
                     >
                       <User className="h-4 w-4" />
-                      Profile
+                      Profil
                     </Link>
                   </div>
                   <div className="p-1 border-t">
@@ -254,7 +254,7 @@ const Header = () => {
                       className="w-full flex items-center gap-2 px-3 py-2 text-sm hover:bg-muted transition-colors rounded-lg text-red-500"
                     >
                       <LogOut className="h-4 w-4" />
-                      Log Out
+                      Déconnexion
                     </button>
                   </div>
                 </div>
@@ -263,10 +263,10 @@ const Header = () => {
           ) : (
             <>
               <Button asChild variant="outline" className="rounded-full">
-                <Link to="/login">Log In</Link>
+                <Link to="/login">Connexion</Link>
               </Button>
               <Button asChild className="rounded-full bg-gradient-to-r from-brand-purple to-brand-blue">
-                <Link to="/signup">Sign Up</Link>
+                <Link to="/signup">S'inscrire</Link>
               </Button>
             </>
           )}
@@ -292,7 +292,7 @@ const Header = () => {
           <div className="flex justify-between items-center border-b pb-4">
             <Button variant="outline" className="w-full flex items-center justify-center gap-2">
               <Search className="h-4 w-4" />
-              <span>Search courses</span>
+              <span>Rechercher des cours</span>
             </Button>
           </div>
           <nav className="flex flex-col gap-2">
@@ -356,21 +356,21 @@ const Header = () => {
                 className="block p-3 text-center rounded-lg border hover:bg-muted transition-colors"
                 onClick={toggleMenu}
               >
-                My Profile
+                Mon Profil
               </Link>
               <Link
                 to="/settings"
                 className="block p-3 text-center rounded-lg border hover:bg-muted transition-colors"
                 onClick={toggleMenu}
               >
-                Settings
+                Paramètres
               </Link>
               <button
                 onClick={handleLogout}
                 className="w-full p-3 text-center rounded-lg border hover:bg-muted transition-colors flex items-center justify-center gap-2 text-red-500"
               >
                 <LogOut className="h-4 w-4" />
-                Log Out
+                Déconnexion
               </button>
             </div>
           ) : (
@@ -378,12 +378,12 @@ const Header = () => {
               <Button asChild variant="outline" className="w-full">
                 <Link to="/login" onClick={toggleMenu}>
                   <LogIn className="h-4 w-4 mr-2" />
-                  Log In
+                  Connexion
                 </Link>
               </Button>
               <Button asChild className="w-full bg-gradient-to-r from-brand-purple to-brand-blue">
                 <Link to="/signup" onClick={toggleMenu}>
-                  Sign Up
+                  S'inscrire
                 </Link>
               </Button>
             </div>

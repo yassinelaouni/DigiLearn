@@ -11,7 +11,7 @@ const ChatbotComponent = () => {
   const [messages, setMessages] = useState([
     {
       id: 1,
-      text: 'Welcome to DigiLearn Support! How can I help you today?',
+      text: "Bienvenue au support DigiLearn ! Comment puis-je vous aider aujourd'hui ?",
       sender: 'bot',
       timestamp: new Date()
     }
@@ -86,7 +86,7 @@ const ChatbotComponent = () => {
       if (botResponses.length === 0) {
         setMessages(prev => [...prev, {
           id: prev.length + 1,
-          text: "🤖 I didn't understand that. Could you rephrase?",
+          text: "🤖 Je n'ai pas compris. Pourriez-vous reformuler ?",
           sender: 'bot',
           timestamp: new Date()
         }]);
@@ -106,7 +106,7 @@ const ChatbotComponent = () => {
       console.error('Chatbot error:', error);
       setMessages(prev => [...prev, {
         id: prev.length + 1,
-        text: '❌ Error communicating with the chatbot server',
+        text: "❌ Erreur de communication avec le serveur du chatbot",
         sender: 'bot',
         timestamp: new Date()
       }]);
@@ -126,7 +126,7 @@ const ChatbotComponent = () => {
             background: 'linear-gradient(to right, #7C66DC, #4E97F3)',
             color: 'white'
           }}
-          aria-label="Open chatbot"
+          aria-label="Ouvrir le chatbot"
         >
           <svg
             xmlns="http://www.w3.org/2000/svg"
@@ -177,20 +177,20 @@ const ChatbotComponent = () => {
                   <circle cx="8" cy="10" r="1" />
                   <circle cx="16" cy="10" r="1" />
                 </svg>
-                <h3 className="font-bold">DigiLearn AI</h3>
+                <h3 className="font-bold">IA DigiLearn</h3>
                 <span className={`h-2 w-2 rounded-full ml-2 ${connectionStatusColor[connectionStatus]}`}></span>
               </div>
               <button
                 onClick={() => setIsOpen(false)}
                 className="text-white hover:text-gray-200"
-                aria-label="Close chatbot"
+                aria-label="Fermer le chatbot"
               >
                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor">
                   <path d="M18 6L6 18M6 6l12 12" strokeWidth="2" />
                 </svg>
               </button>
             </div>
-            <p className="text-xs mt-1 opacity-90">How can I help you today?</p>
+            <p className="text-xs mt-1 opacity-90">Comment puis-je vous aider aujourd'hui ?</p>
           </div>
 
           {/* Messages */}
@@ -209,8 +209,7 @@ const ChatbotComponent = () => {
                   borderRadius: message.sender === 'bot'
                     ? '0 12px 12px 12px'
                     : '12px 0 12px 12px'
-                }}
-              >
+                }}>
                 {message.text}
                 <span className="text-xs opacity-70 block mt-1 text-right">
                   {formatTime(message.timestamp)}
@@ -240,7 +239,7 @@ const ChatbotComponent = () => {
                 type="text"
                 value={input}
                 onChange={(e) => setInput(e.target.value)}
-                placeholder={connectionStatus === 'connected' ? "Type your message..." : "Connecting..."}
+                placeholder={connectionStatus === 'connected' ? "Tapez votre message..." : "Connexion..."}
                 className="flex-1 border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-purple-500"
                 style={{
                   borderRadius: '20px',
@@ -258,7 +257,7 @@ const ChatbotComponent = () => {
                   width: '36px',
                   height: '36px'
                 }}
-                aria-label="Send message"
+                aria-label="Envoyer le message"
                 disabled={!input.trim() || connectionStatus !== 'connected'}
               >
                 <svg
@@ -275,9 +274,9 @@ const ChatbotComponent = () => {
             {connectionStatus !== 'connected' && (
               <p className="text-xs mt-1 text-center">
                 {connectionStatus === 'connecting' ? (
-                  <span className="text-yellow-600">Connecting to chatbot...</span>
+                  <span className="text-yellow-600">Connexion au chatbot...</span>
                 ) : (
-                  <span className="text-red-500">Chatbot disconnected. {reconnectAttempts.current < 3 ? 'Reconnecting...' : 'Please refresh the page.'}</span>
+                  <span className="text-red-500">Chatbot déconnecté. {reconnectAttempts.current < 3 ? "Reconnexion..." : "Veuillez rafraîchir la page."}</span>
                 )}
               </p>
             )}

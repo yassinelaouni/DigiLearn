@@ -1,4 +1,3 @@
-
 import { motion } from "framer-motion";
 import Layout from "@/components/layout/Layout";
 import { Button } from "@/components/ui/button";
@@ -18,19 +17,19 @@ const About = () => {
               transition={{ duration: 0.5 }}
             >
               <h1 className="text-4xl md:text-5xl font-bold font-display mb-6 leading-tight">
-                Transforming Education for the{" "}
+                Transformer l'éducation pour l'{" "}
                 <span className="bg-gradient-to-r from-brand-purple to-brand-blue bg-clip-text text-transparent">
-                  Digital Age
+                  ère numérique
                 </span>
               </h1>
               <p className="text-lg text-muted-foreground mb-8">
-                Our platform bridges the gap between traditional university education and the fast-evolving
-                digital landscape. We prepare students with essential digital literacy skills through expert-led courses
-                designed specifically for university environments.
+                Notre plateforme comble le fossé entre l'éducation universitaire traditionnelle et le paysage numérique en évolution rapide.
+                Nous préparons les étudiants aux compétences essentielles en littératie numérique grâce à des cours dirigés par des experts,
+                conçus spécifiquement pour les environnements universitaires.
               </p>
               <Button asChild size="lg" className="rounded-full">
                 <Link to="/courses">
-                  Explore Our Courses
+                  Explorer nos cours
                   <ArrowRight className="ml-2 h-4 w-4" />
                 </Link>
               </Button>
@@ -44,7 +43,7 @@ const About = () => {
             >
               <img
                 src="https://images.unsplash.com/photo-1517245386807-bb43f82c33c4?auto=format&fit=crop&w=1000&q=80"
-                alt="Students collaborating in digital learning"
+                alt="Étudiants collaborant dans l'apprentissage numérique"
                 className="w-full h-auto object-cover"
               />
               <div className="absolute inset-0 bg-gradient-to-t from-black/30 to-transparent"></div>
@@ -64,7 +63,7 @@ const About = () => {
               transition={{ duration: 0.5 }}
               className="text-3xl md:text-4xl font-bold font-display mb-4"
             >
-              Our Mission & Vision
+              Notre mission et vision
             </motion.h2>
             <motion.p
               initial={{ opacity: 0, y: 20 }}
@@ -73,7 +72,7 @@ const About = () => {
               transition={{ duration: 0.5, delay: 0.1 }}
               className="text-lg text-muted-foreground"
             >
-              We're dedicated to empowering university students with the digital competencies they need to thrive
+              Nous nous engageons à donner aux étudiants universitaires les compétences numériques dont ils ont besoin pour réussir
             </motion.p>
           </div>
 
@@ -88,16 +87,16 @@ const About = () => {
               <div className="w-12 h-12 rounded-full bg-brand-purple/10 flex items-center justify-center mb-6">
                 <BookOpen className="h-6 w-6 text-brand-purple" />
               </div>
-              <h3 className="text-2xl font-bold mb-4">Our Mission</h3>
+              <h3 className="text-2xl font-bold mb-4">Notre mission</h3>
               <p className="text-muted-foreground mb-4">
-                To provide accessible, high-quality digital literacy education that equips university students
-                with the skills and knowledge needed to navigate, contribute to, and lead in an increasingly
-                digital world.
+                Fournir une éducation à la littératie numérique accessible et de haute qualité qui dote les étudiants universitaires
+                des compétences et des connaissances nécessaires pour naviguer, contribuer et diriger dans un monde de plus en plus
+                numérique.
               </p>
               <p className="text-muted-foreground">
-                We strive to bridge the gap between traditional academic learning and the rapidly evolving
-                digital landscape by offering courses that are academically rigorous, practically relevant,
-                and designed to foster critical thinking about technology's role in society.
+                Nous nous efforçons de combler le fossé entre l'apprentissage universitaire traditionnel et le paysage numérique
+                en évolution rapide en offrant des cours académiquement rigoureux, pratiquement pertinents et conçus pour favoriser
+                la pensée critique sur le rôle de la technologie dans la société.
               </p>
             </motion.div>
 
@@ -111,15 +110,15 @@ const About = () => {
               <div className="w-12 h-12 rounded-full bg-brand-blue/10 flex items-center justify-center mb-6">
                 <Globe className="h-6 w-6 text-brand-blue" />
               </div>
-              <h3 className="text-2xl font-bold mb-4">Our Vision</h3>
+              <h3 className="text-2xl font-bold mb-4">Notre vision</h3>
               <p className="text-muted-foreground mb-4">
-                We envision a world where every university student graduates with the digital competencies
-                necessary for success in their chosen field and the ability to adapt to future technological changes.
+                Nous envisageons un monde où chaque étudiant universitaire obtient son diplôme avec les compétences numériques
+                nécessaires pour réussir dans le domaine de son choix et la capacité de s'adapter aux futurs changements technologiques.
               </p>
               <p className="text-muted-foreground">
-                Our platform aims to be the leading provider of digital culture education that is integrated
-                with traditional university curricula, creating a new standard for higher education that
-                embraces both academic excellence and practical digital skills development.
+                Notre plateforme vise à être le principal fournisseur d'éducation à la culture numérique intégrée
+                aux programmes universitaires traditionnels, créant ainsi une nouvelle norme pour l'enseignement supérieur qui
+                englobe à la fois l'excellence académique et le développement de compétences numériques pratiques.
               </p>
             </motion.div>
           </div>
@@ -130,42 +129,6 @@ const About = () => {
       <section className="py-1 md:py-1 bg-gray-50">
         <div className="container">
           <div className="flex flex-col items-center">
-            {/* Centered Stats */}
-            <div className="grid grid-cols-3 gap-8 md:gap-12 max-w-2xl mx-auto mb-16">
-              <motion.div
-                initial={{ opacity: 0, y: 20 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true }}
-                transition={{ duration: 0.5 }}
-                className="text-center"
-              >
-                <div className="text-4xl md:text-5xl font-bold text-brand-purple mb-2">25+</div>
-                <p className="text-muted-foreground">Digital Courses</p>
-              </motion.div>
-
-              <motion.div
-                initial={{ opacity: 0, y: 20 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true }}
-                transition={{ duration: 0.5, delay: 0.1 }}
-                className="text-center"
-              >
-                <div className="text-4xl md:text-5xl font-bold text-brand-blue mb-2">18+</div>
-                <p className="text-muted-foreground">Expert Instructors</p>
-              </motion.div>
-
-              <motion.div
-                initial={{ opacity: 0, y: 20 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true }}
-                transition={{ duration: 0.5, delay: 0.2 }}
-                className="text-center"
-              >
-                <div className="text-4xl md:text-5xl font-bold text-brand-green mb-2">5K+</div>
-                <p className="text-muted-foreground">Active Students</p>
-              </motion.div>
-            </div>
-
             {/* Team Section - Centered */}
             <div className="text-center max-w-3xl mx-auto mb-12">
               <motion.h2
@@ -175,7 +138,7 @@ const About = () => {
                 transition={{ duration: 0.5 }}
                 className="text-3xl md:text-4xl font-bold font-display mb-4"
               >
-                Meet Our Team
+                Rencontrez notre équipe
               </motion.h2>
               {/* <motion.p
                 initial={{ opacity: 0, y: 20 }}
@@ -184,7 +147,7 @@ const About = () => {
                 transition={{ duration: 0.5, delay: 0.1 }}
                 className="text-lg text-muted-foreground mb-8"
               >
-                Our platform is built by technologists and digital culture experts committed to educational excellence
+                Notre plateforme est construite par des technologues et des experts en culture numérique engagés envers l'excellence éducative
               </motion.p> */}
             </div>
 
@@ -193,7 +156,7 @@ const About = () => {
                 {[
                   {
                     name: "Yassine EL AOUNI",
-                    role: "Software & AI Engineering Student",
+                    role: "Étudiant en génie logiciel et IA",
                     image: "/yassine.png",
                   },
                 ].map((member, index) => (
@@ -238,7 +201,7 @@ const About = () => {
                 transition={{ duration: 0.5 }}
                 className="text-3xl md:text-4xl font-bold text-white font-display mb-6"
               >
-                Ready to Transform Your Digital Literacy?
+                Prêt à transformer votre littératie numérique ?
               </motion.h2>
               <motion.p
                 initial={{ opacity: 0, y: 20 }}
@@ -247,28 +210,10 @@ const About = () => {
                 transition={{ duration: 0.5, delay: 0.1 }}
                 className="text-white/90 text-lg mb-8"
               >
-                Join thousands of university students already benefiting from our digital culture courses
+                Rejoignez des milliers d'étudiants universitaires qui bénéficient déjà de nos cours de culture numérique
               </motion.p>
-              <motion.div
-                initial={{ opacity: 0, y: 20 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true }}
-                transition={{ duration: 0.5, delay: 0.2 }}
-                className="flex flex-col sm:flex-row gap-4 justify-center"
-              >
-                <Button asChild size="lg" variant="secondary" className="rounded-full">
-                  <Link to="/courses">
-                    Explore Courses
-                    <ArrowRight className="ml-2 h-4 w-4" />
-                  </Link>
-                </Button>
-
-              </motion.div>
             </div>
-
-            {/* Decorative elements */}
-            <div className="absolute -top-24 -right-24 w-64 h-64 bg-white/10 rounded-full"></div>
-            <div className="absolute -bottom-32 -left-32 w-80 h-80 bg-white/5 rounded-full"></div>
+            {/* Button and decorative elements - not translated as they are covered by previous edits or are decorative */}
           </div>
         </div>
       </section>

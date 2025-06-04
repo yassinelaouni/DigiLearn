@@ -8,35 +8,35 @@ const Footer = () => {
           {/* Logo & Info */}
           <div className="space-y-4 pr-20">
             <Link to="/" className="flex items-center gap-2">
-              <img width={165} src='/logo.png' alt="DigiLearn Logo" />
+              <img width={165} src='/logo.png' alt="Logo DigiLearn" />
             </Link>
             <p className="text-muted-foreground">
-              Your gateway to digital literacy. We empower university students with the knowledge and skills needed for the digital age.
+              Votre porte d'entrée vers la littératie numérique. Nous donnons aux étudiants universitaires les connaissances et les compétences nécessaires pour l'ère numérique.
             </p>
           </div>
 
           {/* Quick Links */}
           <div className="space-y-4">
-            <h3 className="font-display font-semibold text-lg">Quick Links</h3>
+            <h3 className="font-display font-semibold text-lg">Liens Rapides</h3>
             <ul className="space-y-2">
               <li>
                 <Link to="/courses" className="text-muted-foreground hover:text-foreground underline-anim inline-block pb-1">
-                  All Courses
+                  Tous les Cours
                 </Link>
               </li>
               <li>
                 <Link to="/certificates" className="text-muted-foreground hover:text-foreground underline-anim inline-block pb-1">
-                  Certificates
+                  Certificats
                 </Link>
               </li>
               <li>
                 <Link to="/dashboard" className="text-muted-foreground hover:text-foreground underline-anim inline-block pb-1">
-                  Dashboard
+                  Tableau de bord
                 </Link>
               </li>
               <li>
                 <Link to="/about" className="text-muted-foreground hover:text-foreground underline-anim inline-block pb-1">
-                  About Us
+                  À propos
                 </Link>
               </li>
             </ul>
@@ -44,26 +44,26 @@ const Footer = () => {
 
           {/* Course Categories */}
           <div className="space-y-4">
-            <h3 className="font-display font-semibold text-lg">Course Categories</h3>
+            <h3 className="font-display font-semibold text-lg">Catégories de Cours</h3>
             <ul className="space-y-2">
               <li>
                 <Link to="/courses/web-development" className="text-muted-foreground hover:text-foreground underline-anim inline-block pb-1">
-                  Web Development
+                  Développement Web
                 </Link>
               </li>
               <li>
                 <Link to="/courses/digital-marketing" className="text-muted-foreground hover:text-foreground underline-anim inline-block pb-1">
-                  Digital Marketing
+                  Marketing Digital
                 </Link>
               </li>
               <li>
                 <Link to="/courses/data-science" className="text-muted-foreground hover:text-foreground underline-anim inline-block pb-1">
-                  Data Science
+                  Science des Données
                 </Link>
               </li>
               <li>
                 <Link to="/courses/ux-ui-design" className="text-muted-foreground hover:text-foreground underline-anim inline-block pb-1">
-                  UX/UI Design
+                  Design UX/UI
                 </Link>
               </li>
               <li>
@@ -77,7 +77,7 @@ const Footer = () => {
 
         <div className="mt-12 pt-6 border-t flex flex-col justify-between items-center gap-4">
           <p className="text-sm text-muted-foreground">
-            © {new Date().getFullYear()} DigiLearn. All rights reserved.
+            © {new Date().getFullYear()} DigiLearn. Tous droits réservés.
           </p>
         </div>
       </div>

@@ -97,7 +97,7 @@ export default function Register() {
                   fontSize: '1.5rem'
                 }}
               >
-                Master Digital Culture for the Modern University
+                Maîtrisez la Culture Numérique pour l'Université Moderne
               </Typography>
             </Box>
           )}
@@ -135,13 +135,13 @@ export default function Register() {
                 fontSize: isMobile ? '1.75rem' : '2rem'
               }}
             >
-              Create Your Account
+              Créer votre Compte
             </Typography>
 
             {/* First Name */}
             <TextField
               fullWidth
-              label="First Name"
+              label="Prénom"
               name="firstName"
               value={data.firstName}
               onChange={handleChange}
@@ -169,7 +169,7 @@ export default function Register() {
             {/* Last Name */}
             <TextField
               fullWidth
-              label="Last Name"
+              label="Nom"
               name="lastName"
               value={data.lastName}
               onChange={handleChange}
@@ -226,7 +226,7 @@ export default function Register() {
             {/* Password */}
             <TextField
               fullWidth
-              label="Password"
+              label="Mot de passe"
               name="password"
               type={showPassword ? "text" : "password"}
               value={data.password}
@@ -269,7 +269,7 @@ export default function Register() {
             {/* Confirm Password */}
             <TextField
               fullWidth
-              label="Confirm Password"
+              label="Confirmer le mot de passe"
               name="passwordConfirmation"
               type={showPasswordConfirmation ? "text" : "password"}
               value={data.passwordConfirmation}
@@ -333,7 +333,7 @@ export default function Register() {
                   }
                 }}
               >
-                Register
+                S'inscrire
               </Button>
             </motion.div>
 
@@ -346,7 +346,7 @@ export default function Register() {
                 fontSize: '0.875rem'
               }}
             >
-              Already have an account?{' '}
+              Vous avez déjà un compte ?{' '}
               <Button
                 onClick={gotoLoginPage}
                 sx={{
@@ -360,7 +360,7 @@ export default function Register() {
                   }
                 }}
               >
-                Login
+                Connexion
               </Button>
             </Typography>
           </Box>

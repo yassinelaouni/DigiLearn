@@ -1,6 +1,26 @@
 version: "3.1"
 
 nlu:
+- intent: saluer
+  examples: |
+    - bonjour
+    - salut
+    - coucou
+    - bon matin
+    - bonsoir
+    - hey
+    - hi
+
+- intent: lister_cours
+  examples: |
+    - liste des cours
+    - quels cours sont disponibles
+    - montrez-moi les cours
+    - je veux voir les cours
+    - cours disponibles
+    - qu'avez-vous comme cours
+
+    
 - intent: greet
   examples: |
     - hey

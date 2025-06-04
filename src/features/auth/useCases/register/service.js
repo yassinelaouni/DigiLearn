@@ -54,30 +54,27 @@ export default function useRegister() {
   });
   useEffect(() => {
     if (!helpers.validator.isEmptyString(data.email) && !helpers.validator.isEmail(data.email))
-      setLocalErrors((current) => ({ ...current, email: "Enter a valid email" }));
+      setLocalErrors((current) => ({ ...current, email: "Entrez un email valide" }));
     else setLocalErrors((current) => ({ ...current, email: null }));
 
     if (!helpers.validator.isEmptyString(data.password) && !helpers.validator.isPassword(data.password))
-      setLocalErrors((current) => ({ ...current, password: "Enter a valid password" }));
+      setLocalErrors((current) => ({ ...current, password: "Le mot de passe doit contenir au moins 8 caractères" }));
     else setLocalErrors((current) => ({ ...current, password: null }));
 
-    if (
-      !helpers.validator.isEmptyString(data.passwordConfirmation) &&
-      !helpers.validator.isPasswordMatch({ password: data.password, confirmPassword: data.passwordConfirmation })
-    )
-      setLocalErrors((current) => ({ ...current, passwordConfirmation: "Passwords does not match" }));
+    if (!helpers.validator.isEmptyString(data.passwordConfirmation) && data.password !== data.passwordConfirmation)
+      setLocalErrors((current) => ({ ...current, passwordConfirmation: "Les mots de passe ne correspondent pas" }));
     else setLocalErrors((current) => ({ ...current, passwordConfirmation: null }));
 
     if (!helpers.validator.isEmptyString(data.firstName) && !helpers.validator.isName(data.firstName))
-      setLocalErrors((current) => ({ ...current, firstName: "Enter a valid first name" }));
+      setLocalErrors((current) => ({ ...current, firstName: "Entrez un prénom valide" }));
     else setLocalErrors((current) => ({ ...current, firstName: null }));
 
     if (!helpers.validator.isEmptyString(data.lastName) && !helpers.validator.isName(data.lastName))
-      setLocalErrors((current) => ({ ...current, lastName: "Enter a valid last name" }));
+      setLocalErrors((current) => ({ ...current, lastName: "Entrez un nom valide" }));
     else setLocalErrors((current) => ({ ...current, lastName: null }));
 
-    if (!helpers.validator.isEmptyString(data.phone) && !helpers.validator.isMobilePhone(data.phone))
-      setLocalErrors((current) => ({ ...current, phone: "Enter a valid phone number" }));
+    if (!helpers.validator.isEmptyString(data.phone) && !helpers.validator.isPhone(data.phone))
+      setLocalErrors((current) => ({ ...current, phone: "Entrez un numéro de téléphone valide" }));
     else setLocalErrors((current) => ({ ...current, phone: null }));
 
   }, [data]);

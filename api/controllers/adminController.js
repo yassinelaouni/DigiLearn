@@ -57,7 +57,7 @@ exports.getAdminDashboardStats = async (req, res) => {
 exports.getAdminProfile = async (req, res) => {
   try {
     // Temporary bypass for testing
-    const adminId = req.user?.id || '68152e9b92f42938445d56ca'; // Your hardcoded admin ID
+    const adminId = req.user?.id || '6838d919cbd10b318d935b52'; // Your hardcoded admin ID
     
     const admin = await Admin.findById(adminId).select('-password -__v');
 
@@ -92,7 +92,7 @@ exports.getAdminProfile = async (req, res) => {
 exports.updateAdminProfile = async (req, res) => {
   try {
     // Temporary bypass for testing
-    const adminId = req.user?.id || '68152e9b92f42938445d56ca';
+    const adminId = req.user?.id || '6838d919cbd10b318d935b52';
     
     const { firstName, lastName, email, currentPassword, newPassword, confirmPassword } = req.body;
     const admin = await Admin.findById(adminId);

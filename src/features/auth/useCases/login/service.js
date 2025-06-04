@@ -53,11 +53,11 @@ export default function useLogin() {
   });
   useEffect(() => {
     if (!helpers.validator.isEmptyString(data.email) && !helpers.validator.isEmail(data.email))
-      setLocalErrors((current) => ({ ...current, email: "Enter a valid email" }));
+      setLocalErrors((current) => ({ ...current, email: "Entrez un email valide" }));
     else setLocalErrors((current) => ({ ...current, email: null }));
 
     if (!helpers.validator.isEmptyString(data.password) && !helpers.validator.isPassword(data.password))
-      setLocalErrors((current) => ({ ...current, password: "Enter a valid password" }));
+      setLocalErrors((current) => ({ ...current, password: "Entrez un mot de passe valide" }));
     else setLocalErrors((current) => ({ ...current, password: null }));
   }, [data]);
 

@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button";
 import { useToast } from '@/hooks/use-toast';
 
 const UserDashboard = () => {
-    const userId = "68152e9b92f42938445d56d0";
+    const userId = "6838d919cbd10b318d935b58";
     const [userData, setUserData] = useState({
         name: "",
         stats: {
@@ -30,14 +30,14 @@ const UserDashboard = () => {
                     setUserData(data.data);
                 } else {
                     toast({
-                        title: "Error loading dashboard",
+                        title: "Erreur lors de la récupération du tableau de bord",
                         description: data.errorMessage,
                         variant: "destructive",
                     });
                 }
             } catch (error) {
                 toast({
-                    title: "Network error",
+                    title: "Erreur de réseau",
                     description: error.message,
                     variant: "destructive",
                 });
@@ -67,9 +67,9 @@ const UserDashboard = () => {
                 {/* Welcome Section */}
                 <div className="mb-8">
                     <h1 className="text-2xl md:text-3xl font-bold mb-2">
-                        Hello, {userData.name.split(' ')[0]}
+                        Bonjour, {userData.name.split(' ')[0]}
                     </h1>
-                    <p className="text-muted-foreground">Your learning journey at a glance</p>
+                    <p className="text-muted-foreground">Votre parcours d'apprentissage en un coup d'œil</p>
                 </div>
 
                 {/* Activity Stats */}
@@ -80,7 +80,7 @@ const UserDashboard = () => {
                                 <BookOpen className="h-5 w-5 text-blue-600" />
                             </div>
                             <div>
-                                <p className="text-sm text-muted-foreground">Certificates</p>
+                                <p className="text-sm text-muted-foreground">Certificats</p>
                                 <p className="text-xl font-bold">{userData.stats.certificates}</p>
                             </div>
                         </div>
@@ -92,7 +92,7 @@ const UserDashboard = () => {
                                 <Award className="h-5 w-5 text-green-600" />
                             </div>
                             <div>
-                                <p className="text-sm text-muted-foreground">Lessons</p>
+                                <p className="text-sm text-muted-foreground">Leçons</p>
                                 <p className="text-xl font-bold">{userData.stats.lessonsCompleted}</p>
                             </div>
                         </div>
@@ -104,7 +104,7 @@ const UserDashboard = () => {
                                 <CheckCircle className="h-5 w-5 text-purple-600" />
                             </div>
                             <div>
-                                <p className="text-sm text-muted-foreground">Completed Courses</p>
+                                <p className="text-sm text-muted-foreground">Cours Terminés</p>
                                 <p className="text-xl font-bold">{userData.stats.completedCourses}/{userData.stats.totalCourses}</p>
                             </div>
                         </div>
@@ -113,17 +113,17 @@ const UserDashboard = () => {
 
                 {/* Courses Section */}
                 <div className="mb-8">
-                    <h2 className="text-xl font-bold mb-4">Your Courses</h2>
+                    <h2 className="text-xl font-bold mb-4">Vos Cours</h2>
 
                     {userData.allCourses.length === 0 ? (
                         <div className="bg-white rounded-lg border p-8 text-center">
                             <BookOpen className="h-12 w-12 mx-auto text-gray-400 mb-4" />
-                            <h3 className="text-lg font-medium mb-2">No active courses found</h3>
+                            <h3 className="text-lg font-medium mb-2">Aucun cours actif trouvé</h3>
                             <p className="text-muted-foreground mb-4">
-                                You haven't started any courses yet or all courses are empty.
+                                Vous n'avez pas encore commencé de cours ou tous les cours sont vides.
                             </p>
                             <Button asChild>
-                                <Link to="/courses">Browse Courses</Link>
+                                <Link to="/courses">Parcourir les Cours</Link>
                             </Button>
                         </div>
                     ) : (
@@ -146,7 +146,7 @@ const UserDashboard = () => {
                                                 {course.isCompleted && (
                                                     <div className="absolute top-2 right-2 bg-green-500 text-white text-xs px-2 py-1 rounded-full flex items-center">
                                                         <CheckCircle className="h-3 w-3 mr-1" />
-                                                        Completed
+                                                        Terminé
                                                     </div>
                                                 )}
                                             </div>
@@ -154,7 +154,7 @@ const UserDashboard = () => {
                                                 <h3 className="font-bold mb-2">{course.title}</h3>
                                                 <div className="flex items-center gap-2 text-sm text-muted-foreground mb-3">
                                                     <Clock className="h-4 w-4" />
-                                                    <span>{course.progress}/{course.total} lessons ({progressPercent}%)</span>
+                                                    <span>{course.progress}/{course.total} leçons ({progressPercent}%)</span>
                                                 </div>
                                                 <div className="w-full bg-gray-200 rounded-full h-2">
                                                     <div
@@ -169,7 +169,7 @@ const UserDashboard = () => {
                                                     asChild
                                                 >
                                                     <Link to={`/courses/${course.slug}`}>
-                                                        {course.isCompleted ? 'View Course' : 'Continue'}
+                                                        {course.isCompleted ? 'Voir le Cours' : 'Continuer'}
                                                         <ChevronRight className="h-4 w-4" />
                                                     </Link>
                                                 </Button>

@@ -139,7 +139,7 @@ const AdminUsers = () => {
     return (
       <div className="container py-8">
         <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative" role="alert">
-          <strong className="font-bold">Error!</strong>
+          <strong className="font-bold">Erreur !</strong>
           <span className="block sm:inline"> {error}</span>
         </div>
       </div>
@@ -149,14 +149,14 @@ const AdminUsers = () => {
   return (
     <div className="container py-8">
       <div className="flex justify-between items-center mb-6">
-        <h1 className="text-2xl font-bold">User Management</h1>
+        <h1 className="text-2xl font-bold">Gestion des Utilisateurs</h1>
       </div>
 
       <div className="mb-6">
         <div className="relative">
           <Search className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
           <Input
-            placeholder="Search users..."
+            placeholder="Rechercher des utilisateurs..."
             className="pl-10"
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
@@ -168,10 +168,10 @@ const AdminUsers = () => {
         <Table>
           <TableHeader>
             <TableRow>
-              <TableHead>Name</TableHead>
+              <TableHead>Nom</TableHead>
               <TableHead>Email</TableHead>
-              <TableHead>Role</TableHead>
-              <TableHead>Joined</TableHead>
+              <TableHead>Rôle</TableHead>
+              <TableHead>Inscription</TableHead>
               <TableHead className="text-right">Actions</TableHead>
             </TableRow>
           </TableHeader>
@@ -187,7 +187,7 @@ const AdminUsers = () => {
                     ? 'bg-red-100 text-red-800'
                     : 'bg-blue-100 text-blue-800'
                     }`}>
-                    {user.role || 'student'}
+                    {user.role === 'admin' ? 'administrateur' : 'étudiant'}
                   </span>
                 </TableCell>
                 <TableCell>
@@ -220,7 +220,7 @@ const AdminUsers = () => {
       <Dialog open={isEditModalOpen} onOpenChange={setIsEditModalOpen}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>Edit User</DialogTitle>
+            <DialogTitle>Modifier l'Utilisateur</DialogTitle>
           </DialogHeader>
           {error && (
             <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-4">
@@ -230,7 +230,7 @@ const AdminUsers = () => {
           {currentUser && (
             <div className="space-y-4">
               <div>
-                <label className="block text-sm font-medium mb-1">First Name</label>
+                <label className="block text-sm font-medium mb-1">Prénom</label>
                 <Input
                   name="firstName"
                   value={currentUser.firstName}
@@ -238,7 +238,7 @@ const AdminUsers = () => {
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium mb-1">Last Name</label>
+                <label className="block text-sm font-medium mb-1">Nom</label>
                 <Input
                   name="lastName"
                   value={currentUser.lastName}
@@ -253,12 +253,20 @@ const AdminUsers = () => {
                   onChange={handleInputChange}
                 />
               </div>
-              <div className="flex justify-end space-x-2 pt-4">
+              <div>
+                <label className="block text-sm font-medium mb-1">Rôle</label>
+                <Input
+                  name="role"
+                  value={currentUser.role}
+                  onChange={handleInputChange}
+                />
+              </div>
+              <div className="flex justify-end gap-2">
                 <Button variant="outline" onClick={() => setIsEditModalOpen(false)}>
-                  Cancel
+                  Annuler
                 </Button>
                 <Button onClick={handleSaveEdit}>
-                  Save Changes
+                  Enregistrer
                 </Button>
               </div>
             </div>

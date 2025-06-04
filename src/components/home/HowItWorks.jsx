@@ -13,26 +13,26 @@ import step4 from "/test.png";
 const steps = [
   {
     number: "01",
-    title: "Browse Courses",
-    description: "Explore our courses and find what suits you.",
+    title: "Parcourir les Cours",
+    description: "Explorez nos cours et trouvez celui qui vous convient.",
     image: step1,
   },
   {
     number: "02",
-    title: "Enroll & Access",
-    description: "Sign up and start learning immediately.",
+    title: "S'inscrire et Accéder",
+    description: "Inscrivez-vous et commencez à apprendre immédiatement.",
     image: step2,
   },
   {
     number: "03",
-    title: "Learn & Engage",
-    description: "Interact with content, discussions, and assignments.",
+    title: "Apprendre et Participer",
+    description: "Interagissez avec le contenu, les discussions et les exercices.",
     image: step3,
   },
   {
     number: "04",
-    title: "Test Your Knowledge",
-    description: "Assess your learning with quizzes and exams.",
+    title: "Tester vos Connaissances",
+    description: "Évaluez votre apprentissage avec des quiz et des examens.",
     image: step4,
   },
 ];
@@ -64,10 +64,10 @@ const HowItWorks = () => {
         <div className="relative z-10">
           <div className="text-center max-w-3xl mx-auto mb-16">
             <motion.h2 className="text-3xl md:text-4xl font-bold font-display mb-4">
-              How Our Digital Learning Platform Works
+              Comment Fonctionne Notre Plateforme d'Apprentissage Numérique
             </motion.h2>
             <p className="text-muted-foreground text-lg">
-              Follow these simple steps to start your digital learning journey.
+              Suivez ces étapes simples pour commencer votre parcours d'apprentissage numérique.
             </p>
           </div>
 
@@ -94,10 +94,10 @@ const HowItWorks = () => {
             ))}
           </div>
           <motion.div className="mt-16 md:mt-24 text-center">
-            <p className="text-lg mb-6">Ready to start your digital learning journey?</p>
+            <p className="text-lg mb-6">Prêt à commencer votre parcours d'apprentissage numérique ?</p>
             <Button asChild size="lg" className="rounded-full bg-gradient-to-r from-brand-purple to-brand-blue hover:opacity-90 transition-opacity">
               <Link to="/courses">
-                Start Learning Now
+                Commencer à Apprendre
                 <ArrowRight className="ml-2 h-4 w-4" />
               </Link>
             </Button>

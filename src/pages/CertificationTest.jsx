@@ -119,7 +119,7 @@ const CertificationTest = () => {
     if (quizData.isLoading) {
         return (
             <Layout>
-                <div className="container py-8 text-center">Loading quiz data...</div>
+                <div className="container py-8 text-center">Chargement des données du quiz...</div>
             </Layout>
         );
     }
@@ -127,7 +127,7 @@ const CertificationTest = () => {
     if (!quizData.course) {
         return (
             <Layout>
-                <div className="container py-8 text-center">Course not found</div>
+                <div className="container py-8 text-center">Cours introuvable</div>
             </Layout>
         );
     }
@@ -135,7 +135,7 @@ const CertificationTest = () => {
     if (quizData.questions.length === 0) {
         return (
             <Layout>
-                <div className="container py-8 text-center">No quiz questions available</div>
+                <div className="container py-8 text-center">Aucune question de quiz disponible</div>
             </Layout>
         );
     }
@@ -145,7 +145,7 @@ const CertificationTest = () => {
         return (
             <Layout>
                 <div className="flex justify-center items-center h-64">
-                    <p>Generating your certificate...</p>
+                    <p>Génération de votre certificat...</p>
                 </div>
             </Layout>
         );
@@ -156,7 +156,7 @@ const CertificationTest = () => {
             <Layout>
                 <div className="container py-8 md:py-12">
                     <Link to={`/courses/${slug}`} className="inline-flex items-center text-sm text-muted-foreground hover:text-foreground mb-6">
-                        <ChevronLeft className="h-4 w-4 mr-1" /> Back to Course
+                        <ChevronLeft className="h-4 w-4 mr-1" /> Retour au cours
                     </Link>
 
                     <motion.div
@@ -165,7 +165,7 @@ const CertificationTest = () => {
                         className="max-w-3xl mx-auto text-center bg-white rounded-xl border border-gray-100 shadow-sm p-8"
                     >
                         <Award className="h-12 w-12 mx-auto text-yellow-500 mb-4" />
-                        <h1 className="text-3xl font-bold mb-4">Certification Test</h1>
+                        <h1 className="text-3xl font-bold mb-4">Test de certification</h1>
                         <h2 className="text-2xl text-muted-foreground mb-6">{quizData.course.title}</h2>
 
                         <Button
@@ -173,7 +173,7 @@ const CertificationTest = () => {
                             className="bg-gradient-to-r from-purple-600 to-blue-500 px-8"
                             onClick={startTest}
                         >
-                            Start Test
+                            Commencer le test
                         </Button>
                     </motion.div>
                 </div>
@@ -187,7 +187,7 @@ const CertificationTest = () => {
         <Layout>
             <div className="container py-8 md:py-12">
                 <Link to={`/courses/${slug}`} className="inline-flex items-center text-sm text-muted-foreground hover:text-foreground mb-6">
-                    <ChevronLeft className="h-4 w-4 mr-1" /> Back to Course
+                    <ChevronLeft className="h-4 w-4 mr-1" /> Retour au cours
                 </Link>
 
                 <motion.div
@@ -198,7 +198,7 @@ const CertificationTest = () => {
                     <div className="flex justify-between items-center mb-6">
                         <h2 className="text-lg font-semibold">{quizData.course.title}</h2>
                         <span className="text-sm text-muted-foreground">
-                            {quizState.currentQuestion + 1} of {quizData.questions.length}
+                            {quizState.currentQuestion + 1} sur {quizData.questions.length}
                         </span>
                     </div>
 
@@ -242,8 +242,8 @@ const CertificationTest = () => {
                             className="bg-gradient-to-r from-purple-600 to-blue-500"
                         >
                             {quizState.currentQuestion === quizData.questions.length - 1
-                                ? 'Finish Test'
-                                : 'Next Question'}
+                                ? 'Terminer le test'
+                                : 'Question suivante'}
                         </Button>
                     </div>
                 </motion.div>

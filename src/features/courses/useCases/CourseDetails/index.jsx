@@ -51,9 +51,9 @@ const CourseDetails = () => {
         <div className="container py-20 text-center">
           <div className="max-w-md mx-auto">
             <MessageSquareWarning className="h-12 w-12 mx-auto text-gray-400 mb-4" />
-            <h1 className="text-2xl font-bold mb-2">Course not found</h1>
+            <h1 className="text-2xl font-bold mb-2">Cours non trouvé</h1>
             <Button asChild>
-              <Link to="/courses">Back to Courses</Link>
+              <Link to="/courses">Retour aux cours</Link>
             </Button>
           </div>
         </div>
@@ -67,7 +67,7 @@ const CourseDetails = () => {
         <div className="container py-8 md:py-12">
           <Link to="/courses" className="inline-flex items-center text-sm text-muted-foreground hover:text-foreground mb-4">
             <ArrowLeft className="h-4 w-4 mr-1" />
-            Back to Courses
+            Retour aux cours
           </Link>
 
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
@@ -104,7 +104,7 @@ const CourseDetails = () => {
               </div>
 
               <Button size="lg" className="rounded-full bg-gradient-to-r from-purple-600 to-blue-500 hover:opacity-90 transition-opacity">
-                Enroll Now
+                S'inscrire maintenant
               </Button>
             </div>
 
@@ -124,7 +124,7 @@ const CourseDetails = () => {
         <div className="container">
           {/* What You'll Learn Section */}
           <div className="bg-white rounded-xl border border-gray-100 shadow-sm p-6 mb-8">
-            <h2 className="text-xl font-bold mb-6">What You'll Learn</h2>
+            <h2 className="text-xl font-bold mb-6">Ce que vous allez apprendre</h2>
             <div className="space-y-3">
               {course.learningOutcomes?.map((outcome, index) => (
                 <div key={index} className="flex items-start gap-2">
@@ -138,7 +138,7 @@ const CourseDetails = () => {
           {/* Course Content Section */}
           <div className="bg-white rounded-xl border border-gray-100 shadow-sm overflow-hidden">
             <div className="p-6 border-b">
-              <h2 className="text-xl font-bold">Course Content</h2>
+              <h2 className="text-xl font-bold">Contenu du cours</h2>
             </div>
 
             {course.modules.map((module) => (
@@ -212,13 +212,13 @@ const CourseDetails = () => {
             <div className="p-6 border-b">
               <h2 className="text-xl font-bold flex items-center gap-2">
                 <Award className="h-5 w-5 text-yellow-500" />
-                Certification Test
+                Test de certification
               </h2>
             </div>
             <div className="p-6 text-center">
-              <h3 className="text-2xl font-bold mb-2">Make it official</h3>
+              <h3 className="text-2xl font-bold mb-2">Rendez-le officiel</h3>
               <p className="text-muted-foreground mb-6 max-w-2xl mx-auto">
-                Take this 20-question test and earn a certification - perfect for your CV and LinkedIn.
+                Passez ce test de 20 questions et obtenez une certification - parfait pour votre CV et LinkedIn.
               </p>
               <Button
                 asChild
@@ -226,7 +226,7 @@ const CourseDetails = () => {
                 className="bg-gradient-to-r from-purple-600 to-blue-500"
               >
                 <Link to={`/courses/${slug}/certification`}>
-                  Earn a certificate
+                  Obtenir un certificat
                 </Link>
               </Button>
             </div>

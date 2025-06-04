@@ -42,14 +42,14 @@ const Dashboard = () => {
 
   return (
     <div className="container py-8">
-      <h1 className="text-2xl font-bold mb-8">Dashboard Overview</h1>
+      <h1 className="text-2xl font-bold mb-8">Aperçu du tableau de bord</h1>
       
       {/* Stats Cards */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
         {/* Users Card */}
         <Card>
           <CardHeader className="flex flex-row items-center justify-between pb-2">
-            <CardTitle className="text-sm font-medium">Total Users</CardTitle>
+            <CardTitle className="text-sm font-medium">Utilisateurs totaux</CardTitle>
             <div className="p-2 rounded-full bg-blue-100">
               <Users className="h-4 w-4 text-blue-600" />
             </div>
@@ -58,7 +58,7 @@ const Dashboard = () => {
             <div className="text-2xl font-bold mb-2">{safeStats.totalUsers}</div>
             <ProgressBar value={safeStats.totalUsers} max={500} />
             <p className="text-xs text-muted-foreground mt-2">
-              {Math.min((safeStats.totalUsers / 500) * 100, 100).toFixed(0)}% of target
+              {Math.min((safeStats.totalUsers / 500) * 100, 100).toFixed(0)}% de l'objectif
             </p>
           </CardContent>
         </Card>
@@ -66,7 +66,7 @@ const Dashboard = () => {
         {/* Courses Card */}
         <Card>
           <CardHeader className="flex flex-row items-center justify-between pb-2">
-            <CardTitle className="text-sm font-medium">Courses</CardTitle>
+            <CardTitle className="text-sm font-medium">Cours</CardTitle>
             <div className="p-2 rounded-full bg-purple-100">
               <BookOpen className="h-4 w-4 text-purple-600" />
             </div>
@@ -75,7 +75,7 @@ const Dashboard = () => {
             <div className="text-2xl font-bold mb-2">{safeStats.totalCourses}</div>
             <ProgressBar value={safeStats.totalCourses} max={20} color="bg-purple-500" />
             <p className="text-xs text-muted-foreground mt-2">
-              {Math.min((safeStats.totalCourses / 20) * 100, 100).toFixed(0)}% of goal
+              {Math.min((safeStats.totalCourses / 20) * 100, 100).toFixed(0)}% de l'objectif
             </p>
           </CardContent>
         </Card>

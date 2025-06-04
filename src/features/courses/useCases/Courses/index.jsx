@@ -21,26 +21,26 @@ import { cn } from "@/lib/utils";
 
 // Mock categories data
 const categories = [
-  { name: "Web Development", slug: "web-development", icon: <Monitor className="h-4 w-4" />, count: 8 },
-  { name: "Digital Marketing", slug: "digital-marketing", icon: <Megaphone className="h-4 w-4" />, count: 6 },
-  { name: "Data Science", slug: "data-science", icon: <Database className="h-4 w-4" />, count: 5 },
-  { name: "UX/UI Design", slug: "ux-ui-design", icon: <Palette className="h-4 w-4" />, count: 4 },
+  { name: "Développement Web", slug: "web-development", icon: <Monitor className="h-4 w-4" />, count: 8 },
+  { name: "Marketing Numérique", slug: "digital-marketing", icon: <Megaphone className="h-4 w-4" />, count: 6 },
+  { name: "Science des Données", slug: "data-science", icon: <Database className="h-4 w-4" />, count: 5 },
+  { name: "Conception UX/UI", slug: "ux-ui-design", icon: <Palette className="h-4 w-4" />, count: 4 },
   { name: "Blockchain", slug: "blockchain", icon: <Bitcoin className="h-4 w-4" />, count: 2 },
 ];
 
 // Mock levels data
 const levels = [
-  { name: "Beginner", value: "beginner", count: 12 },
-  { name: "Intermediate", value: "intermediate", count: 8 },
-  { name: "Advanced", value: "advanced", count: 5 },
-  { name: "All Levels", value: "all-levels", count: 3 },
+  { name: "Débutant", value: "beginner", count: 12 },
+  { name: "Intermédiaire", value: "intermediate", count: 8 },
+  { name: "Avancé", value: "advanced", count: 5 },
+  { name: "Tous Niveaux", value: "all-levels", count: 3 },
 ];
 
 // Mock durations data
 const durations = [
-  { name: "Less than 6 weeks", value: "0-5", count: 7 },
-  { name: "6-10 weeks", value: "6-10", count: 14 },
-  { name: "10+ weeks", value: "10+", count: 7 },
+  { name: "Moins de 6 semaines", value: "0-5", count: 7 },
+  { name: "6-10 semaines", value: "6-10", count: 14 },
+  { name: "Plus de 10 semaines", value: "10+", count: 7 },
 ];
 
 const Courses = () => {

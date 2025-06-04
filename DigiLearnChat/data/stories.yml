@@ -3,7 +3,7 @@ version: "3.1"
 stories:
   - story: greet path
     steps:
-      - intent: greet
+      - intent: greet  # Or saluer
       - action: utter_greet
 
   - story: goodbye path
@@ -13,7 +13,7 @@ stories:
 
   - story: list courses path
     steps:
-      - intent: list_courses
+      - intent: list_courses  # Or lister_cours
       - action: action_get_courses
 
   - story: get course details path
@@ -21,14 +21,14 @@ stories:
       - intent: detail_cours
         entities:
           - course_title: "Web Development Fundamentals"
-      - action: action_get_course_details
+      - action: action_get_details
 
   - story: get course quiz path
     steps:
       - intent: quiz_cours
         entities:
           - course_title: "Web Development Fundamentals"
-      - action: action_get_course_quiz
+      - action: action_get_quiz_info
 
   - story: out of scope path
     steps:

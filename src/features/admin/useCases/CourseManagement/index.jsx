@@ -34,14 +34,14 @@ import { useToast } from '@/components/ui/use-toast';
 const AdminCourses = () => {
   const { toast } = useToast();
   const categories = [
-    'Web Development',
-    'Mobile Development',
-    'Data Science',
-    'Machine Learning',
-    'Digital Marketing'
+    'Développement Web',
+    'Développement Mobile',
+    'Science des Données',
+    'Apprentissage Automatique',
+    'Marketing Numérique'
   ];
 
-  const lessonTypes = ['video', 'reading'];
+  const lessonTypes = ['vidéo', 'lecture'];
   const fileInputRef = useRef(null);
   const [uploading, setUploading] = useState(false);
   const [uploadProgress, setUploadProgress] = useState(0);
@@ -98,8 +98,8 @@ const AdminCourses = () => {
       } catch (error) {
         console.error('Failed to fetch courses:', error);
         toast({
-          title: 'Error',
-          description: 'Failed to load courses',
+          title: 'Erreur',
+          description: 'Impossible de charger les cours',
           variant: 'destructive'
         });
         setCourses([]);
@@ -130,7 +130,7 @@ const AdminCourses = () => {
     return {
       id: '',
       title: '',
-      type: 'video', // Default to video
+      type: 'vidéo', // Default to video
       duration: '',
       videoUrl: '', // Initialize video URL
       readingContent: '', // Initialize reading content
@@ -207,15 +207,15 @@ const AdminCourses = () => {
         fetchCourses();
         setOpenLessonDialog(false);
         toast({
-          title: 'Success',
-          description: `Lesson ${currentLesson._id ? 'updated' : 'created'} successfully`,
+          title: 'Succès',
+          description: `Leçon ${currentLesson._id ? 'mise à jour' : 'créée'} avec succès`,
         });
       } else {
         throw new Error('Failed to save lesson');
       }
     } catch (error) {
       toast({
-        title: 'Error',
+        title: 'Erreur',
         description: error.message,
         variant: 'destructive',
       });
@@ -237,9 +237,9 @@ const AdminCourses = () => {
         fetchQuizDetails(course.id, course.quiz._id);
       }
 
-      toast({ title: 'Success', description: 'Question deleted' });
+      toast({ title: 'Succès', description: 'Question supprimée' });
     } catch (error) {
-      toast({ title: 'Error', description: error.message, variant: 'destructive' });
+      toast({ title: 'Erreur', description: error.message, variant: 'destructive' });
     }
   };
 
@@ -300,12 +300,12 @@ const AdminCourses = () => {
 
       setOpenQuizDialog(false);
       toast({
-        title: 'Success',
+        title: 'Succès',
         description: `Quiz ${currentQuiz._id ? 'updated' : 'created'} successfully`,
       });
     } catch (error) {
       toast({
-        title: 'Error',
+        title: 'Erreur',
         description: error.message,
         variant: 'destructive'
       });
@@ -343,12 +343,12 @@ const AdminCourses = () => {
       }));
 
       toast({
-        title: 'Success',
+        title: 'Succès',
         description: 'PDF uploaded successfully'
       });
     } catch (error) {
       toast({
-        title: 'Error',
+        title: 'Erreur',
         description: error.response?.data?.errorMessage || 'Failed to upload PDF',
         variant: 'destructive'
       });
@@ -370,7 +370,7 @@ const AdminCourses = () => {
       !currentCourse.level
     ) {
       toast({
-        title: 'Error',
+        title: 'Erreur',
         description: 'Required fields are missing',
         variant: 'destructive'
       });
@@ -430,12 +430,12 @@ const AdminCourses = () => {
       setOpenCourseDialog(false);
       resetCourseForm();
       toast({
-        title: 'Success',
+        title: 'Succès',
         description: `Course ${currentCourse.id ? 'updated' : 'created'} successfully`,
       });
     } catch (error) {
       toast({
-        title: 'Error',
+        title: 'Erreur',
         description: error.message,
         variant: 'destructive'
       });
@@ -448,18 +448,18 @@ const AdminCourses = () => {
     e.preventDefault();
     setLoading(true);
     // Type-specific validation
-    if (currentLesson.type === 'video' && !currentLesson.videoUrl) {
+    if (currentLesson.type === 'vidéo' && !currentLesson.videoUrl) {
       toast({
-        title: 'Error',
+        title: 'Erreur',
         description: 'Video URL is required for video lessons',
         variant: 'destructive'
       });
       return;
     }
 
-    if (currentLesson.type === 'reading' && !currentLesson.readingContent) {
+    if (currentLesson.type === 'lecture' && !currentLesson.readingContent) {
       toast({
-        title: 'Error',
+        title: 'Erreur',
         description: 'Reading content is required for reading lessons',
         variant: 'destructive'
       });
@@ -535,14 +535,14 @@ const AdminCourses = () => {
 
       setOpenLessonDialog(false);
       toast({
-        title: 'Success',
-        description: `Lesson ${currentLesson._id ? 'updated' : 'created'} successfully`,
+        title: 'Succès',
+        description: `Leçon ${currentLesson._id ? 'mise à jour' : 'créée'} avec succès`,
       });
 
     } catch (error) {
       console.error('Error saving lesson:', error);
       toast({
-        title: 'Error',
+        title: 'Erreur',
         description: error.message,
         variant: 'destructive'
       });
@@ -577,12 +577,12 @@ const AdminCourses = () => {
 
       setCourses(courses.filter(c => c.id !== courseId));
       toast({
-        title: 'Success',
+        title: 'Succès',
         description: 'Course deleted successfully',
       });
     } catch (error) {
       toast({
-        title: 'Error',
+        title: 'Erreur',
         description: error.message,
         variant: 'destructive'
       });
@@ -617,10 +617,10 @@ const AdminCourses = () => {
         };
       }));
 
-      toast({ title: 'Success', description: 'Lesson deleted successfully' });
+      toast({ title: 'Succès', description: 'Leçon supprimée avec succès' });
     } catch (error) {
       toast({
-        title: 'Error',
+        title: 'Erreur',
         description: error.message,
         variant: 'destructive'
       });
@@ -670,12 +670,12 @@ const AdminCourses = () => {
       ));
 
       toast({
-        title: 'Success',
+        title: 'Succès',
         description: 'Quiz deleted successfully',
       });
     } catch (error) {
       toast({
-        title: 'Error',
+        title: 'Erreur',
         description: error.message,
         variant: 'destructive'
       });
@@ -704,8 +704,8 @@ const AdminCourses = () => {
   const removeQuestion = (questionId) => {
     if (currentQuiz.questions.length <= 1) {
       toast({
-        title: 'Warning',
-        description: 'A quiz must have at least one question',
+        title: 'Avertissement',
+        description: 'Un quiz doit avoir au moins une question',
         variant: 'default'
       });
       return;
@@ -811,28 +811,28 @@ const AdminCourses = () => {
 
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-2">
-                <Label>Duration*</Label>
+                <Label>Durée*</Label>
                 <Input
                   value={currentCourse.duration}
                   onChange={(e) => setCurrentCourse({ ...currentCourse, duration: e.target.value })}
-                  placeholder="e.g. 10 hours"
+                  placeholder="ex. 10 heures"
                   required
                 />
               </div>
 
               <div className="space-y-2">
-                <Label>Thumbnail URL*</Label>
+                <Label>URL de la miniature*</Label>
                 <Input
                   value={currentCourse.thumbnail}
                   onChange={(e) => setCurrentCourse({ ...currentCourse, thumbnail: e.target.value })}
-                  placeholder="https://example.com/image.jpg"
+                  placeholder="https://exemple.com/image.jpg"
                   required
                 />
               </div>
             </div>
 
             <div className="space-y-2">
-              <Label>Learning Outcomes (one per line)</Label>
+              <Label>Objectifs d'apprentissage (un par ligne)</Label>
               <Textarea
                 value={Array.isArray(currentCourse.learningOutcomes)
                   ? currentCourse.learningOutcomes.join('\n')
@@ -853,10 +853,10 @@ const AdminCourses = () => {
                 {loading ? (
                   <span className="flex items-center">
                     <span className="animate-spin mr-2">↻</span>
-                    {currentCourse.id ? 'Updating...' : 'Creating...'}
+                    {currentCourse.id ? 'Mise à jour...' : 'Création...'}
                   </span>
                 ) : (
-                  currentCourse.id ? 'Update Course' : 'Create Course'
+                  currentCourse.id ? 'Mettre à jour le cours' : 'Créer le cours'
                 )}
               </Button>
             </DialogFooter>
@@ -986,7 +986,7 @@ const AdminCourses = () => {
 
       {/* Rest of your component remains the same */}
       <div className="flex justify-between items-center mb-6">
-        <h1 className="text-2xl font-bold">Course Management</h1>
+        <h1 className="text-2xl font-bold">Gestion des Cours</h1>
         <Button
           onClick={() => {
             setOpenCourseDialog(true);
@@ -994,7 +994,7 @@ const AdminCourses = () => {
           }}
         >
           <Plus className="h-4 w-4 mr-2" />
-          Add Course
+          Nouveau Cours
         </Button>
       </div>
 
@@ -1002,7 +1002,7 @@ const AdminCourses = () => {
         <div className="relative">
           <Search className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
           <Input
-            placeholder="Search courses..."
+            placeholder="Rechercher des cours..."
             className="pl-10"
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
@@ -1182,7 +1182,7 @@ const AdminCourses = () => {
                             onValueChange={(value) => setCurrentLesson({ ...currentLesson, type: value })}
                           >
                             <SelectTrigger>
-                              <SelectValue placeholder="Select type" />
+                              <SelectValue placeholder="Sélectionner le type" />
                             </SelectTrigger>
                             <SelectContent>
                               {lessonTypes.map(type => (
@@ -1195,17 +1195,17 @@ const AdminCourses = () => {
                         </div>
 
                         <div className="space-y-2">
-                          <Label>Duration*</Label>
+                          <Label>Durée*</Label>
                           <Input
                             value={currentLesson.duration}
                             onChange={(e) => setCurrentLesson({ ...currentLesson, duration: e.target.value })}
-                            placeholder="e.g. 10 min"
+                            placeholder="ex. 10 min"
                             required
                           />
                         </div>
                       </div>
 
-                      {currentLesson.type === 'video' && (
+                      {currentLesson.type === 'vidéo' && (
                         <>
                           <div className="space-y-2">
                             <Label>Video URL*</Label>
@@ -1247,12 +1247,12 @@ const AdminCourses = () => {
 
                           {currentLesson.pdfUrl && (
                             <div className="mt-4">
-                              <Label>PDF Preview</Label>
+                              <Label>Aperçu PDF</Label>
                               <div className="mt-2 border rounded-lg p-4">
                                 <iframe
                                   src={`http://localhost:5000${currentLesson.pdfUrl}`}
                                   className="w-full h-64"
-                                  title="PDF Preview"
+                                  title="Aperçu PDF"
                                 />
                                 <a
                                   href={`http://localhost:5000${currentLesson.pdfUrl}`}
@@ -1260,7 +1260,7 @@ const AdminCourses = () => {
                                   rel="noopener noreferrer"
                                   className="text-sm text-blue-600 hover:underline mt-2 inline-block"
                                 >
-                                  Open PDF in new tab
+                                  Ouvrir le PDF dans un nouvel onglet
                                 </a>
                               </div>
                             </div>
@@ -1268,10 +1268,10 @@ const AdminCourses = () => {
                         </>
                       )}
 
-                      {currentLesson.type === 'reading' && (
+                      {currentLesson.type === 'lecture' && (
                         <>
                           <div className="space-y-2">
-                            <Label>Reading Content*</Label>
+                            <Label>Contenu de lecture*</Label>
                             <Textarea
                               value={currentLesson.readingContent}
                               onChange={(e) => setCurrentLesson({ ...currentLesson, readingContent: e.target.value })}
@@ -1318,12 +1318,12 @@ const AdminCourses = () => {
 
                           {currentLesson.pdfUrl && (
                             <div className="mt-4">
-                              <Label>PDF Preview</Label>
+                              <Label>Aperçu PDF</Label>
                               <div className="mt-2 border rounded-lg p-4">
                                 <iframe
                                   src={`http://localhost:5000${currentLesson.pdfUrl}`}
                                   className="w-full h-64"
-                                  title="PDF Preview"
+                                  title="Aperçu PDF"
                                 />
                                 <a
                                   href={`http://localhost:5000${currentLesson.pdfUrl}`}
@@ -1331,7 +1331,7 @@ const AdminCourses = () => {
                                   rel="noopener noreferrer"
                                   className="text-sm text-blue-600 hover:underline mt-2 inline-block"
                                 >
-                                  Open PDF in new tab
+                                  Ouvrir le PDF dans un nouvel onglet
                                 </a>
                               </div>
                             </div>
@@ -1390,8 +1390,8 @@ const AdminCourses = () => {
                       <TableRow key={lesson._id}>
                         <TableCell className="font-medium">
                           <div className="flex items-center gap-2">
-                            {lesson.type === 'video' && <PlayCircle className="h-4 w-4" />}
-                            {lesson.type === 'reading' && <FileText className="h-4 w-4" />}
+                            {lesson.type === 'vidéo' && <PlayCircle className="h-4 w-4" />}
+                            {lesson.type === 'lecture' && <FileText className="h-4 w-4" />}
                             {lesson.title}
                           </div>
                           {lesson.description && (

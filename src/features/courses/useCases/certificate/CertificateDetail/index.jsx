@@ -121,11 +121,11 @@ const CertificateDetail = () => {
                             {/* Content Container - Responsive Padding */}
                             <div className="relative z-10 h-full flex flex-col justify-center items-center p-4 sm:p-8 md:p-12 text-center">
                                 <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold uppercase tracking-wider text-gray-800 mb-2 md:mb-4">
-                                    CERTIFICATE OF ACHIEVEMENT
+                                    CERTIFICAT DE RÉUSSITE
                                 </h2>
 
                                 <p className="text-sm sm:text-base md:text-xl text-gray-500 italic">
-                                    This is to certify that
+                                    Ceci certifie que
                                 </p>
 
                                 {/* Name with responsive sizing */}
@@ -141,7 +141,7 @@ const CertificateDetail = () => {
                                 </div>
 
                                 <p className="text-sm sm:text-base md:text-xl text-gray-500 max-w-2xl mb-2 md:mb-4">
-                                    has successfully completed the course assessment for
+                                    a réussi l'évaluation du cours pour
                                 </p>
 
                                 <h4 className="text-xl sm:text-2xl md:text-3xl font-bold uppercase text-gray-800 mb-4 md:mb-6">

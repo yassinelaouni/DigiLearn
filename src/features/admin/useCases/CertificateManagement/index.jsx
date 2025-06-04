@@ -64,20 +64,20 @@ const AdminCertificates = () => {
   if (error) {
     return (
       <div className="container py-8">
-        <div className="text-red-500">Error: {error}</div>
+        <div className="text-red-500">Erreur : {error}</div>
       </div>
     );
   }
 
   return (
     <div className="container py-8">
-      <h1 className="text-2xl font-bold mb-6">Certificate Management</h1>
+      <h1 className="text-2xl font-bold mb-6">Gestion des Certificats</h1>
 
       <div className="mb-6">
         <div className="relative">
           <Search className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
           <Input
-            placeholder="Search certificates..."
+            placeholder="Rechercher des certificats..."
             className="pl-10"
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
@@ -89,10 +89,10 @@ const AdminCertificates = () => {
         <Table>
           <TableHeader>
             <TableRow>
-              <TableHead>Certificate ID</TableHead>
-              <TableHead>User</TableHead>
-              <TableHead>Course</TableHead>
-              <TableHead>Issued On</TableHead>
+              <TableHead>ID du Certificat</TableHead>
+              <TableHead>Utilisateur</TableHead>
+              <TableHead>Cours</TableHead>
+              <TableHead>Date d'Émission</TableHead>
               <TableHead>Score</TableHead>
             </TableRow>
           </TableHeader>
@@ -106,7 +106,7 @@ const AdminCertificates = () => {
                   <TableCell>{cert.userName}</TableCell>
                   <TableCell>{cert.courseTitle}</TableCell>
                   <TableCell>
-                    {new Date(cert.issueDate).toLocaleDateString()}
+                    {new Date(cert.issueDate).toLocaleDateString('fr-FR')}
                   </TableCell>
                   <TableCell>{cert.score}</TableCell>
                 </TableRow>
@@ -114,7 +114,7 @@ const AdminCertificates = () => {
             ) : (
               <TableRow>
                 <TableCell colSpan={6} className="text-center py-4">
-                  No certificates found
+                  Aucun certificat trouvé
                 </TableCell>
               </TableRow>
             )}

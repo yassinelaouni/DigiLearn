@@ -10,7 +10,7 @@ const Certificates = () => {
     const [suggestedCourses, setSuggestedCourses] = useState([]);
     const [loading, setLoading] = useState(true);
     const { toast } = useToast();
-    const userId = "68152e9b92f42938445d56d0";
+    const userId = "6838d919cbd10b318d935b56";
 
     useEffect(() => {
         const fetchCertificates = async () => {
@@ -23,15 +23,15 @@ const Certificates = () => {
                     setCertificates(data.certificates);
                 } else {
                     toast({
-                        title: "Error loading certificates",
+                        title: "Erreur lors du chargement des certificats",
                         description: data.errorMessage,
                         variant: "destructive",
                     });
                 }
             } catch (error) {
                 toast({
-                    title: "Network error",
-                    description: "Failed to fetch certificates",
+                    title: "Erreur de réseau",
+                    description: "Impossible de récupérer les certificats",
                     variant: "destructive",
                 });
             } finally {
@@ -65,7 +65,7 @@ const Certificates = () => {
             <Layout>
                 <div className="container py-8">
                     <div className="max-w-6xl mx-auto">
-                        <h1 className="text-2xl font-bold mb-6">My Certificates</h1>
+                        <h1 className="text-2xl font-bold mb-6">Mes Certificats</h1>
                         <div className="flex justify-center items-center h-64">
                             <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-blue-500"></div>
                         </div>
@@ -79,7 +79,7 @@ const Certificates = () => {
         <Layout>
             <div className="container py-8">
                 <div className="max-w-6xl mx-auto">
-                    <h1 className="text-2xl font-bold mb-6">My Certificates</h1>
+                    <h1 className="text-2xl font-bold mb-6">Mes Certificats</h1>
 
                     {certificates.length === 0 ? (
                         <div className="bg-white rounded-lg border p-8 text-center">
@@ -89,9 +89,9 @@ const Certificates = () => {
                                 </div>
                             </div>
 
-                            <h2 className="text-xl font-medium mb-2">You don't have any certificates yet</h2>
+                            <h2 className="text-xl font-medium mb-2">Vous n'avez pas encore de certificats</h2>
                             <p className="text-muted-foreground mb-6">
-                                Get your certificate with these courses
+                                Obtenez votre certificat avec ces cours
                             </p>
 
                             <div className="mt-8 space-y-4 text-left max-w-2xl mx-auto">
@@ -111,7 +111,7 @@ const Certificates = () => {
                                         </div>
                                         <Button variant="ghost" size="sm" asChild>
                                             <Link to={`/courses/${course.slug}`}>
-                                                Start Course <ArrowRight className="h-4 w-4 ml-2" />
+                                                Commencer le Cours <ArrowRight className="h-4 w-4 ml-2" />
                                             </Link>
                                         </Button>
                                     </div>
@@ -121,7 +121,7 @@ const Certificates = () => {
                             <div className="mt-8">
                                 <Button asChild>
                                     <Link to="/courses">
-                                        Browse All Courses
+                                        Parcourir Tous les Cours
                                     </Link>
                                 </Button>
                             </div>
@@ -138,7 +138,7 @@ const Certificates = () => {
                                             <div className="flex justify-between items-start mb-4">
                                                 <Award className="h-10 w-10 text-yellow-500" />
                                                 <span className="text-sm text-muted-foreground">
-                                                    {new Date(cert.issueDate).toLocaleDateString('en-US', {
+                                                    {new Date(cert.issueDate).toLocaleDateString('fr-FR', {
                                                         year: 'numeric',
                                                         month: 'short',
                                                         day: 'numeric'
@@ -147,7 +147,7 @@ const Certificates = () => {
                                             </div>
                                             <h3 className="text-lg font-bold mb-1">{cert.courseTitle}</h3>
                                             <p className="text-sm text-muted-foreground">
-                                                Certificate ID: {cert.certificateId}
+                                                ID du Certificat : {cert.certificateId}
                                             </p>
                                         </div>
                                         <div className="p-4 bg-gray-50 h-18"> {/* Fixed button container height */}
@@ -156,7 +156,7 @@ const Certificates = () => {
                                                     to={`/certificates/${cert.certificateId}`}
                                                     state={{ certificateData: cert }}
                                                 >
-                                                    View Certificate
+                                                    Voir le Certificat
                                                 </Link>
                                             </Button>
                                         </div>
@@ -165,7 +165,7 @@ const Certificates = () => {
                             </div>
 
                             <div className="bg-white rounded-lg border p-6">
-                                <h2 className="text-xl font-bold mb-6">Get more certificates with these courses</h2>
+                                <h2 className="text-xl font-bold mb-6">Obtenez plus de certificats avec ces cours</h2>
                                 <div className="space-y-4">
                                     {suggestedCourses.map((course) => (
                                         <div
@@ -183,7 +183,7 @@ const Certificates = () => {
                                             </div>
                                             <Button variant="ghost" size="sm" asChild>
                                                 <Link to={`/courses/${course.slug}`}>
-                                                    Start Course <ArrowRight className="h-4 w-4 ml-2" />
+                                                    Commencer le Cours <ArrowRight className="h-4 w-4 ml-2" />
                                                 </Link>
                                             </Button>
                                         </div>

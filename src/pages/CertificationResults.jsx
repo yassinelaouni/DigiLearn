@@ -41,8 +41,8 @@ const CertificationResults = () => {
     const passingScore = Math.ceil(totalQuestions * 0.85);
 
     const userData = stateUserData || {
-        name: `${currentUser?.firstName || ''} ${currentUser?.lastName || ''}`.trim() || "Student Name",
-        skill: "Marketing with Canva",
+        name: `${currentUser?.firstName || ''} ${currentUser?.lastName || ''}`.trim() || "EL AOUNI Yassine",
+        skill: "Fondements du Développement Web",
         date: new Date().toLocaleDateString('en-US', {
             day: 'numeric',
             month: 'short',
@@ -65,7 +65,7 @@ const CertificationResults = () => {
             const pdf = new jsPDF('l', 'mm', 'a4');
             const imgData = canvas.toDataURL('image/png');
             const imgWidth = 297;
-            const imgHeight = (canvas.height * imgWidth) / canvas.width+6;
+            const imgHeight = (canvas.height * imgWidth) / canvas.width + 6;
 
             pdf.addImage(imgData, 'PNG', 0, 0, imgWidth, imgHeight);
             pdf.save(`${userData.name.replace(/\s+/g, '_')}_certificate.pdf`);
@@ -90,12 +90,12 @@ const CertificationResults = () => {
             <Layout>
                 <div className="container py-8 md:py-12">
                     <div className="max-w-3xl mx-auto text-center">
-                        <h1 className="text-3xl font-bold mb-4">Test Results</h1>
+                        <h1 className="text-3xl font-bold mb-4">Résultats du Test</h1>
                         <p className="text-xl mb-6">
-                        Your score: {score}/{totalQuestions} (minimum passing score: {passingScore} - 85%)</p>
+                            Votre score : {score}/{totalQuestions} (score minimum requis : {passingScore} - 85%)</p>
                         <Button asChild>
                             <Link to={`/courses/${slug}/certification`}>
-                                Try Again
+                                Réessayer
                             </Link>
                         </Button>
                         <div className="mt-12">
@@ -104,7 +104,7 @@ const CertificationResults = () => {
                                 className="inline-flex items-center text-sm text-muted-foreground hover:text-foreground"
                             >
                                 <ChevronLeft className="h-4 w-4 mr-1" />
-                                Back to Course
+                                Retour au Cours
                             </Link>
                         </div>
                     </div>
@@ -131,9 +131,9 @@ const CertificationResults = () => {
                         className="text-center mb-6"
                     >
                         <CheckCircle2 className="h-12 w-12 mx-auto text-green-500 mb-3" />
-                        <h1 className="text-2xl md:text-3xl font-bold mb-2">Congratulations!</h1>
+                        <h1 className="text-2xl md:text-3xl font-bold mb-2">Félicitations !</h1>
                         <p className="text-lg md:text-xl text-muted-foreground mb-4">
-                            You passed with a score of {score}/{totalQuestions}
+                            Vous avez réussi avec un score de {score}/{totalQuestions}
                         </p>
                     </motion.div>
 
@@ -171,11 +171,11 @@ const CertificationResults = () => {
                             {/* Content Container - Responsive Padding */}
                             <div className="relative z-10 h-full flex flex-col justify-center items-center p-4 sm:p-8 md:p-12 text-center">
                                 <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold uppercase tracking-wider text-gray-800 mb-2 md:mb-4">
-                                    CERTIFICATE OF ACHIEVEMENT
+                                    CERTIFICAT DE RÉUSSITE
                                 </h2>
 
                                 <p className="text-sm sm:text-base md:text-xl text-gray-500 italic">
-                                    This is to certify that
+                                    Ceci certifie que
                                 </p>
 
                                 {/* Name with responsive sizing */}
@@ -191,7 +191,7 @@ const CertificationResults = () => {
                                 </div>
 
                                 <p className="text-sm sm:text-base md:text-xl text-gray-500 max-w-2xl mb-2 md:mb-4">
-                                    has successfully completed the course assessment for
+                                    a réussi l'évaluation du cours
                                 </p>
 
                                 <h4 className="text-xl sm:text-2xl md:text-3xl font-bold uppercase text-gray-800 mb-4 md:mb-6">
@@ -199,7 +199,7 @@ const CertificationResults = () => {
                                 </h4>
 
                                 <p className="text-sm sm:text-base md:text-xl font-bold text-gray-800">
-                                    Awarded on {userData.date}
+                                    Décerné le {userData.date}
                                 </p>
                             </div>
 
@@ -209,7 +209,7 @@ const CertificationResults = () => {
                                     <img
                                         src={adminSignature}
                                         alt="Signature"
-                                       width={90} 
+                                        width={90}
                                     />
                                     <p className="text-xs sm:text-sm md:text-base font-bold text-gray-800">{userData.issuer}</p>
                                     <p className="text-xs sm:text-sm text-gray-600">{userData.title}</p>
@@ -239,7 +239,7 @@ const CertificationResults = () => {
                             onClick={handleDownload}
                         >
                             <Download className="h-4 w-4 md:h-5 md:w-5" />
-                            Download PDF
+                            Télécharger le PDF
                         </Button>
                     </motion.div>
                 </div>

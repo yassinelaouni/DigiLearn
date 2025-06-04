@@ -40,7 +40,7 @@ export default function useProfileService() {
       try {
         setIsLoading(true);
         // Get userId from URL params, localStorage, or props
-        const userId = '68279fa46b9c87c404e2ece4'; // Replace with your actual userId source
+        const userId = '6838d919cbd10b318d935b58'; // Replace with your actual userId source
         
         const response = await fetch(`${API_BASE_URL}/users/${userId}/profile`, {
           headers: { 

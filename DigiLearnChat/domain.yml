@@ -1,14 +1,14 @@
 version: "3.1"
 
 intents:
-  - greet
+  - saluer           # Keep if you need French support
+  - lister_cours     # Keep if you need French support
+  - greet            # English version
   - goodbye
-  - affirm
-  - deny
-  - out_of_scope
-  - list_courses
+  - list_courses     # English version
   - detail_cours
   - quiz_cours
+  - out_of_scope
 
 entities:
   - course_title
@@ -18,24 +18,26 @@ slots:
     type: text
     influence_conversation: true
     mappings:
-    - type: from_entity
-      entity: course_title
+      - type: from_entity
+        entity: course_title
 
 responses:
   utter_greet:
-  - text: "Hello! I'm your DigiLearn assistant. How can I help you today?"
-  
+    - text: "👋 Hello! Welcome to the Learning Management System. How can I help you today?"
+
   utter_goodbye:
-  - text: "Goodbye! Have a great day!"
-  
+    - text: "👋 Goodbye! Happy learning!"
+
   utter_default:
-  - text: "I'm not sure I understand. Could you rephrase that?"
+    - text: "Sorry, I didn't understand that. Could you rephrase?"
+    - text: "I'm not sure I follow. Can you ask in a different way?"
 
 actions:
-  - action_get_courses
-  - action_get_course_details
-  - action_get_course_quiz
+  - action_get_details
+  - action_greet
+  - action_get_quiz_info
+  - action_get_courses  # Add this missing action
 
 session_config:
-  session_expiration_time: 60  # minutes
+  session_expiration_time: 60
   carry_over_slots_to_new_session: true

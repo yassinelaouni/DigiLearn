@@ -22,7 +22,7 @@ const AppBarMenu = ({ menuItems }) => {
     const handleMenuItemClick = (item) => {
         handleMenuClose();
         navigate(item.url);
-        if (item.label === 'Logout') {
+        if (item.label === 'Déconnexion') {
             dispatch(actions.logout());
             navigate("/")
         }
@@ -33,8 +33,8 @@ const AppBarMenu = ({ menuItems }) => {
             <IconButton
                 size="large"
                 edge="end"
-                aria-label="account of current user"
-                aria-controls="primary-search-account-menu"
+                aria-label="compte de l'utilisateur actuel"
+                aria-controls="menu-compte-recherche-principal"
                 aria-haspopup="true"
                 onClick={handleProfileMenuOpen}
                 color="inherit"
@@ -47,7 +47,7 @@ const AppBarMenu = ({ menuItems }) => {
                     vertical: "top",
                     horizontal: "right",
                 }}
-                id="primary-search-account-menu"
+                id="menu-compte-recherche-principal"
                 keepMounted
                 transformOrigin={{
                     vertical: "top",

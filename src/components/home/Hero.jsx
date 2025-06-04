@@ -1,4 +1,3 @@
-
 import { motion } from "framer-motion";
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
@@ -42,7 +41,7 @@ const Hero = () => {
                 <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-brand-purple opacity-75"></span>
                 <span className="relative inline-flex rounded-full h-3 w-3 bg-brand-purple"></span>
               </span>
-              New courses added every month
+              Nouveaux cours ajoutés chaque mois
             </motion.div>
 
             <motion.h1
@@ -51,9 +50,9 @@ const Hero = () => {
               transition={{ duration: 0.5, delay: 0.1 }}
               className="text-4xl md:text-5xl lg:text-6xl font-bold font-display leading-tight"
             >
-              Master Digital Culture for the{" "}
+              Maîtrisez la culture numérique pour l'{" "}
               <span className="bg-gradient-to-r from-brand-purple to-brand-blue bg-clip-text text-transparent">
-                Modern University
+                université moderne
               </span>
             </motion.h1>
 
@@ -63,7 +62,7 @@ const Hero = () => {
               transition={{ duration: 0.5, delay: 0.2 }}
               className="text-lg md:text-xl text-muted-foreground max-w-2xl mx-auto lg:mx-0"
             >
-              Unlock the power of digital literacy with our specialized university courses. Learn web development, digital marketing, data science, and more.
+              Débloquez le pouvoir de la littératie numérique avec nos cours universitaires spécialisés. Apprenez le développement web, le marketing numérique, la science des données, et plus encore.
             </motion.p>
 
             <motion.div
@@ -74,37 +73,15 @@ const Hero = () => {
             >
               <Button asChild size="lg" className="rounded-full bg-gradient-to-r from-brand-purple to-brand-blue hover:opacity-90 transition-opacity">
                 <Link to="/courses">
-                  Explore Courses
+                  Explorer les cours
                   <ChevronRight className="ml-2 h-4 w-4" />
                 </Link>
               </Button>
               <Button asChild variant="outline" size="lg" className="rounded-full">
                 <Link to="/about">
-                  Learn More
+                  En savoir plus
                 </Link>
               </Button>
-            </motion.div>
-
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.5, delay: 0.4 }}
-              className="flex items-center justify-center lg:justify-start gap-8 pt-4"
-            >
-              <div className="flex flex-col items-center lg:items-start">
-                <span className="text-2xl font-bold text-brand-purple">25+</span>
-                <span className="text-sm text-muted-foreground">Courses</span>
-              </div>
-              <div className="w-px h-10 bg-border"></div>
-              <div className="flex flex-col items-center lg:items-start">
-                <span className="text-2xl font-bold text-brand-blue">18+</span>
-                <span className="text-sm text-muted-foreground">Expert Instructors</span>
-              </div>
-              <div className="w-px h-10 bg-border"></div>
-              <div className="flex flex-col items-center lg:items-start">
-                <span className="text-2xl font-bold text-brand-green">5k+</span>
-                <span className="text-sm text-muted-foreground">Students</span>
-              </div>
             </motion.div>
           </div>
 
@@ -114,10 +91,10 @@ const Hero = () => {
             transition={{ duration: 0.6, delay: 0.3 }}
             className="relative"
           >
-              {!isMobile && (<div className="relative">
+            {!isMobile && (<div className="relative">
               <img
                 src="/landing.png"
-                alt="Digital learning illustration"
+                alt="Illustration d'apprentissage numérique"
                 className="w-full h-auto object-cover"
               />
               <div className="absolute top-0 left-0 w-full h-full"></div>
@@ -133,8 +110,8 @@ const Hero = () => {
                 <Book className="h-6 w-6 text-brand-purple" />
               </div>
               <div>
-                <p className="font-medium">25+ Courses</p>
-                <p className="text-sm text-muted-foreground">Curated for university</p>
+                <p className="font-medium">Plus de 25 cours</p>
+                <p className="text-sm text-muted-foreground">Conçus pour l'université</p>
               </div>
             </motion.div>
 
@@ -147,8 +124,8 @@ const Hero = () => {
                 <Lightbulb className="h-6 w-6 text-brand-yellow" />
               </div>
               <div>
-                <p className="font-medium">Interactive Learning</p>
-                <p className="text-sm text-muted-foreground">Hands-on projects</p>
+                <p className="font-medium">Apprentissage interactif</p>
+                <p className="text-sm text-muted-foreground">Projets pratiques</p>
               </div>
             </motion.div>
 
@@ -161,8 +138,8 @@ const Hero = () => {
                 <Users className="h-6 w-6 text-brand-blue" />
               </div>
               <div>
-                <p className="font-medium">Community Support</p>
-                <p className="text-sm text-muted-foreground">Connect with peers</p>
+                <p className="font-medium">Soutien communautaire</p>
+                <p className="text-sm text-muted-foreground">Connectez-vous avec vos pairs</p>
               </div>
             </motion.div>
 
@@ -174,17 +151,17 @@ const Hero = () => {
       </div>
 
 
-      <div className={`container ${isMobile ? 'mt-2' : 'mt-16 md:mt-24'}`}> 
+      <div className={`container ${isMobile ? 'mt-2' : 'mt-16 md:mt-24'}`}>
         <div className="relative overflow-hidden rounded-2xl bg-gradient-to-r from-brand-purple to-brand-blue p-8 md:p-10">
           <div className="absolute inset-0 bg-white/10 backdrop-blur-3xl"></div>
           <div className="relative z-10 flex flex-col md:flex-row items-center justify-between gap-6">
             <div className="text-white text-center md:text-left">
-              <h3 className="text-2xl md:text-3xl font-bold mb-2">Start Your Digital Journey Today</h3>
-              <p className="text-white/80 max-w-xl">Join thousands of university students mastering digital skills</p>
+              <h3 className="text-2xl md:text-3xl font-bold mb-2">Commencez votre parcours numérique aujourd'hui</h3>
+              <p className="text-white/80 max-w-xl">Rejoignez des milliers d'étudiants universitaires maîtrisant les compétences numériques</p>
             </div>
             <Button asChild size="lg" variant="secondary" className="rounded-full group">
               <Link to="/signup">
-                Get Started
+                Commencer
                 <ArrowRight className="ml-2 h-4 w-4 transition-transform group-hover:translate-x-1" />
               </Link>
             </Button>

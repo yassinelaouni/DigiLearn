@@ -18,38 +18,38 @@ const mockImageURL = "https://images.unsplash.com/photo-1519389950473-47ba027778
 // Benefits Data
 const benefits = [
   {
-    title: "Interactive Learning Experience",
-    description: "Engage with dynamic content, hands-on exercises, and interactive quizzes designed to reinforce learning.",
+    title: "Expérience d'Apprentissage Interactive",
+    description: "Interagissez avec du contenu dynamique, des exercices pratiques et des quiz interactifs conçus pour renforcer l'apprentissage.",
     icon: <Lightbulb className="h-6 w-6 text-brand-purple" />,
     color: "bg-brand-purple",
   },
   {
-    title: "Expert University Instructors",
-    description: "Learn from experienced professors and industry professionals with real-world expertise.",
+    title: "Instructeurs Universitaires Experts",
+    description: "Apprenez auprès de professeurs expérimentés et de professionnels du secteur avec une expertise pratique.",
     icon: <Medal className="h-6 w-6 text-brand-blue" />,
     color: "bg-brand-blue",
   },
   {
-    title: "Vibrant Learning Community",
-    description: "Connect with fellow students through discussion forums, group projects, and peer reviews.",
+    title: "Communauté d'Apprentissage Dynamique",
+    description: "Connectez-vous avec d'autres étudiants via des forums de discussion, des projets de groupe et des évaluations par les pairs.",
     icon: <Users className="h-6 w-6 text-brand-green" />,
     color: "bg-brand-green",
   },
   {
-    title: "Industry-Relevant Curriculum",
-    description: "Stay current with cutting-edge digital skills that align with industry demands and trends.",
+    title: "Programme Adapté à l'Industrie",
+    description: "Restez à jour avec les compétences numériques de pointe qui correspondent aux exigences et tendances de l'industrie.",
     icon: <Globe className="h-6 w-6 text-brand-orange" />,
     color: "bg-brand-orange",
   },
   {
-    title: "Flexible Learning Schedule",
-    description: "Study at your own pace with 24/7 access to course materials and recorded lectures.",
+    title: "Horaires d'Apprentissage Flexibles",
+    description: "Étudiez à votre rythme avec un accès 24/7 aux supports de cours et aux conférences enregistrées.",
     icon: <Clock className="h-6 w-6 text-brand-pink" />,
     color: "bg-brand-pink",
   },
   {
-    title: "Cutting-Edge Digital Topics",
-    description: "Explore emerging technologies and digital trends shaping the future of various industries.",
+    title: "Sujets Numériques de Pointe",
+    description: "Explorez les technologies émergentes et les tendances numériques qui façonnent l'avenir de diverses industries.",
     icon: <Cpu className="h-6 w-6 text-brand-yellow" />,
     color: "bg-brand-yellow",
   },
@@ -58,26 +58,26 @@ const benefits = [
 // Subjects Data
 const subjects = [
   {
-    title: "Web Development",
-    description: "HTML, CSS, JavaScript, React, Node.js, and more.",
+    title: "Développement Web",
+    description: "HTML, CSS, JavaScript, React, Node.js, et plus encore.",
     icon: <Monitor className="h-12 w-12" />,
     color: "from-blue-500 to-indigo-600",
   },
   {
-    title: "Data Science",
-    description: "Python, R, Machine Learning, Data Visualization.",
+    title: "Science des Données",
+    description: "Python, R, Apprentissage Automatique, Visualisation de Données.",
     icon: <Database className="h-12 w-12" />,
     color: "from-green-500 to-emerald-600",
   },
   {
     title: "Design Thinking",
-    description: "UX/UI, Prototyping, Visual Design, User Research.",
+    description: "UX/UI, Prototypage, Design Visuel, Recherche Utilisateur.",
     icon: <Palette className="h-12 w-12" />,
     color: "from-orange-500 to-amber-600",
   },
   {
-    title: "Digital Strategy",
-    description: "Marketing, Analytics, SEO, Content Creation.",
+    title: "Stratégie Numérique",
+    description: "Marketing, Analytique, SEO, Création de Contenu.",
     icon: <Layers className="h-12 w-12" />,
     color: "from-purple-500 to-fuchsia-600",
   },
@@ -106,7 +106,7 @@ const Benefits = () => {
             transition={{ duration: 0.5 }}
             className="text-3xl md:text-4xl font-bold font-display mb-4"
           >
-            Why Choose Our Digital Culture Courses
+            Pourquoi Choisir Nos Cours de Culture Numérique
           </motion.h2>
           <motion.p 
             initial={{ opacity: 0, y: 20 }}
@@ -115,7 +115,7 @@ const Benefits = () => {
             transition={{ duration: 0.5, delay: 0.1 }}
             className="text-muted-foreground text-lg"
           >
-            Gain valuable digital literacy skills with our comprehensive approach to e-learning.
+            Acquérez des compétences précieuses en littératie numérique grâce à notre approche complète de l'apprentissage en ligne.
           </motion.p>
         </div>
         
