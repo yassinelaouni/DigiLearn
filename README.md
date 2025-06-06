@@ -23,7 +23,3 @@ DigiLearn is a web application built with React that provides university student
 - Responsive design for all devices
 - Interactive UI elements
 
-## Development Notes
-
-This project was initially built with TypeScript and later converted to JavaScript.
-
